@@ -1,4 +1,33 @@
+// You shouldn't need to bother with this script
+// If you came here looking for info on how to add the standard com system. Here's a template:
+/*
 
+#include "xobj_core/_LM.lsl" 
+
+//    Included in all these calls:
+//    METHOD - (int)method
+//    INDEX - (int)obj_index
+//    PARAMS - (var)parameters
+//    SENDER_SCRIPT - (var)parameters
+//    CB - The callback you specified when you sent a task
+//    CB_DATA - Array of params to return in a callback
+//    id - (key)method_raiser_uuid
+
+    
+if(method$isCallback){
+    // Received a callback
+	
+    return;
+}
+// Received a method call
+
+   
+#define LM_BOTTOM  
+#include "xobj_core/_LM.lsl"
+
+
+
+*/
 
 #ifndef LM_BOTTOM
 // Top goes here
