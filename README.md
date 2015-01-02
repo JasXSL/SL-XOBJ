@@ -33,7 +33,7 @@ Create a new script in LSL and name it #ROOT or anything you like really, that s
 Note that a #ROOT script is not needed if you don't need a linkset to accept external commands (like touch_start, listen, control etc)
 
 
-    3. Setting up shared vars (optional)
+    	3. Setting up shared vars (optional)
 Shared vars are used for scripts to get variables from another script. Ex a script called "st User" might choose to share an object containing user info like {(key)id:(string)species}
 This could then be accessed by "st UserInfo" that could call something like:
     string species = _shared("st User", ["userData", "cf2625ff-b1e9-4478-8e6b-b954abde056b"]);
@@ -69,7 +69,7 @@ Events:
     0: SharedVarsEvt$changed <- {o:(var)oldData, n:(var)newData, v:(arr)index, s:(str)script}
     
     
-    4. Adding a module
+    	4. Adding a module
 Scripts in XOBJ can be called modules. A module ALWAYS consists of at least one header file which contains preprocessor definitions, and optionally one package file (if you want to share it) containing the actual code. You can always write the code of the package file directly in SL if you don't intend on sharing it.
 
 To add a pre-existing module you'll want to start by including your project core, then define any config definitions, and finally including the package file. Install the dialog manager:
@@ -79,7 +79,7 @@ To add a pre-existing module you'll want to start by including your project core
 4. Add the package file: #include "xobj_core/classes/packages/cl Dialog.lsl"
 5. Compile. You can now utilize the dialog manager.
 
-		5. Running methods
+	5. Running methods
 XOBJ uses a few standard functions to send or receive data:
   runMethod(string uuidOrLink, string className, integer method, list data, string findObj, string in, string callback, string customTarg)
     This is the standard function to run a method on a script.
@@ -102,4 +102,6 @@ So in your script you can just run:
   
 Please note that you need to include a module's header file if you wish to access it. So if you want to utilize the dialog manager in a script, you need to start by #include "cl Dialog.lsl"
 
-    6. 
+    6. Create a module.
+Please see the module creation readme.
+
