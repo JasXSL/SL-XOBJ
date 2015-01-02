@@ -2,7 +2,7 @@
 	Dependencies
 		- st Remoteloader
 	
-	This is a script that lets an object temp attach to you.
+	This is a script that lets an object temp attach to you. It also serves as a #ROOT script.
 	Setup:
 	1. Create a prim in your target's HUD.
 	2. Install the "st Remoteloader" module into that prim.
