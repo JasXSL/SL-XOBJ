@@ -7,8 +7,9 @@
 // Conf
 string CURRENT_FOLDER;
 string SUBFOLDER;
-
+#if RLVcfg$USE_KEEPATTACH==1
 list KEEP_ATTACHED = []; // (str)itemName, (key)id
+#endif
 #ifdef RLVcfg$limitSprint
 float sprint = RLVcfg$limitSprint;
 string sprintTexture = "c0f942a2-46c3-2489-33ef-f072a6cb4e0d";
@@ -232,7 +233,7 @@ default
     */
     if(method$isCallback){
         if(method$byOwner){
-			#if RLVcfg$KEEP_ATTACHED==1
+			#if RLVcfg$USE_KEEPATTACH==1
             if(METHOD == RemoteloaderMethod$attach){
                 integer pos = findAttached(CB);
                 if(~pos){
