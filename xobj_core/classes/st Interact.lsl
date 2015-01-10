@@ -15,10 +15,13 @@
 	3. Define any config overrides you want
 	4. Create a new function: onInteract(key obj, string task, list params){}
 	5. Create a new function: onDesc(key obj, string text)
-	7. #include "xobj_core/classes/packages/st Interact.lsl"
+	6. Create a new function: integer preInteract(key obj)
+	7. Create a new function: onInit(){}
+	8. #include "xobj_core/classes/packages/st Interact.lsl"
 
 	onInteract will be raised when a user interacts (default fly up) with an object
 	onDesc will be raised when the aimed at description changes or is lost
+	preInteract should return false if something is preventing the player from interacting
 	
 	You can also create an onInit(){} function which is run as the first code of state_entry
 	
@@ -41,6 +44,8 @@
 #define Interact$TASK_SOUNDSPACE "SS"		// *(str)name, (float)vol
 #define Interact$TASK_WL_PRESET "WL"		// *(str)preset
 #define Interact$TASK_FOOTSTEPS "tFS"		// *
+
+#define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
 
 // * Implemented by default. Though you might need to install a module for it.
 
