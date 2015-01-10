@@ -3,6 +3,7 @@
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_core/classes/st Attached.lsl"
+#include "xobj_core/classes/st RLV.lsl"
 
 // Conf
 string CURRENT_FOLDER;
@@ -10,7 +11,8 @@ string SUBFOLDER;
 #if RLVcfg$USE_KEEPATTACH==1
 list KEEP_ATTACHED = []; // (str)itemName, (key)id
 #endif
-#ifdef RLVcfg$limitSprint
+
+#if RLVcfg$USE_SPRINT==1
 float sprint = RLVcfg$limitSprint;
 string sprintTexture = "c0f942a2-46c3-2489-33ef-f072a6cb4e0d";
 integer sprintPrim;
@@ -206,6 +208,7 @@ default
 		#if RLVcfg$USE_WINDLIGHT==1
 		_saveShared([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
 		#endif
+		memLim(1.5);
     }
     
     listen(integer chan, string name, key id, string message){
@@ -266,8 +269,7 @@ default
             else if(METHOD == RLVMethod$remAttached)
                 public_remAttached(method_arg(0)); 
 			#endif
-            
-			
+            			
 			if(METHOD == RLVMethod$cubeFlush){
                 cubeTask([]);
             }else if(METHOD == RLVMethod$sitOn){
@@ -278,8 +280,21 @@ default
                 string add = "";
                 if((integer)method_arg(0))add="unsit=y,";
                 llOwnerSay("@"+add+"unsit=force");
-            }
-            
+            }else if(METHOD == RLVMethod$limitCamDist){
+				if((float)method_arg(0)<0)llOwnerSay("@camdistmax=y");
+				else llOwnerSay("@camdistmax:"+method_arg(0)+"=n");
+			}
+			else if(METHOD == RLVMethod$preventTP){
+				string app = "y";
+				if(!(integer)method_arg(0))app = "n";
+				llOwnerSay("@tploc="+app+",tplure="+app);
+			}
+			else if(METHOD == RLVMethod$preventFly){
+				string app = "y";
+				if(!(integer)method_arg(0))app = "n";
+				llOwnerSay("@fly="+app);
+			}
+
 			#if RLVcfg$USE_WINDLIGHT==1
 			if(METHOD == RLVMethod$windlightPreset){
                 _saveShared([RLVShared$windlight], method_arg(0));

@@ -10,9 +10,13 @@
 	Install the support cube
 	1. Create a new box, it can be any size but I recommend a default 0.5x0.5x0.5 cube.
 	2. Create a script in it, name the script "st Supportcube"
-	3. Include your project _core.lsl file
-	4. #include "xobj_core/classes/packages/st Supportcube.lsl"
-	5. Save and pick up the object. Make sure its got copy permissions set.
+	3. #include "xobj_core/classes/st Supportcube.lsl"
+	4. #define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
+	5. Include your project _core.lsl file
+	6. #include "xobj_core/classes/packages/st Supportcube.lsl"
+	7. Save and pick up the object. Make sure its got copy permissions set.
+	
+	It's important that they are added in that order, #define LISTEN_OVERRIDE will NOT work if it gets added AFTER _core.lsl
 	
 	Install st RLV
 	1. Create a new script in your HUD (root prim recommended) and named it "st RLV"
@@ -129,6 +133,11 @@
 #define RLVMethod$windlightPreset 11	// (str)preset
 #define RLVMethod$resetWindlight 12		// Resets to config default
 
+#define RLVMethod$limitCamDist 13		// (float)dist <0 = clear, 0 = force mouselook
+#define RLVMethod$preventTP 14			// (bool)prevent
+#define RLVMethod$preventFly 15			// (bool)Prevent
+
+
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
 
@@ -145,6 +154,10 @@
 #define RLV$unsit(override) runMethod((string)LINK_THIS, "st RLV", RLVMethod$unsit, [override], TNN)
 #define RLV$windlightPreset(preset) runMethod((string)LINK_THIS, "st RLV", RLVMethod$windlightPreset, [preset], TNN)
 #define RLV$resetWindlight() runMethod((string)LINK_THIS, "st RLV", RLVMethod$resetWindlight, [], TNN)
+
+#define RLV$limitCamDist(limit) runMethod((string)LINK_THIS, "st RLV", RLVMethod$limitCamDist, [limit], TNN)
+#define RLV$preventTP(prevent) runMethod((string)LINK_THIS, "st RLV", RLVMethod$preventTP, [prevent], TNN)
+#define RLV$preventFly(prevent) runMethod((string)LINK_THIS, "st RLV", RLVMethod$preventFly, [prevent], TNN)
 
 
 
