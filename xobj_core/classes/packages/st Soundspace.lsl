@@ -1,5 +1,7 @@
-#include "toonie_halloween/_core.lsl"
 #include "xobj_core/_CLASS_STATIC.lsl"
+#include "xobj_core/classes/st SoundspaceAux.lsl"
+#include "xobj_core/classes/st Interact.lsl"
+#include "xobj_core/classes/st Soundspace.lsl"
 
 
 integer BFL;
