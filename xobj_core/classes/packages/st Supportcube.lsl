@@ -1,5 +1,4 @@
-#include "xobj_core/classes/st Supportcube.lsl"
-#define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
+#include "xobj_core/classes/st RLV.lsl"
 #include "xobj_core/_CLASS_STATIC.lsl"
 
 
@@ -126,5 +125,3 @@ default
     #include "xobj_core/_LM.lsl" 
     
 }
-
-
