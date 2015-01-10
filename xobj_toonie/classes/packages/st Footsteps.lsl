@@ -1,5 +1,8 @@
 #include "xobj_core/_CLASS_STATIC.lsl"
 #include "xobj_toonie/classes/st Footsteps.lsl"
+#include "xobj_core/classes/st Interact.lsl"
+#include "xobj_core/classes/st RLV.lsl"
+#include "xobj_core/classes/st Primswim.lsl"
 
 
 
