@@ -8,6 +8,8 @@
 #include "xobj_core/classes/st Primswim.lsl"
 #include "xobj_core/classes/st PrimswimAux.lsl"
 #include "xobj_core/classes/st Interact.lsl"
+#include "xobj_core/classes/st Soundspace.lsl"
+
 
 string wl_preset;
 string wl_set;
@@ -27,7 +29,7 @@ integer BFL;
 #define BFL_FULLY_SUBMERGED 8
 #define BFL_FEET_SUBMERGED 16
 #define BFL_WITHIN_20M_OF_WATER 32
-#define BFL_STOP_ANIMATION 64       // Stop swimming because of effect
+//#define BFL_STOP_ANIMATION 64       // Stop swimming because of effect
 #define BFL_HAS_WET_FEET 256
 #define BFL_CONTROLS_TAKEN 512
 #define BFL_AT_SURFACE 1024
@@ -116,9 +118,11 @@ updateAnimstate(){
     integer bf_start;
     integer bf_stop;
 
-    if(BFL&BFL_STOP_ANIMATION && BFA != 0){
-        bf_stop = BFA_IDLE|BFA_ACTIVE;
-        BFA=0;
+    if(BFL&BFL_STOP_ANIMATION){
+		if(BFA != 0){
+			bf_stop = BFA_IDLE|BFA_ACTIVE;
+			BFA=0;
+		}
     }else{
         if(BFL&BFL_IN_WATER && ~BFA&BFA_IDLE){
             bf_start = bf_start|BFA_IDLE;
@@ -136,6 +140,8 @@ updateAnimstate(){
             BFA = BFA&~BFA_ACTIVE;
         }
     }
+	
+	
     if(bf_start != 0){
         if(bf_start&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle,TRUE,0);
         if(bf_start&BFA_ACTIVE){
@@ -332,9 +338,7 @@ timerEvent(string id, string data){
                     
                     
                     // CONTROLS MOVEMENT
-                    integer status = StatusFlags();
-                    
-                    integer stopped = (status&(StatusFlag$FLAG_RAPED|StatusFlag$MOVELOCKED|StatusFlag$CLIMBING) || ainfo&AGENT_SITTING);
+                    integer stopped = checkForceStop();
                     
                     if(CONTROL && !stopped){
                         vector fwd; vector left; vector up;
@@ -613,6 +617,7 @@ default
         if(llGetInventoryType("st PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("st PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
         debug("");
+		memLim(1.5);
     }
     
     attach(key id){
