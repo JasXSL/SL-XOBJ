@@ -42,7 +42,6 @@ default
     }
     
     control(key id, integer level, integer edge){
-        if(~BFL&BFL_INIT)return;
         if(level&edge)raiseEvent(evt$BUTTON_PRESS, (string)(level&edge));
         if(~level&edge)raiseEvent(evt$BUTTON_RELEASE, (string)(~level&edge));
     }
