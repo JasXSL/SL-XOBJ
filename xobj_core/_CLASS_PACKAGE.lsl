@@ -115,7 +115,7 @@ __rebuildIndex(){
 	cls$each(index, obj, {
 		list_each(_INDEX_VARS, k, v, {
 			string dta = llList2String(_INDEX, k);
-			json_push(dta, llJsonGetValue(obj, [v]));
+			push(dta, llJsonGetValue(obj, [v]));
 			_INDEX = llListReplaceList(_INDEX, [dta], k, k);
 		});
 	});
