@@ -92,10 +92,12 @@ public_set(string script, list index, string data){
 	}
     llSetLinkMedia(llList2Integer(primData, 0), llList2Integer(primData,1), [PRIM_MEDIA_HOME_URL, cur, PRIM_MEDIA_CURRENT_URL, two, PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
 	
-	#ifdef SharedVarsConf$raiseChangedEvent 
-	raiseEvent(evt$SHARED_CHANGED, llList2Json(JSON_OBJECT, [ 
+	#ifdef SharedVarsEvt$changed 
+	raiseEvent(SharedVarsEvt$changed, llList2Json(JSON_OBJECT, [ 
+		#ifdef SharedVarsEvt$includeData
         "o", llJsonGetValue(cur, index),
         "n", data,
+		#endif
         "v", llList2Json(JSON_ARRAY, index),
         "s", script
     ]));

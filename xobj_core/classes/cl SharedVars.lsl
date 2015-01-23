@@ -18,7 +18,8 @@
 
 // Event raised when a shared var has changed.
 // Quote it out if you do not wish it to raise an event (not recommended)
-#define SharedVarsEvt$changed 0		// Raised when shared var is changed {o:(var)oldData, n:(var)newData, v:(arr)index, s:(str)script}					
+#define SharedVarsEvt$changed 0		// Raised when shared var is changed {v:(arr)index, s:(str)script}					
+//#define SharedVarsEvt$includeData 1	// adds: o:(var)oldData, n:(var)newData to the above call. WARNING memory intensive
 
 // Methods
 #define SharedVarsMethod$SET 0      // (list)index, (var)data - Script name is auto-fetched
