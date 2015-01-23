@@ -7,13 +7,13 @@ integer BFL;
 #define BFL_RECENT_CLICK 1      // Recently interacted
 
 #define TIMER_SEEK "a"
-#define TIMER_RECENT_TP "b" 
 #define TIMER_RECENT_CLICK "c"
 
 integer pInteract;
 
 string targDesc;
 key targ;
+
 
 onEvt(string script, integer evt, string data){ 
     if(script == "st RLV" && evt == evt$SCRIPT_INIT){
@@ -22,11 +22,8 @@ onEvt(string script, integer evt, string data){
     else if(script == "#ROOT" && evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
         if(BFL&BFL_RECENT_CLICK)return;
         
-        integer statusFlags = StatusFlags();
-        if(statusFlags&(StatusFlag$FLAG_RAPED|StatusFlag$RECENT_TP)){
-            GUI$setRpText("Can't do that right now.", ZERO_VECTOR);
-            return; 
-        }
+		if(!preInteract(targ))return;
+        
         
         integer ainfo = llGetAgentInfo(llGetOwner());
         if(ainfo&AGENT_SITTING){
@@ -56,8 +53,7 @@ onEvt(string script, integer evt, string data){
 				vector to = (vector)llList2String(split,1); 
 				to+=prPos(targ);
 				RLV$cubeTask(SupportcubeBuildTeleport(to));
-				multiTimer([TIMER_RECENT_TP, "", 5, FALSE]);
-				Status$setFlag(StatusFlag$RECENT_TP);
+				raiseEvent(InteractEvt$TP, "");
 			} 
 			else if(task == Interact$TASK_PLAY_SOUND || task == Interact$TASK_TRIGGER_SOUND){
 				key sound = llList2String(split,1);
@@ -129,9 +125,7 @@ timerEvent(string id, string data){
             onDesc(targ, "");
         }
     }
-    else if(id == TIMER_RECENT_TP){
-        Status$unsetFlag(StatusFlag$RECENT_TP);
-    }
+
     else if(id == TIMER_RECENT_CLICK){
         BFL = BFL&~BFL_RECENT_CLICK;
     }

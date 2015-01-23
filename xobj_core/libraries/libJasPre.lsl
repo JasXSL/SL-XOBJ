@@ -62,6 +62,7 @@
 	#define implode(delim, lst) llDumpList2String(lst, delim)
 // Shorter way to trim a string
 	#define tr(input) llStringTrim(input, STRING_TRIM)
+	#define trim(input) tr(input)
 // Check if a string is not "" or JSON_INVALID
 	#define isset(input) ((string)input!="" && (string)input!=JSON_INVALID)
 	

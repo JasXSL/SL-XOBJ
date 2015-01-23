@@ -29,7 +29,7 @@ Create a file in that folder and name it _core.lsl (The name doesn't really matt
 In the first line of _core.lsl enter #include "xobj_core/_ROOT.lsl"
 Hit enter. LSL include files must always end with a blank line
 Save your file.
-Create a new script in LSL and name it #ROOT or anything you like really, that script in particular will serve as the standard input and does not neccessarily have to be accessed directly. On the first line, enter #include "MyFirstProject/_core.lsl" and save. For root implementation examples, see the #ROOT implementations readme.
+Create a new script in LSL and name it #ROOT. #ROOT will serve as the standard input. On the first line, enter #include "MyFirstProject/_core.lsl" and save. For root implementation examples, see the #ROOT implementations readme.
 Note that a #ROOT script is not needed if you don't need a linkset to accept external commands (like touch_start, listen, control etc)
 
 

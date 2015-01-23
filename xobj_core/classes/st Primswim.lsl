@@ -9,8 +9,11 @@
 	1. Create a new script, name it "st Primswim"
 	2. Include your _core.lsl file
 	3. Define any config options you want
-	4. #include "xobj_core/classes/packages/st Primswim.lsl"
-	5. Compile
+	4. Create a function integer checkForceStop(){return FALSE;}
+	5. #include "xobj_core/classes/packages/st Primswim.lsl"
+	6. Compile
+	
+	
 	
 	How to install st PrimswimAux:
 	1. Create a new script, name it "st PrimswimAux"
@@ -27,11 +30,16 @@
 	
 	Hopefully everything should work now.
 	
+	
+	
 	Usage:
 	Create a box (primswim only works with boxes)
 	Name the box exactly: WATER
 	Make the box phantom.
 	You should now be able to swim when entering it.
+	
+	Helper functions:
+	checkForceStop() Lets you return FALSE if something is else in the HUD is preventing the user from moving under water
 	
 */
 

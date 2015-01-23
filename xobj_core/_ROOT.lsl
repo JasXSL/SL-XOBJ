@@ -70,11 +70,22 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define TNN "", "", CALLBACK_NONE, ""
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
+// If you a script to listen to override, you have to define that BEFORE you include root
+// Ex:
+/*
+	
+	#include "xobj_core/classes/st Supportcube.lsl"
+	#define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
+	#include "toonie_rezzed/_core.lsl"
+	#include "xobj_core/classes/packages/st Supportcube.lsl"
+
+*/ 
 initiateListen(){
 	llListen(playerChan(llGetOwner()), "", "", "") ;
 	#ifdef LISTEN_OVERRIDE 
 	llListen(LISTEN_OVERRIDE,"","","");
 	#endif
+	
 }
 
 // Disregard these, they're just preprocessor shortcuts
