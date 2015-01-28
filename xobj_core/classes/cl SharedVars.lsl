@@ -59,6 +59,26 @@ integer _SHARED_CACHE_ROOT;     // Contains cache included into the head of ever
 #define _shared(script, index) getSharedVar(script, index)
 #define evt$eventIsSharedScriptChange(sc) (script == "cl SharedVars" && evt == evt$SHARED_CHANGED && jVal(data, ["s"]) == sc)
 
+// Only use this for a script to set it's own variables when inter-script synchronisity is REQUIRED
+// It will cost a lot more script memory, generally cost more script time and not fire events
+// It will not be able to spawn new tables either. So only use it if you are CERTAIN your script has been assigned a
+// Prim and face from cl SharedVars. You can do this by _saveShared with a non-null value
+// This will not unset data either
+_saveSharedOverride(string script, list index, string data){
+	string indexes = (string)llGetLinkMedia(_SHARED_CACHE_ROOT, 0, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]);
+	list names = llJson2List(llJsonGetValue(indexes, [SharedVarsVar$scriptName]));
+    integer pos = llListFindList(names,[script]);
+	if(~pos){
+		integer prim = (integer)llJsonGetValue(indexes, [SharedVarsVar$prim, pos]);
+		integer face = (integer)llJsonGetValue(indexes, [SharedVarsVar$face, pos]);
+		string out = llJsonSetValue((string)llGetLinkMedia(
+            prim, 
+            face, 
+            [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]
+        ), index, data);
+		llSetLinkMedia(prim, face, [PRIM_MEDIA_HOME_URL, llGetSubString(out,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(out,1024,2047), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
+    }else llOwnerSay("UNABLE TO SAVE OVERRIDE. "+script+" NOT SET.");
+}
 
 string getSharedVar(string script, list index){
     string indexes = (string)llGetLinkMedia(_SHARED_CACHE_ROOT, 0, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]);
