@@ -43,6 +43,9 @@
 // Quickly split a string into a list
 	#define explode(delim, str) llParseString2List(str, [delim], [])
 
+// Quickly set a value of an array
+	#define set(arr, pos, val) arr = llListReplaceList(arr, [val], pos, pos)
+	
 // Removes the first element of a list and returns it - Cannot be run as a parameter or in a statement
 #define shift(lst) llList2String(lst,0); lst=llDeleteSubList(lst,0,0)
 	// Ex: list l = ["a", "b"]; string first = shift(l); first => "a" - l => ["b"]
@@ -73,8 +76,10 @@
 // Add an item to the end of a JSON ARRAY . Cannot be run as a parameter or in a statement
 	#define json_push(input, val) input = llJsonSetValue(input, [-1], val);
 	// Ex: string json = "[\"Rawr\", \"Meow\"]"; json_push(json, "Hiss"); - json = [\"Rawr\",\"Meow\",\"Hiss\"];
-
-
+	
+	#define mkobj(data) llList2Json(JSON_OBJECT, data)
+	#define mkarr(data) llList2Json(JSON_ARRAY, data)
+	
 
 	
 	

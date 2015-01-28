@@ -1,3 +1,74 @@
+/*
+Very rudimentary and can probably be written better.
+You cant do a number immediately followed by a parentheses, ex: "3(4+6)". Use "3*(4+6)" instead.
+
+Usage example:
+string variables = llList2Json(JSON_OBJECT, ["x", 4]);
+string algorithm = "10+RAND(x*2)/2";
+llSay(0, algorithm+" (Where: "+variables+")  = "+(string)algo(algorithm, 0, variables));
+*/
+
+float algo(string al, integer part, string varObj){
+    list parts = [
+        "(,)",              // Parentheses work different in that they are calculated separately
+        "RAND",             // This is the math order inverse
+        "+,-",              // AS
+        "*,/",              // MD
+        "^"                 // E
+    ];
+    list exp = llCSV2List(llList2String(parts,part));
+    float val;
+    integer i; 
+    
+    list split = llParseString2List(al, [], exp);
+
+    if(part == 0){
+        for(i=0; i<llGetListLength(split); i++){
+            string str = llStringTrim(llList2String(split,i), STRING_TRIM);
+            if(str == "("){
+                integer x; integer ps = 1; list out;
+                for(x = i+1; x<llGetListLength(split); x++){
+                    if(llList2String(split,x) == "(")ps++;
+                    else if(llList2String(split,x) == ")") ps--;
+                    out+=llList2String(split, x);
+                    if(ps == 0 || x>=llGetListLength(split)){
+                        float nr = algo((string)llDeleteSubList(out, -1, -1), 0, varObj); 
+                        split = llListReplaceList(split, [nr], i, x);
+                        x = llGetListLength(split);
+                    }
+                }
+            }
+        }
+        
+
+        return algo((string)split, 1, varObj);
+    }
+
+    string action = "+";
+    for(i=0; i<llGetListLength(split); i++){
+        string str = llStringTrim(llList2String(split, i), STRING_TRIM);
+        
+        if(~llListFindList(exp, [str])){
+            action = str;
+        }
+        
+        else{
+            float v;
+            
+            if(llJsonValueType(varObj, [str]) != JSON_INVALID)v = (float)llJsonGetValue(varObj, [str]);
+            else if(part < llGetListLength(parts)-1)v = algo(str, part+1, varObj);
+            else v = (float)str;
+
+            if(action == "+")val+=v;
+            else if(action == "-")val-=v;
+            else if(action == "*")val*=v;
+            else if(action == "/")val/=v;
+            else if(action == "^")val = llPow(val, v);
+            else if(action == "RAND")val+=llFrand(v);
+        }
+    }
+    return val;
+}
 integer alphaNumeric(string str){
     if(~llSubStringIndex(llEscapeURL(str), "%"))return FALSE;
     return TRUE;
