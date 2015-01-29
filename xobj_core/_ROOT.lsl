@@ -9,6 +9,7 @@
 #include "xobj_core/libraries/libJas.lsl"
 #include "xobj_core/libraries/libJasPre.lsl"
 #include "xobj_core/libraries/partiCat.lsl"
+#include "xobj_core/_CLASS_STATIC.lsl"
 
 // Sharedvars should be included by default, so it can be used by all projects at will
 #include "xobj_core/classes/cl SharedVars.lsl" // SV headers

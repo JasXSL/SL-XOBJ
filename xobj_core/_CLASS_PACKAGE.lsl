@@ -47,7 +47,6 @@
 	
 */
 
-#include "xobj_core/_CLASS_STATIC.lsl"
 #define SCRIPT_IS_PACKAGE
 
 // These are globals needed to store objects and track the current index. An index of -1 means no object is set to work on
