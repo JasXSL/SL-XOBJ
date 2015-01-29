@@ -110,9 +110,8 @@ Let's create an in-world box to run your method.
 2. Create a new script in your box and name it #ROOT.
 3. Copy+paste the root script you made earlier into the box #ROOT script.
 4. On the first row enter #include "myFirstProject/_core.lsl"
-5. On the second row enter #include "xobj_core/_CLASS_STATIC.lsl"
-6. Add to the top of the script: #include "myFirstProject/classes/st Main.lsl"
-7. Add the following code into the new #ROOT script's default{}
+5. Add to the top of the script: #include "myFirstProject/classes/st Main.lsl"
+6. Add the following code into the new #ROOT script's default{}
 
 #include "xobj_core/_LM.lsl" 
 /* 
