@@ -69,6 +69,7 @@
 // Check if a string is not "" or JSON_INVALID
 	#define isset(input) ((string)input!="" && (string)input!=JSON_INVALID)
 	
+	#define algo(math, vars) mathToFloat(math, 0, vars)
 	
 	
 	
