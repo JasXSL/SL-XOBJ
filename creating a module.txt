@@ -27,7 +27,7 @@ onEvt(string script, integer evt, string data){
 		integer prim = (integer)jVal(data, [0]);
 		key clicker = (key)jVal(data, [1]);
 		if(clicker == llGetOwner()){
-			Dialog$spawn(llGetOwner(), "Would you like to output hello world?", ["Yes", "No"], 0, "");
+			Dialog$spawn(llGetOwner(), "Would you like to output hello world?", (["Yes", "No"]), 0, "");
 		}
 	}
 }
@@ -110,8 +110,10 @@ Let's create an in-world box to run your method.
 1. Create a box in world.
 2. Create a new script in your box and name it #ROOT.
 3. Copy+paste the root script you made earlier into the box #ROOT script.
-4. Add to the top of the script: #include "myFirstProject/classes/st Main.lsl"
-5. Add the following code into the new #ROOT script's default{}
+4. On the first row enter #include "myFirstProject/_core.lsl"
+5. On the second row enter #include "xobj_core/_CLASS_STATIC.lsl"
+6. Add to the top of the script: #include "myFirstProject/classes/st Main.lsl"
+7. Add the following code into the new #ROOT script's default{}
 
 #include "xobj_core/_LM.lsl" 
 /* 
