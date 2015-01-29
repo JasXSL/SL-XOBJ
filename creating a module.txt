@@ -15,11 +15,10 @@ Note: Make sure the notecard ends with a blank row, or the preprocessor will thr
 Save the blank script for now, we'll use it later.
 Open up your "st Main" script in SL.
 On the first row enter #include "myFirstProject/_core.lsl"
-On the second row enter #include "xobj_core/_CLASS_STATIC.lsl"
-On the third row enter #include "myFirstProject/classes/st Main.lsl"
-On the fourth row enter #include "xobj_core/classes/cl Dialog.lsl"
+On the second row enter #include "myFirstProject/classes/st Main.lsl"
+On the third row enter #include "xobj_core/classes/cl Dialog.lsl"
 
-Note that including _CLASS_STATIC.lsl defines your script as a static script, whereas if you wanted the script ot be a package of objects you'd instead include _CLASS_PACKAGE.lsl - But that's very advanded so we'll just start with static modules.
+Note that your script is by default defined as a static script, whereas if you wanted the script ot be a package of objects you'd also include xobj_core/_CLASS_PACKAGE.lsl - But that's very advanded so we'll just start with static modules.
 
 Next we'll need to start listening to events. After the #includes add the following code:
 onEvt(string script, integer evt, string data){
