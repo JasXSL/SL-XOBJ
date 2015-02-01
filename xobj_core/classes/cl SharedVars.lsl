@@ -18,8 +18,13 @@
 
 // Event raised when a shared var has changed.
 // Quote it out if you do not wish it to raise an event (not recommended)
-#define SharedVarsEvt$changed 0		// Raised when shared var is changed {v:(arr)index, s:(str)script}					
+#ifndef SharedVarsConf$preventEvent
+	#define SharedVarsConf$preventEvent 0
+#endif
 //#define SharedVarsEvt$includeData 1	// adds: o:(var)oldData, n:(var)newData to the above call. WARNING memory intensive
+
+// Event raised when data is changed unless SharedVarsConf$preventEvent is 1
+#define SharedVarsEvt$changed 0		// Raised when shared var is changed {v:(arr)index, s:(str)script}
 
 // Methods
 #define SharedVarsMethod$SET 0      // (list)index, (var)data - Script name is auto-fetched
@@ -57,7 +62,7 @@ integer _SHARED_CACHE_ROOT;     // Contains cache included into the head of ever
 #define _saveShared(index, val) runMethod((string)LINK_ROOT, "cl SharedVars", SharedVarsMethod$SET, [llList2Json(JSON_ARRAY, index), val], TNN);
 #define _saveSharedScript(script, index, val) runMethod((string)LINK_ROOT, "cl SharedVars", SharedVarsMethod$otherSet, [script, llList2Json(JSON_ARRAY, index), val], TNN);
 #define _shared(script, index) getSharedVar(script, index)
-#define evt$eventIsSharedScriptChange(sc) (script == "cl SharedVars" && evt == evt$SHARED_CHANGED && jVal(data, ["s"]) == sc)
+#define evt$eventIsSharedScriptChange(sc) (script == "cl SharedVars" && evt == SharedVarsEvt$changed && jVal(data, ["s"]) == sc)
 
 // Only use this for a script to set it's own variables when inter-script synchronisity is REQUIRED
 // It will cost a lot more script memory, generally cost more script time and not fire events
