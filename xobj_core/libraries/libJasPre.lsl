@@ -99,7 +99,7 @@
 // Quickly set memory limit to a multiplier of current memory used
 #define memLim(multi) llSetMemoryLimit(llCeil((float)llGetUsedMemory()*multi))
 
-
+#define triggerSoundOn(id, sound, vol) {vector pos = llList2Vector(llGetObjectDetails(id, [OBJECT_POS]), 0); llTriggerSoundLimited(sound, vol, pos + <0.1,0.1,0.1>, pos - <0.1,0.1,0.1>);}
 
 
 
