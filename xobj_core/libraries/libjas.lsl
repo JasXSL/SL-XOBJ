@@ -144,7 +144,7 @@ float mathToFloat(string al, integer part, string varObj){
     list exp = llCSV2List(llList2String(parts,part));
     float val; integer i; 
     list split = llParseString2List(al, [], exp);
-    
+     
     if(part == 0){
         for(i=0; i<llGetListLength(split); i++){
             string str = llStringTrim(llList2String(split,i), STRING_TRIM);
@@ -163,9 +163,12 @@ float mathToFloat(string al, integer part, string varObj){
             }
         }
         part = 1;
-        split = llParseString2List((string)split, [], llCSV2List(llList2String(parts,part)));
+        exp = llCSV2List(llList2String(parts,part));
+        split = llParseString2List((string)split, [], exp);
     }
     string action = "+";
+    
+    //llOwnerSay("Step: "+(string)part+" : "+llDumpList2String(split, " ")); 
     for(i=0; i<llGetListLength(split); i++){
         string str = llStringTrim(llList2String(split, i), STRING_TRIM);
         if(~llListFindList(exp, [str]))action = str;
