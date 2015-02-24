@@ -118,12 +118,6 @@ updateAnimstate(){
     integer bf_start;
     integer bf_stop;
 
-    if(BFL&BFL_STOP_ANIMATION){
-		if(BFA != 0){
-			bf_stop = BFA_IDLE|BFA_ACTIVE;
-			BFA=0;
-		}
-    }else{
         if(BFL&BFL_IN_WATER && ~BFA&BFA_IDLE){
             bf_start = bf_start|BFA_IDLE;
             BFA = BFA|BFA_IDLE;
@@ -139,7 +133,7 @@ updateAnimstate(){
             bf_stop = bf_stop|BFA_ACTIVE;
             BFA = BFA&~BFA_ACTIVE;
         }
-    }
+    
 	
 	
     if(bf_start != 0){
