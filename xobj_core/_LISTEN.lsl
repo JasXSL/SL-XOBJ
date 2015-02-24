@@ -27,7 +27,11 @@ listen(integer chan, string name, key id, string message){
 	#endif
 	
 	#ifdef LISTEN_OVERRIDE
-	if(chan == LISTEN_OVERRIDE && llGetOwnerKey(id) == llGetOwner()){
+	if(chan == LISTEN_OVERRIDE
+		#ifndef LISTEN_OVERRIDE_ALLOW_ALL
+		&& llGetOwnerKey(id) == llGetOwner()
+		#endif
+	){
 		onListenOverride(chan, id, message);
 		return;
 	}
