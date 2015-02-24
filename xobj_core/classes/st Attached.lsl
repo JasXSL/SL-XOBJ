@@ -22,8 +22,14 @@
 	
 */
 
+// If you want to have a random token that will detach all attachments without needing to verify object owner (on HUD detach for an instance)
+// Define LISTEN_OVERRIDE, then LISTERN_OVERRIDE_ALLOW_ALL and define Attached$detachHash to a personal function
+// When the message is received on that chan, the object will detach
+// Please note that this might be somewhat vulnerable and if someone figures out your hashing algorithm they can remove people's
+// Attachments attached through this script
+// #define Attached$detachHash llSHA1String((string)llGetOwner()+"detachall")
+
 #define AttachedMethod$remove 0			// NULL
- 
 
 
 #define Attached$remove(attachmentName) runOmniMethod("st Attached", AttachedMethod$remove, [], TARG_NULL, NORET, attachmentName)

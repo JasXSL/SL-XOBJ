@@ -21,7 +21,21 @@ timerEvent(string id, string data){
     }
 }
 
+onListenOverride(integer chan, key id, string message){
+	#ifdef Attached$detachHash
+	if(message == Attached$detachHash){
+		kill();
+	}
+	#endif
+} 
+
 integer DIE;
+
+kill(){
+	llDie();
+	DIE = TRUE;
+    if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+}
 
 default
 { 
@@ -39,6 +53,9 @@ default
     {
 		llListen(playerChan(llGetOwner()), "", "", "");
 		llListen(0, "", llGetOwner(), "");
+		#ifdef LISTEN_OVERRIDE
+		llListen(LISTEN_OVERRIDE, "", "", "");
+		#endif
         llSetStatus(STATUS_PHANTOM, TRUE);
         initShared();
         memLim(1.5);
@@ -75,9 +92,7 @@ default
         */
 		if(method$byOwner){
 			if(METHOD == AttachedMethod$remove){
-                llDie();
-				DIE = TRUE;
-                if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+                kill();
             }
 		}
         
