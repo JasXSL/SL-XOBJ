@@ -1,6 +1,5 @@
 #define DISREGARD_SHARED
 #include "xobj_core/classes/st Animhandler.lsl" 
-#include "xobj_core/_CLASS_STATIC.lsl"
 
 
 timerEvent(string id, string data){
@@ -18,7 +17,6 @@ default
     }
     state_entry()
     {
-        initShared();
         memLim(1.5);
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
     }
