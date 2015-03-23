@@ -15,6 +15,12 @@
 #include "xobj_core/classes/cl SharedVars.lsl" // SV headers
 
 
+#ifndef DEBUG
+#define debug(text)
+#else
+#define debug(text) llOwnerSay(__SHORTFILE__+" @ "+(string)__LINE__+": "+text)
+#endif
+
 // These constants should be overwritten and defined in your _core.lsl file for each project
 #ifndef PC_SALT
 	// Define and set to any integer in your _core.lsl file, it will offset your playerchan. It's not recommended to use the same number for multiple projects.
