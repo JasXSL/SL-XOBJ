@@ -96,15 +96,18 @@ mount(){
     findNearestNode();
     // Position cube at node and start
     vector p = offset2global(llList2Vector(nodes, onNode));
-
+	
+	debug("Mounting");
     if(llKey2Name(CUBE) == ""){
-        RLV$cubeTask(([
+        debug("Spawning cube");
+		RLV$cubeTask(([
             SupportcubeBuildTask(Supportcube$tSetPos, [p]),
             SupportcubeBuildTask(Supportcube$tSetRot, [rot*ladder_root_rot])
         ]));
     }
     setCubePos(p);
-
+	
+	
     RLV$cubeTask(([
         SupportcubeBuildTask(Supportcube$tForceSit, [])
     ]));
@@ -271,8 +274,11 @@ default
         if(METHOD == ClimbMethod$start){
             if(BFL&BFL_CLIMBING){
                 dismount(FALSE);
+				debug("Dismount");
                 return;
             }
+
+			debug("Climb start: "+PARAMS);
             ladder = tr(method_arg(0));
             rot = (rotation)method_arg(1);
             anim_passive = tr(method_arg(2));
@@ -293,6 +299,9 @@ default
             for(i=0; i<llGetListLength(nodes); i++)nodes = llListReplaceList(nodes, [(vector)llList2String(nodes,i)], i, i);
             
             if(llGetListLength(nodes) == 4)mount();
+			#ifdef DEBUG
+			else debug("Invalid node length: "+(string)llGetListLength(nodes));
+			#endif
         }
     }
         

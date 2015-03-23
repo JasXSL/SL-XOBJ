@@ -25,3 +25,5 @@
 #ifndef ClimbCfg$defaultSpeed
 	#define ClimbCfg$defaultSpeed .65
 #endif
+
+
