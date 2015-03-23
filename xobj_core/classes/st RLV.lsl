@@ -66,6 +66,11 @@
 	#ifndef RLVcfg$sprintFaceRot
 		#define RLVcfg$sprintFaceRot 0
 	#endif
+	
+	#ifndef RLVcfg$sprintFadeOut
+		#define RLVcfg$sprintFadeOut 1
+	#endif
+	
 #endif
 
 // Use RLV keep-attached letting you auto-reattach RLV attached objects

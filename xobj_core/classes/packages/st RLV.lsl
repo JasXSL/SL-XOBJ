@@ -1,9 +1,9 @@
 #define DISREGARD_EVENTS
-#include "xobj_core/_CLASS_STATIC.lsl"
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_core/classes/st Attached.lsl"
 #include "xobj_core/classes/st RLV.lsl"
+
 
 // Conf
 string CURRENT_FOLDER;
@@ -25,7 +25,6 @@ float sprintRegenModifier = 1;
 
 // Include the general class functionality - Make a full include to grab any private stuff
 #include "xobj_core/classes/st RLV.lsl"
-#include "toonie_halloween/classes/st COM.lsl"
 
 
 
@@ -33,6 +32,7 @@ integer BFL;
 #define BFL_SPRINTING 1
 #define BFL_RUN_LOCKED 2
  
+
 #define TIMER_SPRINT_CHECK "a"
 #define TIMER_SPRINT_QUICK "b"
 #define TIMER_SPRINT_START_REGEN "c"
@@ -109,7 +109,9 @@ timerEvent(string id, string data){
         if(pstatus&AGENT_ALWAYS_RUN && pstatus&AGENT_WALKING){
             if(sprint==RLVcfg$limitSprint){
                 multiTimer([TIMER_SPRINT_FADE]);
+				#if RLVcfg$sprintFadeOut==1
                 llSetLinkAlpha(sprintPrim, 1, ALL_SIDES); 
+				#endif
             }
             if(~BFL&BFL_SPRINTING)multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
             BFL=BFL|BFL_SPRINTING;
@@ -137,7 +139,9 @@ timerEvent(string id, string data){
             sprint+=.025*sprintRegenModifier;
             if(sprint>=RLVcfg$limitSprint){
                 multiTimer([id]);
+				#if RLVcfg$sprintFadeOut==1
                 multiTimer([TIMER_SPRINT_FADE, 1., .1, TRUE]);
+				#endif
             }
         }
         if(sprint<0)sprint = 0;
@@ -145,14 +149,18 @@ timerEvent(string id, string data){
         llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot]);
     }else if(id == TIMER_SPRINT_START_REGEN){
         multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
-    }else if(id == TIMER_SPRINT_FADE){
+    }
+	#if RLVcfg$sprintFadeOut==1
+	else if(id == TIMER_SPRINT_FADE){
         float f = (float)data-.05;
         if(f <0)multiTimer([id]);
         else{
             llSetLinkAlpha(sprintPrim, f, ALL_SIDES);
             multiTimer([TIMER_SPRINT_FADE, f, .1, FALSE]);
         }
-    }else
+    }
+	#endif
+	else
 #endif
 
 #if RLVcfg$USE_KEEPATTACH==1
@@ -176,7 +184,7 @@ public_setSubFolder(string folder){
     SUBFOLDER = folder;
 }
 #endif
-
+*/
 default 
 {
     object_rez(key id){
@@ -201,10 +209,12 @@ default
         if(llGetAttached())llOwnerSay("@versionnum="+(string)chan);
         #if RLVcfg$USE_SPRINT==1
         links_each(num, ln, {
-            if(ln == RLVcfg$sprintName)sprintPrim = num;
+            if(ln == RLVcfg$sprintName){sprintPrim = num;}
         })
-        llSetLinkAlpha(sprintPrim, 0, ALL_SIDES);
-        #endif 
+			#if RLVcfg$sprintFadeOut==1
+			llSetLinkAlpha(sprintPrim, 0, ALL_SIDES);
+			#endif
+		#endif 
 		#if RLVcfg$USE_WINDLIGHT==1
 		_saveShared([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
 		#endif
