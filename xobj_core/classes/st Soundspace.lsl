@@ -3,7 +3,7 @@
 	Installing soundspaces
 	1. Create 2 prims on your HUD create a new script in one of them and name it st Soundspace
 	2. Include your _core.lsl file
-	3. #include "xobj_core/classes/packages/st SoundspaceAux.lsl"
+	3. #include "xobj_core/classes/packages/st Soundspace.lsl"
 	4. Create a new script in the same prim as st Soundspace, name it "st SoundspaceAux"
 	5. Make sure you have st SoundspaceAux on drive.
 	6. At the top of your st SoundspaceAux include your _core.lsl file
