@@ -204,7 +204,6 @@ toggleCam(integer submerged){
     if(submerged){
         BFL = BFL|BFL_CAM_UNDER_WATER;
         if(isset(wl_set)){
-            
             RLV$windlightPreset(wl_set);
         }
     }else{
@@ -585,11 +584,6 @@ onEvt(string script, integer evt, string data){
     }
 }
 
-integer debug_link;
-
-debug(string text){
-    llSetLinkPrimitiveParamsFast(debug_link,[PRIM_TEXT, text, <1,1,1>,1]);
-}
 
 default
 {
@@ -602,15 +596,12 @@ default
         ascale = llGetAgentSize(llGetOwner());
         llStopMoveToTarget();
         setBuoyancy();
-        links_each(num, ln, {
-            if(ln == "dubloon")debug_link = num;
-        })
         llSensor(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI);
         llSleep(1);
         multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
         if(llGetInventoryType("st PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("st PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
-        debug("");
+        debug((string)PrimswimCfg$USE_WINDLIGHT);
 		memLim(1.5);
     }
     
