@@ -11,8 +11,8 @@
 #include "xobj_core/libraries/partiCat.lsl"
 #include "xobj_core/_CLASS_STATIC.lsl"
 
-// Sharedvars should be included by default, so it can be used by all projects at will
-#include "xobj_core/classes/cl SharedVars.lsl" // SV headers
+
+
 
 
 #ifndef DEBUG
@@ -36,11 +36,13 @@ integer playerChan(key id){
     return -llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT);
 }
 
+#ifndef OVERRIDE_TOKEN
 // This generates a salted hash for your project. Feel free replace the content of this function with an algorithm of your own.
 string getToken(key senderKey, key recipient, string saltrand){
 	if(saltrand == "")saltrand = llGetSubString(llGenerateKey(),0,15);
 	return saltrand+llGetSubString(llSHA1String((string)senderKey+(string)llGetOwnerKey(recipient)+TOKEN_SALT+saltrand),0,15);
 }
+#endif
 // Returns "" on fail, else returns data
 
 
@@ -59,6 +61,9 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define METHOD_CALLBACK -2		// == || == pretty much the same but sent as a callback
 #define EVT_RAISED -3			// str = (string)data, id = (string)event - An event was raised. Runs the onEvt() function
 #define RESET_ALL -4			// NULL - Resets all scripts in the project
+#define DB2_ADD -5				// [str[, (obj)data]] = (str)script - Data is passed along if this is the first time the script is seen
+#define DB2_UPDATE -6			// str = (arr)data
+#define DB2_DELETE -7			// str = (str)script
 
 // Standard methods
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers.
@@ -98,9 +103,11 @@ initiateListen(){
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, customTarg, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), customTarg+getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdOmniCom(methodType, customTarg, className, data) llRegionSay(playerChan(llGetOwner()), customTarg+getToken(llGetKey(), llGetOwner(), "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
-#define stdIntCom(methodType, uuidOrLink, className, data) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), "");
+#define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "");
+#define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender);
 #define sendCallback(sender, senderScript, method, search, in, cbdata, cb) list CB_OP = [method, search, in, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, "*", senderScript, CB_OP);}
 
+#define fwdMethod(link, className, method, data, sender) fwdIntCom(RUN_METHOD, link, className, [method, "", "", mkarr(data), llGetScriptName()], sender)
 
 // This is the standard way to run a method on a module. See the readme files on how to use it properly.
 runMethod(string uuidOrLink, string className, integer method, list data, string findObj, string in, string callback, string customTarg){
@@ -109,7 +116,7 @@ runMethod(string uuidOrLink, string className, integer method, list data, string
 	string pre = customTarg;
 	if(pre == "")pre = "*";
 	if((key)uuidOrLink){stdObjCom(RUN_METHOD, uuidOrLink, pre, className, op);}
-	else{ stdIntCom(RUN_METHOD, uuidOrLink, className, op)}
+	else{ stdIntCom(RUN_METHOD, uuidOrLink, className, op);}
 }
 
 // Tries to run a method on all viable scripts in the region
@@ -157,6 +164,17 @@ raiseEvent(integer evt, string data){
 #define resetAll() llMessageLinked(LINK_SET, RESET_ALL, llGetScriptName(), ""); llResetScript()
 
 
+
+
+// Database management
+// DB2 is faster but consumes slightly more memory in every script.
+#ifdef USE_LEGACY_DB
+#include "xobj_core/classes/cl SharedVars.lsl" // SV headers
+#else
+	// DB2 needs you to define the scripts you want to use
+	// #define USE_SHARED [Script1, Script2...]
+	#include "xobj_core/_DB2.lsl"
+#endif
 
 
  

@@ -32,6 +32,66 @@ if(method$isCallback){
 #ifndef LM_BOTTOM
 // Top goes here
 link_message(integer link, integer nr, string str, key id){
+	#ifdef SCRIPT_IS_ROOT
+	if(nr == DB2_ADD){
+		string script = jVal(str, [0]);
+		if(llListFindList(DB2_CACHE, [script]) == -1){
+			list prims; // Prim IDS
+			list idx;	// Prim NR
+			links_each(ln, n, 
+				if(llGetSubString(db2$prefix,0,llStringLength(db2$prefix)-1) == llGetSubString(n,0,llStringLength(db2$prefix)-1)){
+					prims+=ln;
+					idx += (integer)llGetSubString(n,llStringLength(db2$prefix), -1);
+				}	
+			)
+			integer i; list flat;
+			for(i=0; i<llGetListLength(idx); i++)flat += 0;
+			
+			for(i=0; i<llGetListLength(idx); i++)flat = llListReplaceList(flat, llList2List(prims,i,i), llList2Integer(idx,i),llList2Integer(idx,i));
+			if(llList2Integer(flat,0) == 0)flat = llDeleteSubList(flat,0,0);
+			// DB can start with 0 or 1
+			for(i=0; i<llGetListLength(flat); i++){
+				integer x;
+				for(x=0; x<9; x++){
+					if(llListFindList(DB2_CACHE, [llList2Integer(flat,i), x]) == -1){
+						DB2_CACHE += [script, llList2Integer(flat,i), x];
+						
+						debug("Str: "+str);
+						if(isset(jVal(str, [2]))){
+							// Newly added, save data
+							db2(DB2$SET, script, llJson2List(jVal(str, [1])), jVal(str, [2]));
+						}
+						return;
+					}
+				}
+			}
+			debug("FATAL ERROR: Not enough DB prims to store this many shared items.");
+		}
+		db2$rootSend();
+	}else if(nr == DB2_DELETE){
+		integer pos = llListFindList(DB2_CACHE, [str]);
+		if(pos == -1){
+			DB2_CACHE = llDeleteSubList(DB2_CACHE, pos, pos+2);
+		}
+		db2$rootSend();
+	}else
+	#else 
+		#ifdef USE_SHARED
+		if(nr == DB2_UPDATE){
+			list data = llJson2List(str);
+			list d = USE_SHARED; DB2_CACHE = [];
+			
+			if((string)d == "*"){
+				DB2_CACHE = data;
+				return;
+			}
+			list_shift_each(d, v, 
+				integer pos = llListFindList(data, [v]);
+				if(~pos)DB2_CACHE += llList2List(data, pos, pos+2);
+			)
+		}else
+		#endif
+	#endif
 	if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
 		
@@ -100,10 +160,13 @@ link_message(integer link, integer nr, string str, key id){
 		#ifndef DISREGARD_EVENTS
 			string scr = llJsonGetValue(str, [0]);
 			integer evt = (integer)((string)id);
-			#ifndef DISREGARD_SHARED
-			if(_SHARED_CACHE_ROOT == 0){
-				initShared();
-			}
+			#ifdef USE_LEGACY_DB
+				#warning Old shared vars are deprecated.
+				#ifndef DISREGARD_SHARED
+				if(SHARED_CACHE_ROOT == 0){
+					initShared();
+				}
+				#endif
 			#endif
 			onEvt(scr, evt, llJsonGetValue(str, [1]));
 		#endif
