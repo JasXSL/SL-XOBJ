@@ -17,11 +17,8 @@
 
 
 listen(integer chan, string name, key id, string message){
-	#ifdef DEBUG
-	llOwnerSay("COM received:\n"+message);
-	#endif
+	debug("COM received:\n"+message);
 	
-
 	#ifdef REQUIRE_INIT
 	if(~BFL&BFL_INIT)return;
 	#endif
@@ -38,7 +35,6 @@ listen(integer chan, string name, key id, string message){
 	#endif
 	
 	#ifdef ALLOW_USER_DEBUG
-	
     if(chan == 0){
 		#if ALLOW_USER_DEBUG!=2
 		if(llGetOwnerKey(id) != llGetOwner())return;
@@ -63,29 +59,22 @@ listen(integer chan, string name, key id, string message){
 			if(llGetSubString(message,0,llStringLength(pn)-1) == pn)message = llDeleteSubString(message, 0, llStringLength(pn)-1);
 			else message = llDeleteSubString(message,0,0);
 		}else{
-			#ifdef DEBUG
-			llOwnerSay("Call rejected because name doesn't match in LISTEN_LIMIT_BY_NAME @ _LISTEN.lsl: "+message);
-			llOwnerSay("INPUT: '"+llGetSubString(message, 0, llStringLength(pn)-1)+"' EXPECTED: '"+pn+"'");
-			#endif
+			debug("Call rejected because name doesn't match in LISTEN_LIMIT_BY_NAME @ _LISTEN.lsl: "+message);
+			debug("INPUT: '"+llGetSubString(message, 0, llStringLength(pn)-1)+"' EXPECTED: '"+pn+"'");
 			return;
 		}
 	}
 	#endif
 	
 	
-	
-	if(llGetSubString(message, 0, 31) != getToken(id, llGetOwner(), llGetSubString(message,0,15))){
-		#ifdef DEBUG
-		llOwnerSay("Token rejected, call: "+message+" expected "+getToken(id, llGetOwner(), llGetSubString(message,0,15)));
-		#endif
-        return;
+	string expected = getToken(id, llGetOwner(), llGetSubString(message,0,15));
+	if(llGetSubString(message, 0, llStringLength(expected)-1) != getToken(id, llGetOwner(), llGetSubString(message,0,15))){
+		debug("Token rejected, call: "+message+" expected "+expected);
+		return;
     } 
-	message = llDeleteSubString(message, 0,31);
+	message = llDeleteSubString(message, 0,llStringLength(expected)-1);
 	#ifdef DEBUG
-	//llOwnerSay("Call accepted: "+llGetSubString(message, llSubStringIndex(message, ":")+1, -1));
-	#endif
-	#ifdef DEBUG
-	llOwnerSay("COM passed: "+llGetSubString(message, llSubStringIndex(message, ":")+1, -1));
+	debug("COM passed: "+llGetSubString(message, llSubStringIndex(message, ":")+1, -1));
     #endif
 	llMessageLinked(LINK_SET, (integer)llGetSubString(message, 0,llSubStringIndex(message, ":")-1), llGetSubString(message, llSubStringIndex(message, ":")+1, -1), id);
 }

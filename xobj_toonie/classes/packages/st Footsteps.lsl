@@ -1,4 +1,4 @@
-#include "xobj_core/_CLASS_STATIC.lsl"
+#define USE_EVENTS
 #include "xobj_toonie/classes/st Footsteps.lsl"
 #include "xobj_core/classes/st Interact.lsl"
 #include "xobj_core/classes/st RLV.lsl"

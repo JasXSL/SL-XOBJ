@@ -1,7 +1,8 @@
-// ACTUAL SCRIPT
+#define USE_EVENTS
+
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_toonie/classes/cl MeshAnim.lsl"
-#include "xobj_core/_CLASS_PACKAGE.lsl"
+
 
 #ifndef MeshAnimConf$LIMIT_AGENT_RANGE
 #define MeshAnimConf$LIMIT_AGENT_RANGE 0

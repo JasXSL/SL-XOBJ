@@ -1,5 +1,4 @@
 // Preprocessor shortcuts
-#define DISREGARD_SHARED
 #include "xobj_core/classes/st Rezzed.lsl" 
 #include "xobj_core/classes/st Remoteloader.lsl" 
 

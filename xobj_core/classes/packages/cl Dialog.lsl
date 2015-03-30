@@ -1,18 +1,11 @@
 // Include the main file
 
-
 // Include the general class functionality - Make a full include to grab any private stuff
 #include "xobj_core/classes/cl Dialog.lsl"
+
+#define INDEXES [DialogVar$user]
+
 #include "xobj_core/_CLASS_PACKAGE.lsl"
-
-
-integer BFL;
-//#define BFL_QUERYING 1
-
-//#define TIMER_QUERY "a"
-
-
-
 
                             // STD
 integer __construct(list args){  // senderKey, targetId, menu, script, callback, buttons, message
@@ -117,12 +110,6 @@ timerEvent(string id, string data){
 
 default 
 {
-    
-    state_entry()
-    {
-        // ALWAYS init shared vars - Made this way to speed things up
-        initShared();
-    }
 
     listen(integer chan, string name, key id, string message){
         if(private_setCurUser(id)){

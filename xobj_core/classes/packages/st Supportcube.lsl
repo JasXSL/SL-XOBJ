@@ -1,13 +1,13 @@
 #include "xobj_core/classes/st RLV.lsl"
-#include "xobj_core/_CLASS_STATIC.lsl"
 
 
 integer BFL;
 #define BFL_ON_SIT 1
 
+
 #define TIMER_NEXT "a"
 #define TIMER_DIE "b"
-
+#define TIMER_CHECK "c"
 
 list tasks = [];
 
@@ -47,6 +47,7 @@ timerEvent(string id, string data){
     if(id == TIMER_NEXT){
         runTask();
     }else if(id == TIMER_DIE && llAvatarOnSitTarget() == "")llDie();
+	else if(id == TIMER_CHECK && llKey2Name(llGetOwner()) == "")llDie();
 }
 
 onListenOverride(integer chan, key id, string message){
@@ -71,11 +72,14 @@ default
     
     state_entry(){
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
+		debug("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);
         if((float)llGetObjectDesc()){
+			debug("Setting death timer");
             runMethod(llGetOwner(), "st RLV", RLVMethod$cubeFlush, [], TNN);
             multiTimer([TIMER_DIE, "", (float)llGetObjectDesc(), TRUE]);
         }
+		multiTimer([TIMER_CHECK, "", 10, TRUE]);
         initiateListen();
     }
     

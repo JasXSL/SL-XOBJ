@@ -1,4 +1,4 @@
-#define DISREGARD_EVENTS
+#define USE_SHARED [cls$name]
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_core/classes/st Attached.lsl"
@@ -47,9 +47,11 @@ cubeTask(list tasks){
     if(cubetasks){
         
         if(llKey2Name(supportcube) != ""){
+			debug("Running cube tasks on "+(string)playerChan(llGetOwner()));
             runMethod((string)supportcube, "st Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
             cubetasks = [];
         }else{
+			debug("Spawning cube");
             llRezAtRoot("SupportCube", llGetPos()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
         }
         
@@ -192,7 +194,7 @@ default
             supportcube = id;
 
             raiseEvent(RLVevt$supportcubeSpawn, (string)id);
-            _saveShared([RLVShared$supportcube], (string)id);
+            db2$set([RLVShared$supportcube], (string)id);
             //llSleep(.2);
             //cubeTask([]);
         }
@@ -216,7 +218,7 @@ default
 			#endif
 		#endif 
 		#if RLVcfg$USE_WINDLIGHT==1
-		_saveShared([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
+		db2$set([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
 		#endif
 		memLim(1.5);
     }
@@ -307,11 +309,11 @@ default
 
 			#if RLVcfg$USE_WINDLIGHT==1
 			if(METHOD == RLVMethod$windlightPreset){
-                _saveShared([RLVShared$windlight], method_arg(0));
+                db2$set([RLVShared$windlight], method_arg(0));
                 llOwnerSay("@setenv_preset:"+method_arg(0)+"=force");
             }
             else if(METHOD == RLVMethod$resetWindlight){
-                _saveShared([RLVShared$windlight], RLVcfg$defaultWindlight);
+                db2$set([RLVShared$windlight], RLVcfg$defaultWindlight);
                 llOwnerSay("@setenv_preset:"+RLVcfg$defaultWindlight+"=force"); 
             }
 			#endif

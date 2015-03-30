@@ -1,5 +1,7 @@
-
-#include "xobj_core/_CLASS_STATIC.lsl"
+#define USE_EVENTS
+#if PrimswimCfg$USE_WINDLIGHT==1
+	#define USE_SHARED ["st RLV"]
+#endif
 
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st RLV.lsl"
@@ -162,7 +164,7 @@ enterWater(){
     raiseEvent(PrimswimEvt$onWaterEnter, "");
 	
 	#if PrimswimCfg$USE_WINDLIGHT==1
-    wl_preset = _shared("st RLV", [RLVShared$windlight]);
+    wl_preset = db2$get("st RLV", [RLVShared$windlight]);
     #endif
 
     //dif=llGetVel()*.25;

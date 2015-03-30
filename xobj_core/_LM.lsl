@@ -156,22 +156,21 @@ link_message(integer link, integer nr, string str, key id){
 	}else if(nr == RESET_ALL && str != llGetScriptName()){
 		llResetScript();
 	}
+	#ifdef USE_EVENTS
 	else if(nr == EVT_RAISED){
-		#ifndef DISREGARD_EVENTS
-			string scr = llJsonGetValue(str, [0]);
-			integer evt = (integer)((string)id);
-			#ifdef USE_LEGACY_DB
-				#warning Old shared vars are deprecated.
-				#ifndef DISREGARD_SHARED
-				if(SHARED_CACHE_ROOT == 0){
-					initShared();
-				}
-				#endif
+		string scr = llJsonGetValue(str, [0]);
+		integer evt = (integer)((string)id);
+		#ifdef USE_LEGACY_DB
+			#ifndef DISREGARD_SHARED
+			if(SHARED_CACHE_ROOT == 0){
+				initShared();
+			}
 			#endif
-			onEvt(scr, evt, llJsonGetValue(str, [1]));
 		#endif
+		onEvt(scr, evt, llJsonGetValue(str, [1]));
+		
 	}
-	
+	#endif
 	
 }
 #endif

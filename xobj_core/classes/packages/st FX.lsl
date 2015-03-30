@@ -1,3 +1,8 @@
+#ifdef FXConf$useShared
+	#define DB2$USE_SHARED [cls$name]
+#endif
+#define USE_EVENTS
+
 #include "xobj_core/_ROOT.lsl"
 #include "xobj_core/classes/st FX.lsl"
 //#include "situation/_lib_effects.lsl"
@@ -11,7 +16,7 @@ list EVT_INDEX;     // [scriptname_evt, [pid, pid...]]
 list TAG_CACHE;     // [(int)tag1...]
 integer PID;
 
-#define savePackages() _save([], llList2Json(JSON_ARRAY, PACKAGES))
+#define savePackages() db2$set([], llList2Json(JSON_ARRAY, PACKAGES))
 #define runPackage(caster, package, stacks) string c = caster; if(c == "s"){c = llGetOwner();} raiseEvent(FXEvt$runEffect, llList2Json(JSON_ARRAY, [c, stacks, mkarr(package)]))
 onEvt(string script, integer evt, string data){
     // Packages to work on

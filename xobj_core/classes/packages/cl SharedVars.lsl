@@ -1,11 +1,8 @@
-// Include the main file
-#define DISREGARD_SHARED
-
 // Include this class basic definition file
 //#include "xobj_core/classes/class SharedVars.lsl"
 // Note: SharedVars is a required class for xobj to work  
 
-
+#warning Old shared vars are deprecated.
 // Static : These are non preprocessor definitions that should not be shared with other scripts
 list DB_CACHE;  // Contains linknums of databases
 

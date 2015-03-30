@@ -1,5 +1,4 @@
 // Conf
-#define DISREGARD_SHARED
 #include "xobj_core/classes/st Remoteloader.lsl" 
 #include "xobj_core/_CLASS_STATIC.lsl"
 
@@ -15,7 +14,6 @@ default
     }
     state_entry() 
     {
-        initShared();
         memLim(1.5);
     } 
     
@@ -70,12 +68,8 @@ default
             else if(METHOD == RemoteloaderMethod$rez){
                 llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));
             }
-            
-            
         }
-        
-        
-    
+
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 
 }

@@ -1,9 +1,6 @@
-
-
 #define AttachedMethod$remove 0			// (str)objName or "*" for all
 
 // Preprocessor shortcuts
-#define DISREGARD_SHARED
 #include "xobj_core/classes/st Remoteloader.lsl" 
 // Include local head and class type
 #include "xobj_core/_CLASS_STATIC.lsl"
@@ -57,7 +54,6 @@ default
 		llListen(LISTEN_OVERRIDE, "", "", "");
 		#endif
         llSetStatus(STATUS_PHANTOM, TRUE);
-        initShared();
         memLim(1.5);
 		
 		if(llGetStartParameter() == 2){

@@ -1,4 +1,3 @@
-#define DISREGARD_SHARED
 #include "xobj_core/classes/st Animhandler.lsl" 
 
 

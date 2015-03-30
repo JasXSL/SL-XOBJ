@@ -1,3 +1,5 @@
+#define USE_SHARED ["st RLV"]
+#define USE_EVENTS
 #include "xobj_core/_CLASS_STATIC.lsl"
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st RLV.lsl"
@@ -44,7 +46,7 @@ float perc;
 
 setCubePos(vector pos){
     if(CUBE == "" || llKey2Name(CUBE) == ""){
-        CUBE = _shared("st RLV", [RLVShared$supportcube]);
+        CUBE = db2$get("st RLV", [RLVShared$supportcube]);
     }
     //rot*ladder_root_rot
     llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]));

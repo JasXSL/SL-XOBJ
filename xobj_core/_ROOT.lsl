@@ -11,7 +11,14 @@
 #include "xobj_core/libraries/partiCat.lsl"
 #include "xobj_core/_CLASS_STATIC.lsl"
 
+/*
+	Header vars that you can use in each script:
+	#define SCRIPT_IS_ROOT <- Always define this on top of #ROOT
+	#define USE_EVENTS <- Add to top of a script that should be listening to events
+	#define USE_SHARED (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
+	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
 
+*/
 
 
 
@@ -93,6 +100,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 */ 
 initiateListen(){
+	debug("Listening on "+(string)playerChan(llGetOwner()));
 	llListen(playerChan(llGetOwner()), "", "", "") ;
 	#ifdef LISTEN_OVERRIDE 
 	llListen(LISTEN_OVERRIDE,"","","");
