@@ -17,6 +17,12 @@
 #define FX$rem(raiseEvt, name, tag, sender, pid) runMethod((string)LINK_SET, "st FX", FXMethod$rem, ([raiseEvt, name, tag, sender, pid]), TNN)
 
 
+#ifndef fx$COND_HAS_PACKAGE_NAME
+	#define fx$COND_HAS_PACKAGE_NAME 1			// [(str)name1, (str)name2...] - Recipient has a package with at least one of these names
+#endif
+#ifndef fx$COND_HAS_PACKAGE_TAG
+	#define fx$COND_HAS_PACKAGE_TAG 2			// [(int)tag1, (int)tag2...] - Recipient has a tackage with a tag with at least one of these
+#endif
 
 //#define FXConf$useEvtListener
 // Lets you use the evtListener(string script, integer evt, string data) to perform actions when an event is received
@@ -26,7 +32,7 @@
 
 // User defined functions (overwrite these in your implementation)
 	// Run whenever a spell needs to check condition
-	integer checkCondition(key caster, key targ, integer cond, list data){return TRUE;}
+	integer checkCondition(key caster, integer inverse, integer cond, list data){return TRUE;}
 	// Targ can also be "PC" and "NPC" in which case it's up to the developer to scan for those
 	// Events are run automatically on packages. They are then sent to evtListener where you can write your own onEvt actions if you want
 	evtListener(string script, integer evt, string data){}
@@ -61,9 +67,10 @@ string FX_buildFX(integer id, list params){
     return llList2Json(JSON_ARRAY, [id]+params);
 }
 
+
 // Conditions should also be added to your FX sheet. Conditions will be checked in the checkCondition(key caster, key targ, integer cond, list cond_data) function
-string FX_buildCondition(integer cond, integer targ, list vars){
-    return llList2Json(JSON_ARRAY, [cond, targ]+vars);
+string FX_buildCondition(integer cond, list vars){
+    return llList2Json(JSON_ARRAY, [cond]+vars);
 }
 
 
@@ -74,8 +81,21 @@ string FX_buildCondition(integer cond, integer targ, list vars){
 #define PF_UNDISPELLABLE 4			// 
 #define PF_UNIQUE 8					// Only one player can have this
 // an integer PID gets added on the end when added to FX
-string FX_buildPackage(float dur, float tick, integer flags, integer maxstacks, string name, string desc, integer texture, list fxobjs, list conditions, list evts, list tags){
-    return llList2Json(JSON_ARRAY, FX_fround(dur)+FX_fround(tick)+[flags, maxstacks, name, desc, texture, llList2Json(JSON_ARRAY, fxobjs),llList2Json(JSON_ARRAY, conditions),llList2Json(JSON_ARRAY, evts), llList2Json(JSON_ARRAY, tags)]);
+
+#define FX_DUR 0
+#define FX_TICK 1
+#define FX_FLAGS 2
+#define FX_MAXSTACKS 3
+#define FX_NAME 4
+#define FX_DESC 5
+#define FX_TEXTURE 6
+#define FX_FXOBJS 7
+#define FX_CONDS 8
+#define FX_EVTS 9
+#define FX_TAGS 10
+#define FX_MIN_CONDITIONS 11	// 0 = ALL
+string FX_buildPackage(float dur, float tick, integer flags, integer maxstacks, string name, string desc, integer texture, list fxobjs, list conditions, list evts, list tags, integer fxMinConditions){
+    return llList2Json(JSON_ARRAY, FX_fround(dur)+FX_fround(tick)+[flags, maxstacks, name, desc, texture, llList2Json(JSON_ARRAY, fxobjs),llList2Json(JSON_ARRAY, conditions),llList2Json(JSON_ARRAY, evts), llList2Json(JSON_ARRAY, tags), fxMinConditions]);
 }
 
 // Helper function for shortening package strings
