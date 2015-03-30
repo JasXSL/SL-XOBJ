@@ -14,7 +14,27 @@ xobj supports the following features:
 
 Note: xobj_core requires the firestorm viewer
 
-Create your first project:
+Updates
+=======
+DB2 has been added to replace cl SharedVars
+Features:
+- Faster
+- Lower memory cost
+- No separate script needed
+- Synchronous (after the first save per script)
+
+How to use:
+At the top of your #ROOT script, add: #define SCRIPT_IS_ROOT
+At the top of any script that needs to either get or set shared vars #define USE_SHARED ["*"]
+Note: It's generally better and faster to limit #define USE_SHARED ["#ROOT", "st Status", cls$name...]
+
+Set a shared var:
+db2$set(["toonie"], "panda"); <- The first call takes a few sec to save as #ROOT needs to add this script to cache. Once done (usually a second or 2), db2$set will be INSTANT and SYNCHRONOUS
+db2$get(cls$name, ["toonie"]) <- Gets data as usual
+
+
+Create your first project
+=======
 		1. Enable preprocessing
 Open a script window, click the cogs icon at the top and check Enable LSL preprocessor, Script optimizer and #includes from local disk.
 The other checkboxes are optional.
@@ -30,44 +50,43 @@ In the first line of _core.lsl enter #include "xobj_core/_ROOT.lsl"
 Hit enter. LSL include files must always end with a blank line
 Save your file.
 Create a new script in LSL and name it #ROOT. #ROOT will serve as the standard input. On the first line, enter #include "MyFirstProject/_core.lsl" and save. For root implementation examples, see the #ROOT implementations readme.
-Note that a #ROOT script is not needed if you don't need a linkset to accept external commands (like touch_start, listen, control etc)
 
 
     	3. Setting up shared vars (optional)
 Shared vars are used for scripts to get variables from another script. Ex a script called "st User" might choose to share an object containing user info like {(key)id:(string)species}
 This could then be accessed by "st UserInfo" that could call something like:
-    string species = _shared("st User", ["userData", "cf2625ff-b1e9-4478-8e6b-b954abde056b"]);
-
-To do so, you need one or more cubes added to the linkset to serve as a database. Each prim can serve up to 9 scripts at a time (-1 for the first cube as it's needed for indexing) allocating 2048 bytes of data.
+	string species = db2$get("st User", (["userData", "cf2625ff-b1e9-4478-8e6b-b954abde056b"]));
+	Note: Notice the extra parentheses around the list to prevent preprocessor errors.
+	
+To do so, you need one or more cubes added to the linkset to serve as a database. Each prim can serve up to 9 scripts at a time allocating 2048 bytes of data per script.
 1. Create a new cube and name it DB0
 2. Set the cube's path-cut to any value above 0
-3. Set the cube's hollow to any value about 0
+3. Set the cube's hollow to any value above 0
 4. Make your object fully transparent and link it to your linkset (ex: your HUD)
 5. Please note that textures on this prim will not be visible, so keep it hidden
 (Protip: Setting the cube's physics shape to convex-hull will help you save prims if the linkset is rezzed)
 Note: If you get an error about DB being full, you can create additional database prims, just name them DB1, DB2 etc
-Create a new script in the root prim of your linkset and name it exactly "cl SharedVars"
-In your cl SharedVars script, put only one line: #include "xobj_core/classes/packages/cl SharedVars.lsl"
-Compile that script.
+At the first line of your #ROOT script add #define SCRIPT_IS_ROOT
+
+In any script that you want to be able to read and/or set shared vars (except #ROOT which already caches all script) add on top of the script #define USE_SHARED ["st script1", "st script2", cls$name] etc or just #define USE_SHARED ["*"] if you want to be able to use all scripts. Keep in mind the second alternative will be slightly slower and use more memory.
+
 You can now save or read shared vars in any script of the linkset.
+**The first time you call db2$set(idx, data) it will take a second or a few (depending on lag) for the data to be readable.**
+Any db2$set(idx, data) called after this first first call will be **SYNCHRONOUS**.
+You can get data with db2$get(script, idx)
+
 
 Constants:
-  If you wish to prevent a script from using shared vars (conserving a little memory) enter at the top of the script:
-    #define DISREGARD_SHARED
-  If you wish to use a different prefix of your DB cubes (default DB0, DB1 etc) enter at the top ex:
-    #define SharedVarsConst$dbPrimPrefix "newPrefix"
+(advanced) If you wish to use a different prefix of your DB cubes (default DB0, DB1 etc) enter at the top ex:
+    #define db2$prefix "newPrefix"
 Functions:
-  These functions can be used at any time:
-    initShared(); <- Recommended that you put in state_entry. Shared vars will try to initialize once the project starts, but due to delay might be dropped.
-    _saveShared(list index, string val); <- Saves a variable by index to the running script's shared vars.
-      Ex: _saveShared(["users", "cf2625ff-b1e9-4478-8e6b-b954abde056b"], "lynx")
-    _saveSharedScript(string script, list index, string val) - Same as above but lets you specify a specific script's shared vars to modify, use with caution
-    _shared(string script, list index) <- Lets you read shared vars from a script
-      Ex: _shared("st Users", ["users", "cf2625ff-b1e9-4478-8e6b-b954abde056b"]) <- Returns "lynx"
-Events:
-  SharedVars raises the following Events:
-    0: SharedVarsEvt$changed <- {o:(var)oldData, n:(var)newData, v:(arr)index, s:(str)script}
+  These functions can be used at any time (but will not work properly without a USE_SHARED definition:
+    db2$set((list)idx, (str)data) <- Idx is a list of where in the JSON to search like ["tonaie"], data is the data you want to save to that index, like "Panda"
+    db2$get((str)script, (list)idx) <- Script is the name of the script to read from. idsx is a json pointer like ["tonaie"]
+    clearDB2() <- Drops all stored databases
     
+Events:
+  Not yet implemented. Will see if I need to later as it would increase memory cost.
     
     	4. Adding a module
 Scripts in XOBJ can be called modules. A module ALWAYS consists of at least one header file which contains preprocessor definitions, and optionally one package file (if you want to share it) containing the actual code. You can always write the code of the package file directly in SL if you don't intend on sharing it.
@@ -94,6 +113,8 @@ XOBJ uses a few standard functions to send or receive data:
     
     Since the three last parameters are situational, you can use the constant TNN to shorten your code. Ex:
   runmethod((string)LINK_THIS, "cl Dialog", DialogMethod$spawn, [llGetOwner(), "DialogText", llList2Json(JSON_ARRAY, ["Button1" "Button2"]), 0], TNN);
+  
+  
 
 A lot of the header scripts have predefined shortcuts also, so you won't have to type out all of that. For an example, cl Dialog has predefined:
   Dialog$spawn(user, message, buttons, menuID, callback)
