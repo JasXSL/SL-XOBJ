@@ -1,5 +1,9 @@
 #define USE_EVENTS
+#ifndef INDEXES
+#define INDEXES [MeshAnimVal$name]
+#endif
 
+#include "xobj_core/_CLASS_PACKAGE.lsl"
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_toonie/classes/cl MeshAnim.lsl"
 
@@ -25,13 +29,15 @@ string CURRENT_ANIM;
                 // Ex: [2] - 2 prims are stored
                 // Ex: [9] - 9 frames are stored
 */
-
+// See above
 list OBJ_CACHE;
 list OBJ_INDEX;
 
+// Flags of current animation
 integer FLAG_CACHE;
-list PRE; 
+// Speed of current animation
 float SPEED_CACHE;
+
 list LAST_HIDE;
 
 integer BFL = 1;
@@ -39,8 +45,9 @@ integer BFL = 1;
 
 
 public_startAnim(string name){
-
+	debug("Starting "+name);
     list search = __search(name, MeshAnimVal$name);
+	debug("Found: "+mkarr(search));
     if(llList2Integer(search,0) == -1)return;
     
     
@@ -55,6 +62,7 @@ public_startAnim(string name){
 }
 
 public_stopAnim(string name){
+	debug("Stopping "+name);
     list search = __search(name, MeshAnimVal$name);
     if(llList2Integer(search,0) == -1){
         return;
@@ -75,11 +83,11 @@ public_stopAnim(string name){
 public_stopAll(){
     multiTimer([TIMER_FRAME]);
 }
-
-public_hideAllAnimating(){   
+/*
+public_hideAllAnimating(){
     llSetLinkAlpha(LINK_SET, 0, ALL_SIDES);
 }
-
+*/
 private_refreshAnims(){
     string top; integer pri; string data; integer idx; integer flags; integer  i;
     cls$each(index, obj, {
@@ -95,6 +103,7 @@ private_refreshAnims(){
     });
 	
 	if(top == "" || top != CURRENT_ANIM){
+		// Hide previous
 		if(CURRENT_ANIM != ""){
 			LAST_HIDE = [];
 			for(i=0; i<llGetListLength(OBJ_INDEX); i+=2){
@@ -138,7 +147,7 @@ private_refreshAnims(){
                         idCache = llListReplaceList(idCache, [num], n-1, n-1);
                 }
             });
-            
+            if(~llListFindList(idCache, [0]))return llOwnerSay("Error: Prims not found for "+top+". Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
 
             OBJ_CACHE += [0,0,0]+idCache+frames;
             OBJ_INDEX += [llGetListLength(idCache), llGetListLength(frames)];
@@ -147,6 +156,9 @@ private_refreshAnims(){
         FLAG_CACHE = flags;
         SPEED_CACHE = (float)jVal(data, ([MeshAnimVal$frames, "s"]));
 		if(MeshAnimConf$LIMIT_AGENT_RANGE && ~BFL&BFL_AGENTS_IN_RANGE)return;
+		debug("Starting anim. Speed: "+(string)SPEED_CACHE);
+		debug("OBJ_CACHE = "+mkarr(OBJ_CACHE));
+		debug("OBJ_INDEX = "+mkarr(OBJ_INDEX));
         multiTimer([TIMER_FRAME, "", SPEED_CACHE, FALSE]);
     }
     
@@ -181,6 +193,7 @@ timerEvent(string id, string data){
                 // Ex: [2] - 2 prims are stored
                 // Ex: [9] - 9 frames are stored
         */
+		
         
         integer  i; integer idx; // Hide the old
         for(i=0; i<llGetListLength(OBJ_INDEX); i+=2){
@@ -191,12 +204,11 @@ timerEvent(string id, string data){
             integer maxPrims = llList2Integer(OBJ_INDEX, i);
             list frames = llList2List(OBJ_CACHE, idx+3+maxPrims, idx+3+maxPrims+maxSteps-1);
             list prims = llList2List(OBJ_CACHE, idx+3, idx+3+maxPrims-1);
-			//llSetText(llList2CSV(OBJ_CACHE),<1,1,1>,1);
+			//debug(mkarr(prims));
             while(llGetListEntryType(frames, step) == TYPE_STRING && step<llGetListLength(frames)){
-                raiseEvent(evt$MESH_ANIM_FRAME_EVENT, llList2String(frames,step));
+                raiseEvent(MeshAnimEvt$frame, llList2String(frames,step));
                 step++;
             }
-            
             if(step >= llGetListLength(frames)){
                 if(looping)step = 0;
                 else step = -1;
@@ -204,18 +216,14 @@ timerEvent(string id, string data){
             
             integer side;
             integer prim;
-            
             if(step != -1){
                 played = TRUE;
                 side = llList2Integer(frames,step);
                 integer pr = llFloor((float)side/8);
                 side-=pr*8;
                 prim = llList2Integer(prims, pr);
-				
-				
-				
                 llSetLinkAlpha(prim, 1, side);
-				if(LAST_HIDE!=[]){
+				if(LAST_HIDE!=[] && ~FLAG_CACHE&MeshAnimFlag$DONT_HIDE_PREVIOUS){
 					integer i;
 					for(i = 0; i<llGetListLength(LAST_HIDE); i+=2){
 						if(llList2Integer(LAST_HIDE,i) != prim || llList2Integer(LAST_HIDE, i+1) != side){
@@ -275,7 +283,7 @@ default
 {
     state_entry()
     {
-        public_hideAllAnimating();
+        //public_hideAllAnimating();
 		
         if(llGetStartParameter() == 2){
 			raiseEvent(evt$SCRIPT_INIT, "");
@@ -312,7 +320,7 @@ default
                 public_stopAnim(method_arg(0));
             } 
             else if(METHOD == MeshAnimMethod$stopAll)public_stopAll() ;     
-			else if(METHOD == MeshAnimMethod$emulateFrameEvent)raiseEvent(evt$MESH_ANIM_FRAME_EVENT, method_arg(0));
+			else if(METHOD == MeshAnimMethod$emulateFrameEvent)raiseEvent(MeshAnimEvt$frame, method_arg(0));
         }  
         else if(nr == METHOD_CALLBACK){   
             

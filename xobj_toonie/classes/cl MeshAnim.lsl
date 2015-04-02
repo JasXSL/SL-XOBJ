@@ -149,7 +149,7 @@
 #define MeshAnimConf$remoteloadOnAttachedIni		
 
 								
-#define evt$MESH_ANIM_FRAME_EVENT 0	// Raised when a non-integer frame is discovered
+#define MeshAnimEvt$frame 0	// Raised when a non-integer frame is discovered
 
                                 // Methods //
 
@@ -167,10 +167,10 @@
 
 #define MeshAnimFlag$LOOPING 1
 #define MeshAnimFlag$PLAYING 2
+#define MeshAnimFlag$DONT_HIDE_PREVIOUS 4
 
-#ifndef INDEXES
-#define INDEXES [MeshAnimVal$name]
-#endif
+
+
 
 // Method hooks
 #define MeshAnim$startAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$startAnim, [animName], TNN)
