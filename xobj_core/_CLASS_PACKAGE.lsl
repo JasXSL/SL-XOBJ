@@ -52,10 +52,13 @@
 // These are globals needed to store objects and track the current index. An index of -1 means no object is set to work on
 list _OBJECTS;
 list _INDEX;
+#ifndef INDEXES
+#define INDEXES []
+#endif
 list _INDEX_VARS = INDEXES;
 integer CURRENT_WORK_OBJECT = -1;	// Index
 #define UNINITIALIZED (CURRENT_WORK_OBJECT == -1)
-
+#define SCRIPT_IS_PACKAGE
 
 
 
