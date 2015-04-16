@@ -55,9 +55,41 @@
 	// Ex: list l = ["a", "b"]; string last = pop(l); last => "b" - l => ["a"]
 	
 
-	
-	
-	
+
+// BITWISE OPERATIONS
+#define getBitArr(int, index, bytesize) ((int<<(32-(bytesize*(index+1))))>>(32-bytesize))
+#define remBitArr(int, index, bytesize) (int&~(((integer)llPow(bytesize,2)-1)<<(bytesize*index)))
+#define setBitArr(int, set, index, bytesize) (remBitArr(int, index, bytesize)|(set<<(bytesize*index)))
+#define addBitArr(int, set, bytesize) ((int<<bytesize)|set)
+// Moves all values left, removing any 0 values
+integer flattenBitArr(integer int, integer bytesize){
+    integer i; integer right;
+    for(i=0; i<llFloor(32./bytesize); i++){
+        integer b = getBitArr(int, i, bytesize);
+        if(right){
+            int = setBitArr(int, b, (i-right), bytesize);
+            int = remBitArr(int, i, bytesize);
+        }
+        if(b == 0)right++;
+    } 
+    return int;
+}
+integer indexOfBitArr(integer int, integer find, integer bytesize){
+    integer i;
+    for(i=0; i<llFloor(32./bytesize);i++){
+        if(getBitArr(int, i, bytesize) == find)return i;
+    }
+    return -1;
+}
+list bitArrToList(integer int, integer bytesize){
+    list out;
+    integer i; 
+    for(i=0; i<llFloor(32./bytesize); i++)out+=getBitArr(int, i, bytesize);
+    return out;
+}
+
+#define setFlag(bitfield, flag) bitfield = bitfield|flag
+#define unsetFlag(bitfield, flag) bitfield = bitfield&~flag
 	
 	
 // STRING //
@@ -109,10 +141,5 @@
 #define prDesc(prim) (string)llGetObjectDetails(prim, [OBJECT_DESC])
 #define prLinkedToMe(prim) (llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0) == llGetKey())
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
-
-// "Shortcuts" to set bitfield flags
-#define setFlag(bitfield, flag) bitfield = bitfield|flag
-#define unsetFlag(bitfield, flag) bitfield = bitfield&~flag
-
 
 
