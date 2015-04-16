@@ -152,7 +152,6 @@ updateAnimstate(){
 
 
 enterWater(){
-    CONTROL = 0;
     BFL = BFL|BFL_IN_WATER;
     BFL=BFL&~BFL_FEET_SUBMERGED;
     setBuoyancy();
@@ -162,6 +161,7 @@ enterWater(){
     else llTriggerSound(PrimswimCfg$splashSmall, 1);
     
     raiseEvent(PrimswimEvt$onWaterEnter, "");
+	debug("Entered water");
 	
 	#if PrimswimCfg$USE_WINDLIGHT==1
     wl_preset = db2$get("st RLV", [RLVShared$windlight]);
