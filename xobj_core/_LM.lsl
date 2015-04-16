@@ -59,6 +59,7 @@ link_message(integer link, integer nr, string str, key id){
 						debug("Str: "+str);
 						if(isset(jVal(str, [2]))){
 							// Newly added, save data
+							debug("SETTING NEW DATA");
 							db2(DB2$SET, script, llJson2List(jVal(str, [1])), jVal(str, [2]));
 						}
 						return;

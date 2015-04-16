@@ -28,7 +28,7 @@ string db2(integer task, string script, list sub, string val){
 	if(pos==-1)
 		llMessageLinked(LINK_ROOT, DB2_ADD, mkarr(([llGetScriptName(), mkarr(sub), val])), "");
 	else{
-		debug("Saving instantly");
+		debug("Saving instantly onto "+llGetLinkName(llList2Integer(DB2_CACHE, pos+1))+" face: "+llList2String(DB2_CACHE, pos+2));
 		llSetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, llGetSubString(set,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(set,1024,2047), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
 	}
 	return "1";
