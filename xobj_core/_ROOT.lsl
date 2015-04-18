@@ -20,12 +20,29 @@
 
 */
 
-
+#define DEBUG_ALL 100
+#define DEBUG_USER 10
+#define DEBUG_RARE 20
+#define DEBUG_UNCOMMON 30
+#define DEBUG_COMMON 40
 
 #ifndef DEBUG
 #define debug(text)
+#define debugLv(text, lv)
+#define debugCommon(text)
+#define debugUncommon(text)
+#define debugRare(text)
 #else
-#define debug(text) llOwnerSay(__SHORTFILE__+" @ "+(string)__LINE__+": "+text)
+_dbg(string text, integer level){
+	if(level<=DEBUG){
+		llOwnerSay(llGetTimestamp()+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text);
+	}
+}
+#define debugLv(text, lv) _dbg(text, lv)
+#define debugRare(text) _dbg(text, DEBUG_RARE)
+#define debugUncommon(text) _dbg(text, DEBUG_UNCOMMON)
+#define debugCommon(text) _dbg(text, DEBUG_COMMON)
+#define debug(text) _dbg(text, DEBUG_USER)
 #endif
 
 // These constants should be overwritten and defined in your _core.lsl file for each project
@@ -68,7 +85,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define METHOD_CALLBACK -2		// == || == pretty much the same but sent as a callback
 #define EVT_RAISED -3			// str = (string)data, id = (string)event - An event was raised. Runs the onEvt() function
 #define RESET_ALL -4			// NULL - Resets all scripts in the project
-#define DB2_ADD -5				// [str[, (obj)data]] = (str)script - Data is passed along if this is the first time the script is seen
+#define DB2_ADD -5				// [(str)sender, (str)script[, (obj)data]] = (str)script - Data is passed along if this is the first time the script is seen
 #define DB2_UPDATE -6			// str = (arr)data
 #define DB2_DELETE -7			// str = (str)script
 
@@ -76,6 +93,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers.
 #define stdMethod$insert -1		// callback = (int)success
 #define stdMethod$remove -2		// callback = (int)amount_of_objects_removed
+#define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root. Note that this is only sent when db2 return "0" for asynchronous
 //#define stdMethod$interact -3	// [st Interact] - To sent an interact call to a prim (Removed, replaced with events)
 
 // General methods.
@@ -100,7 +118,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 */ 
 initiateListen(){
-	debug("Listening on "+(string)playerChan(llGetOwner()));
+	debugUncommon("Listening on "+(string)playerChan(llGetOwner()));
 	llListen(playerChan(llGetOwner()), "", "", "") ;
 	#ifdef LISTEN_OVERRIDE 
 	llListen(LISTEN_OVERRIDE,"","","");
