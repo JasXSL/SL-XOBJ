@@ -34,7 +34,9 @@ if(method$isCallback){
 link_message(integer link, integer nr, string str, key id){
 	#ifdef SCRIPT_IS_ROOT
 	if(nr == DB2_ADD){
-		string script = jVal(str, [0]);
+		string sender = jVal(str, [0]);
+		string script = jVal(str, [1]);
+		debugCommon("Shared Save request received @ root from script "+script);
 		if(llListFindList(DB2_CACHE, [script]) == -1){
 			list prims; // Prim IDS
 			list idx;	// Prim NR
@@ -56,17 +58,18 @@ link_message(integer link, integer nr, string str, key id){
 					if(llListFindList(DB2_CACHE, [llList2Integer(flat,i), x]) == -1){
 						DB2_CACHE += [script, llList2Integer(flat,i), x];
 						
-						debug("Str: "+str);
-						if(isset(jVal(str, [2]))){
+						if(isset(jVal(str, [3]))){
 							// Newly added, save data
-							debug("SETTING NEW DATA");
-							db2(DB2$SET, script, llJson2List(jVal(str, [1])), jVal(str, [2]));
+							debugUncommon("SETTING NEW DATA @ root for script "+script);
+							db2(DB2$SET, script, llJson2List(jVal(str, [2])), jVal(str, [3]));
+							sendCallback(id, sender, stdMethod$setShared, "", "", llList2Json(JSON_ARRAY, ([script, jVal(str,[2])])), jVal(str, [4]));
+							db2$rootSend();
 						}
 						return;
 					}
 				}
 			}
-			debug("FATAL ERROR: Not enough DB prims to store this many shared items.");
+			debugRare("FATAL ERROR: Not enough DB prims to store this many shared items.");
 		}
 		db2$rootSend();
 	}else if(nr == DB2_DELETE){
@@ -148,9 +151,7 @@ link_message(integer link, integer nr, string str, key id){
 	#endif
 		
 		if(CB != JSON_NULL && CB != "" && !(method$isCallback)){
-			#ifdef DEBUG
-			llOwnerSay("Sending callback. CB is: "+CB+" DATA: "+llList2Json(JSON_ARRAY, CB_DATA)+" and targ is: "+(string)llKey2Name(id));
-			#endif
+			debugCommon("Sending callback. CB is: "+CB+" DATA: "+llList2Json(JSON_ARRAY, CB_DATA)+" and targ is: "+(string)llKey2Name(id));
 			sendCallback(id, SENDER_SCRIPT, METHOD, SEARCH, IN, llList2Json(JSON_ARRAY, CB_DATA), CB);
 		}
 		
