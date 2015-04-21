@@ -41,6 +41,16 @@ string db2(integer task, string script, list sub, string val){
 		return jVal(dta, sub);
 	}
 	string set = llJsonSetValue(dta,sub,val);
+	if(!isset(val) && sub == []){
+		if(pos == -1){
+			debugRare("Trying to delete unset shared: "+script);
+			return "";
+		}
+		llClearLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2));
+		llMessageLinked(LINK_ROOT, DB2_DELETE, script, "");
+		debugCommon("Deleting shared: "+script);
+		return "0";
+	}
 	// Create new
 	if(pos==-1){
 		llMessageLinked(LINK_ROOT, DB2_ADD, mkarr(([llGetScriptName(), script, mkarr(sub), val])), "");
@@ -58,5 +68,4 @@ string db2(integer task, string script, list sub, string val){
 }
 
 #define clearDB2() links_each(ln, n, {if(llGetSubString(db2$prefix,0,llStringLength(db2$prefix)-1) == llGetSubString(n,0,llStringLength(db2$prefix)-1)){integer i;for(i=0; i<llGetLinkNumberOfSides(ln); i++){llClearLinkMedia(ln, i);}}})
-
 
