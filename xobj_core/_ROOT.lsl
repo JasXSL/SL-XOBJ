@@ -26,20 +26,18 @@
 #define DEBUG_UNCOMMON 30
 #define DEBUG_COMMON 40
 
-
-
 #ifndef DEBUG
-#define qd(text) _dbg(text)
-#define _dbg(text) llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text)
-
 #define debug(text)
 #define debugLv(text, lv)
 #define debugCommon(text)
 #define debugUncommon(text)
 #define debugRare(text)
 #else
-#define qd(text) _dbg(text, 0)
-#define _dbg(text, level) if(level<=DEBUG){llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text);}
+_dbg(string text, integer level){
+	if(level<=DEBUG){
+		llOwnerSay(llGetTimestamp()+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text);
+	}
+}
 #define debugLv(text, lv) _dbg(text, lv)
 #define debugRare(text) _dbg(text, DEBUG_RARE)
 #define debugUncommon(text) _dbg(text, DEBUG_UNCOMMON)
@@ -125,9 +123,7 @@ initiateListen(){
 	#ifdef LISTEN_OVERRIDE 
 	llListen(LISTEN_OVERRIDE,"","","");
 	#endif
-	#ifdef ALLOW_USER_DEBUG
-	llListen(0, "", "", "");
-	#endif
+	
 }
 
 // Disregard these, they're just preprocessor shortcuts

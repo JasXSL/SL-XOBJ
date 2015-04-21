@@ -11,7 +11,6 @@
 	#define REQUIRE_INIT - Will not raise events until BFL_INIT is set
 	#define LISTEN_OVERRIDE (int)chan - Allows the owner to run override messages through the function onListenOverride(integer chan, key id, string message){} Use this only when you need to send lots of commands in rapid succession.
 	#define DEBUG - Outputs all messages to owner
-	#define ALLOW_USER_DEBUG 2=anyone - Lets anyone/owner raise events by saying debug script, method, arg1, arg2...
 
 */
 
@@ -43,7 +42,6 @@ listen(integer chan, string name, key id, string message){
         if(llGetSubString(message, 0, 5) == "debug "){ // script, method, param1, param2...
             list split = llCSV2List(llGetSubString(message, 6, -1));
             list op = [llList2Integer(split,1), "", "", llList2Json(JSON_ARRAY, llDeleteSubList(split, 0, 1)), ""];
-			debugCommon("Sending user debug.");
             llMessageLinked(LINK_SET, RUN_METHOD, llList2String(split,0)+llList2Json(JSON_ARRAY, op), id);
         }
         return;
