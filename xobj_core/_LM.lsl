@@ -57,11 +57,11 @@ link_message(integer link, integer nr, string str, key id){
 				for(x=0; x<9; x++){
 					if(llListFindList(DB2_CACHE, [llList2Integer(flat,i), x]) == -1){
 						DB2_CACHE += [script, llList2Integer(flat,i), x];
-						
-						if(isset(jVal(str, [3]))){
+						list l = llJson2List(jVal(str, [2]));
+						if(isset(jVal(str, [3])) || l != []){
 							// Newly added, save data
 							debugUncommon("SETTING NEW DATA @ root for script "+script);
-							db2(DB2$SET, script, llJson2List(jVal(str, [2])), jVal(str, [3]));
+							db2(DB2$SET, script, l, jVal(str, [3]));
 							sendCallback(id, sender, stdMethod$setShared, "", "", llList2Json(JSON_ARRAY, ([script, jVal(str,[2])])), jVal(str, [4]));
 							db2$rootSend();
 						}
@@ -74,10 +74,11 @@ link_message(integer link, integer nr, string str, key id){
 		db2$rootSend();
 	}else if(nr == DB2_DELETE){
 		integer pos = llListFindList(DB2_CACHE, [str]);
-		if(pos == -1){
+		debugUncommon("Deleting shared: "+str+" @ pos: "+(string)pos);
+		if(~pos){
 			DB2_CACHE = llDeleteSubList(DB2_CACHE, pos, pos+2);
+			db2$rootSend();
 		}
-		db2$rootSend();
 	}else
 	#else 
 		#ifdef USE_SHARED
@@ -93,6 +94,7 @@ link_message(integer link, integer nr, string str, key id){
 				integer pos = llListFindList(data, [v]);
 				if(~pos)DB2_CACHE += llList2List(data, pos, pos+2);
 			)
+			
 		}else
 		#endif
 	#endif
