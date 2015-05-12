@@ -30,7 +30,7 @@
 
 #ifndef DEBUG
 #define qd(text) _dbg(text)
-#define _dbg(text) llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text)
+#define _dbg(text) llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text))
 
 #define debug(text)
 #define debugLv(text, lv)
@@ -39,7 +39,7 @@
 #define debugRare(text)
 #else
 #define qd(text) _dbg(text, 0)
-#define _dbg(text, level) if(level<=DEBUG){llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+text);}
+#define _dbg(text, level) if(level<=DEBUG){llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text));}
 #define debugLv(text, lv) _dbg(text, lv)
 #define debugRare(text) _dbg(text, DEBUG_RARE)
 #define debugUncommon(text) _dbg(text, DEBUG_UNCOMMON)
@@ -79,7 +79,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define evt$TOUCH_END -3		// [(int)prim, (key)id] - Raised when an agent release the click
 #define evt$BUTTON_PRESS -4		// (int)level&edge - Raised when a CONTROL button is pressed down. The nr is a bitfield containing the CONTROL_* buttons that were pressed.
 #define evt$BUTTON_RELEASE -5	// (int)~level&edge - Raised when a CONTROL button is released. The nr is a bitfield containing the CONTROL_* buttons that were released.
-
+#define evt$BUTTON_DOUBLE_PRESS -6	// (int)level&edge - If a button has been double tapped
+#define evt$BUTTON_HELD_SEC -7		// [(int)level, (float)sec] - After a button has been held for x time
 
 // nr Task definitions
 // These are put into the nr field of llMessageLinked. Do NOT use negative integers if you're going to send your own link messages manually.
