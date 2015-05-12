@@ -49,10 +49,9 @@ default
             if(METHOD == RemoteloaderMethod$load){
                 //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
                 slave++;
-                //llOwnerSay("Slave: "+(string)slave+" script: "+method_arg(0)+" from "+llKey2Name(id));
+                //qd("Slave: "+(string)slave+" script: "+method_arg(0)+" from "+llKey2Name(id));
                 llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, method_arg(0), (integer)method_arg(1), (integer)method_arg(2)]), "rm_slave");
-                
-                if(slave>4)slave = 0;
+                if(slave>=RemoteloaderConf$slaves)slave = 0;
             }
             else if(METHOD == RemoteloaderMethod$asset){
                 llGiveInventory(id, method_arg(0));

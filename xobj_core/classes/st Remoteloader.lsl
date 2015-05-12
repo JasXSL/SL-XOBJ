@@ -42,10 +42,14 @@ default
 #define RemoteloaderMethod$attach 2		// (str)asset
 #define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam
 
+#ifndef RemoteloaderConf$slaves
+#define RemoteloaderConf$slaves 5
+#endif
+
 // Preprocessor shortcuts
 #define Remoteloader$attach(asset) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
 #define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
-
+#define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
 
 
 
