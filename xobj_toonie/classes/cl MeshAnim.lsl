@@ -146,10 +146,14 @@
 
 
 // Remoteload the latest cl MeshAnim from HUD if st Attached is initialized
-#define MeshAnimConf$remoteloadOnAttachedIni		
+//#define MeshAnimConf$remoteloadOnAttachedIni		
+//#define MeshAnimConf$animStartEvent
 
 								
 #define MeshAnimEvt$frame 0	// Raised when a non-integer frame is discovered
+#define MeshAnimEvt$agentsInRange 1		// Player is within LOD range, start animating
+#define MeshAnimEvt$agentsLost 2		// Out of bounds, the animator will stop
+#define MeshAnimEvt$onAnimStart 3		// (str)anim - Requires the MeshAnimConf
 
                                 // Methods //
 
@@ -157,6 +161,9 @@
 #define MeshAnimMethod$stopAnim 1		// (str)animName
 #define MeshAnimMethod$stopAll 2
 #define MeshAnimMethod$emulateFrameEvent 3	// (var)data
+#define MeshAnimMethod$resume 4				// 
+#define MeshAnimMethod$add 5				// name, data, flags, priority
+#define MeshAnimMethod$rem 6				// name
 
                                 // Obj Member Vars //
 #define MeshAnimVal$name "A"
@@ -170,15 +177,21 @@
 #define MeshAnimFlag$DONT_HIDE_PREVIOUS 4
 
 
-
+#ifndef MeshAnimConf$LIMIT_AGENT_RANGE
+#define MeshAnimConf$LIMIT_AGENT_RANGE 0
+#endif
 
 // Method hooks
 #define MeshAnim$startAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$startAnim, [animName], TNN)
+#define MeshAnim$restartAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$startAnim, [animName, true], TNN)
+
 #define MeshAnim$stopAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$stopAnim, [animName], TNN)
 #define MeshAnim$stopAll() runMethod((string)LINK_ROOT, "cl MeshAnim", MeshAnimMethod$stopAll, [], TNN)
+#define MeshAnim$resume() runMethod((string)LINK_ROOT, "cl MeshAnim", MeshAnimMethod$resume, [], TNN)
 
-#define MeshAnim$rem(anim) runMethod((string)LINK_THIS, "cl MeshAnim", stdMethod$remove, [], anim, MeshAnimVal$name, NORET, "")
-#define MeshAnim$add(anim, data, flags, priority) runMethod((string)LINK_THIS, "cl MeshAnim", stdMethod$insert, [anim, data, flags, priority], anim, MeshAnimVal$name, NORET, "")
+#define MeshAnim$rem(anim) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$rem, [anim], TNN)
+#define MeshAnim$add(anim, data, flags, priority) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$add, [anim, data, flags, priority], TNN)
+
 
 
 
