@@ -148,21 +148,21 @@
 
 
 // Shortcuts
-#define RLV$setFolder(folder) runMethod((string)LINK_THIS, "st RLV", RLVMethod$setFolder, [folder], TNN)
-#define RLV$setSubFolder(folder) runMethod((string)LINK_THIS, "st RLV", RLVMethod$setSubFolder, [folder], TNN)
-#define RLV$cubeTask(tasks) runMethod((string)LINK_THIS, "st RLV", RLVMethod$cubeTask, tasks, TNN)
-#define RLV$keepAttached(item) runMethod((string)LINK_THIS, "st RLV", RLVMethod$keepAttached, [item], TNN)
-#define RLV$remAttached(item) runMethod((string)LINK_THIS, "st RLV", RLVMethod$remAttached, [item], TNN)
-#define RLV$sprintFadeModifier(multiplier) runMethod((string)LINK_THIS, "st RLV", RLVMethod$sprintFadeModifier, [multiplier], TNN)
-#define RLV$sprintRegenModifier(multiplier) runMethod((string)LINK_THIS, "st RLV", RLVMethod$sprintRegenModifier, [multiplier], TNN)
-#define RLV$sitOn(uuid, prevent_unsit) runMethod((string)LINK_THIS, "st RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
-#define RLV$unsit(override) runMethod((string)LINK_THIS, "st RLV", RLVMethod$unsit, [override], TNN)
-#define RLV$windlightPreset(preset) runMethod((string)LINK_THIS, "st RLV", RLVMethod$windlightPreset, [preset], TNN)
-#define RLV$resetWindlight() runMethod((string)LINK_THIS, "st RLV", RLVMethod$resetWindlight, [], TNN)
+#define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$setFolder, [folder], TNN)
+#define RLV$setSubFolder(folder) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$setSubFolder, [folder], TNN)
+#define RLV$cubeTask(tasks) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$cubeTask, tasks, TNN)
+#define RLV$keepAttached(item) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$keepAttached, [item], TNN)
+#define RLV$remAttached(item) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$remAttached, [item], TNN)
+#define RLV$sprintFadeModifier(multiplier) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sprintFadeModifier, [multiplier], TNN)
+#define RLV$sprintRegenModifier(multiplier) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sprintRegenModifier, [multiplier], TNN)
+#define RLV$sitOn(uuid, prevent_unsit) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
+#define RLV$unsit(override) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$unsit, [override], TNN)
+#define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$windlightPreset, [preset], TNN)
+#define RLV$resetWindlight() runMethod((string)LINK_ROOT, "st RLV", RLVMethod$resetWindlight, [], TNN)
 
-#define RLV$limitCamDist(limit) runMethod((string)LINK_THIS, "st RLV", RLVMethod$limitCamDist, [limit], TNN)
-#define RLV$preventTP(prevent) runMethod((string)LINK_THIS, "st RLV", RLVMethod$preventTP, [prevent], TNN)
-#define RLV$preventFly(prevent) runMethod((string)LINK_THIS, "st RLV", RLVMethod$preventFly, [prevent], TNN)
+#define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$limitCamDist, [limit], TNN)
+#define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventTP, [prevent], TNN)
+#define RLV$preventFly(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventFly, [prevent], TNN)
 
 
 

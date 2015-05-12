@@ -5,14 +5,13 @@
 	2. Include your _core.lsl file
 	3. #include "xobj_core/classes/packages/st Soundspace.lsl"
 	4. Create a new script in the same prim as st Soundspace, name it "st SoundspaceAux"
-	5. Make sure you have st SoundspaceAux on drive.
-	6. At the top of your st SoundspaceAux include your _core.lsl file
-	7. enter #define THIS_SUB 1
-	8. Enter #include "xobj_core/classes/packages/st SoundspaceAux.lsl"
-	9. Compile
-	10. Go to the second prim and create another script named st SoundspaceAux
-	11. Copy+paste the code from your previous st SoundspaceAux into the new one but replace #define THIS_SUB 1 with #define THIS_SUB 2
-	12. Done!
+	5. At the top of your st SoundspaceAux include your _core.lsl file
+	6. enter #define THIS_SUB 1
+	7. Enter #include "xobj_core/classes/packages/st SoundspaceAux.lsl"
+	8. Compile
+	9. Go to the second prim and create another script named st SoundspaceAux
+	10. Copy+paste the code from your previous st SoundspaceAux into the new one but replace #define THIS_SUB 1 with #define THIS_SUB 2
+	11. Done!
 	
 	Usage:
 	To override current soundspace with the underwater soundspace, use Soundspace$dive(integer underWater)
