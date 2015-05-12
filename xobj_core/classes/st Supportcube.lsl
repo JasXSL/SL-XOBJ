@@ -30,6 +30,8 @@
 #define Supportcube$tForceUnsit 4		// []
 #define Supportcube$tDelay 5			// [(float)delay]
 #define Supportcube$tRunMethod 6		// [(key)targ, (str)script, (int)method, (arr)data]
+#define Supportcube$tTranslateTo 7		// [(vec)pos, (rot)rot, (float)time, (int)mode] - Mode defaults to FWD
+#define Supportcube$tTranslateStop 8	// 
 
 #define SupportcubeOverride$tSetPosAndRot 6		// Tunneled through override - (vec)pos, (rot)rotation
 
