@@ -11,7 +11,7 @@ list DB2_CACHE;
 #define db2$prefix "DB"
 #endif
 
-#define db2$rootSend() llMessageLinked(LINK_THIS, DB2_UPDATE, mkarr(DB2_CACHE), "")
+#define db2$rootSend() llMessageLinked(LINK_SET, DB2_UPDATE, mkarr(DB2_CACHE), "")
 #define db2$get(script, sub) db2(DB2$GET, script, sub, "")
 #define db2$set(sub, val) db2(DB2$SET, llGetScriptName(), sub, val)
 #define db2$setOther(script, sub, val) db2(DB2$SET, script, sub, val)

@@ -304,10 +304,7 @@ multiTimer(list data){
     if(data != []){
         integer pos = llListFindList(llList2ListStrided(llDeleteSubList(_TIMERS,0,0), 0, -1, 5), llList2List(data,0,0));
         if(~pos)_TIMERS = llDeleteSubList(_TIMERS, pos*5, pos*5+4);
-        if(llGetListLength(data)==4){
-            if(_TIMERS==[])llResetTime();
-            _TIMERS+=[llGetTime()+llList2Float(data,2)]+data;
-        }
+        if(llGetListLength(data)==4)_TIMERS+=[llGetTime()+llList2Float(data,2)]+data;
     }
     for(i=0; i<llGetListLength(_TIMERS); i+=5){
         if(llList2Float(_TIMERS,i)<=llGetTime()){
@@ -452,6 +449,39 @@ integer superScanx(vector pos, vector mypos, rotation mrot, integer limit){
         else return -1;
     }else return -1;
 }
+translateTo(vector to, rotation rota, float time, integer mode){
+    vector start = llGetPos();
+    vector dist = to-start;
+    integer totSteps = llFloor(time/0.2);
+    if(totSteps<=0)totSteps = 0;
+    if(totSteps>50)totSteps = 50;
+    
+    vector srot = llRot2Euler(llGetRot());
+    vector vrot = llRot2Euler(rota);
+    vector rdist = vrot-srot;
+    
+    list frames;
+    integer i; vector added; vector roted;
+    for(i=1; i<=totSteps; i++){
+        float f = llCos(PI+PI*((float)i/totSteps))/2+.5;
+        vector rot = rdist*f-roted;
+        vector point = dist*f-added;
+        roted = rdist*f;
+        added = dist*f;
+        frames+=[point, llEuler2Rot(rot), 0.2];
+    }
+    
+    float tot;
+    for(i=0; i<llGetListLength(frames); i+=2){
+        vector v = llList2Vector(frames, i);
+        tot+=v.x;
+    }
+    if(mode == 0)mode = KFM_FORWARD;
+    llSetKeyframedMotion(frames, [KFM_MODE,mode]);    
+}
+
+#define translateStop() llSetKeyframedMotion([], [KFM_COMMAND, KFM_CMD_STOP])
+
 integer triggerAnim(string anim, integer start){
     if(llGetInventoryType(anim) == INVENTORY_ANIMATION && llGetPermissions() & PERMISSION_TRIGGER_ANIMATION){
         if(start)llStartAnimation(anim);
