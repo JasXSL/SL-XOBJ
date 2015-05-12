@@ -12,7 +12,7 @@
 	1. Create a new script and name it st Footsteps
 	2. Include your _core.lsl file
 	3. Include any other files you want
-	4. add onThud(float z){} if you want to do something special when landing
+	4. add onThud(float z){} which is raised when landing heavily
 	5. 	#include "xobj_toonie/classes/packages/st Footsteps.lsl"
 	6. Compile and enjoy ^.^
 	
@@ -20,7 +20,6 @@
 	
 */
 
-onThud(float z){}
 
 list SOUNDS;
 list COLS;
