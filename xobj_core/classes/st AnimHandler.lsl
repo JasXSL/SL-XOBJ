@@ -19,6 +19,8 @@
 
 // Preprocessor shortcuts
 #define AnimHandler$anim(anim, start, repDly) runMethod((string)LINK_SET, "st AnimHandler", AnimHandlerMethod$anim, ([anim, start, repDly]), TNN)
+#define AnimHandler$targAnim(targ, anim, start) runMethod((string)targ, "st AnimHandler", AnimHandlerMethod$anim, ([anim, start]), TNN)
+
 
 
 
