@@ -125,6 +125,7 @@ list bitArrToList(integer int, integer bytesize){
 #define true TRUE
 #define false FALSE
 
+
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)
 
@@ -141,5 +142,16 @@ list bitArrToList(integer int, integer bytesize){
 #define prDesc(prim) (string)llGetObjectDetails(prim, [OBJECT_DESC])
 #define prLinkedToMe(prim) (llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0) == llGetKey())
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
+// Check if prim is in front of me
+#define prAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llGetRot()); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llList2Vector(odata, 0)-llGetPos())); var = llRot2Angle(bet);} 
+
+
+
+
+
+
+
+// Vectors
+#define vecBetween(a, b, distance) a-(llVecNorm(a-b)*distance)
 
 
