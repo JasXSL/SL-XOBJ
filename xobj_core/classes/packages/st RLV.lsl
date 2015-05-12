@@ -1,4 +1,6 @@
+#ifndef USE_SHARED
 #define USE_SHARED [cls$name]
+#endif
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st Remoteloader.lsl"
 #include "xobj_core/classes/st Attached.lsl"
@@ -47,11 +49,11 @@ cubeTask(list tasks){
     if(cubetasks){
         
         if(llKey2Name(supportcube) != ""){
-			debug("Running cube tasks on "+(string)playerChan(llGetOwner()));
+			debugUncommon("Running cube tasks on "+(string)playerChan(llGetOwner()));
             runMethod((string)supportcube, "st Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
             cubetasks = [];
         }else{
-			debug("Spawning cube");
+			debugUncommon("Spawning cube");
             llRezAtRoot("SupportCube", llGetPos()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
         }
         
@@ -272,6 +274,7 @@ default
 			
 			
 			if(METHOD == RLVMethod$cubeTask){
+				debugCommon("Received cubetasks: "+PARAMS);
                 cubeTask(llJson2List(PARAMS));
             }
 			

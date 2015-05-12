@@ -40,6 +40,9 @@ runTask(){
         }else if(t == Supportcube$tRunMethod){
             runMethod((key)llList2String(params,0), llList2String(params,1), llList2Integer(params,2), llJson2List(llList2String(params,3)), TNN);
         }
+		else if(t == Supportcube$tTranslateTo){
+			translateTo((vector)llList2String(params,0), (rotation)llList2String(params,1), llList2Float(params,2), llList2Integer(params,3));
+		}else if(t == Supportcube$tTranslateStop)translateStop();
     }
 } 
 
@@ -72,7 +75,7 @@ default
     
     state_entry(){
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
-		debug("Running killall");
+		debugCommon("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);
         if((float)llGetObjectDesc()){
 			debug("Setting death timer");

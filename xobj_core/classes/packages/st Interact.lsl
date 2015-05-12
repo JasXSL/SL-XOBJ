@@ -13,72 +13,78 @@ integer pInteract;
 
 string targDesc;
 key targ;
+integer held;
 
 
 onEvt(string script, integer evt, string data){ 
     if(script == "st RLV" && evt == evt$SCRIPT_INIT){
         init();
     }
-    else if(script == "#ROOT" && evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
-        if(BFL&BFL_RECENT_CLICK)return;
-        
-		if(!preInteract(targ))return;
-        
-        
-        integer ainfo = llGetAgentInfo(llGetOwner());
-        if(ainfo&AGENT_SITTING){
-            if(ainfo&AGENT_SITTING){
-                RLV$unsit(FALSE);
-            }
-            return;
-        }
-        
-        
-        BFL = BFL|BFL_RECENT_CLICK;
-        multiTimer([TIMER_RECENT_CLICK, "", 1, FALSE]);
-        llPlaySound("ca561a13-c867-53f6-ee73-3e70fa37312e", .5);
-        
-        
-        list actions = llParseString2List(targDesc, ["$$"], []);
-        if(llGetListLength(actions)>1){
-            multiTimer([TIMER_RECENT_CLICK, "", 2, FALSE]);
-        }
-        
-        while(llGetListLength(actions)){
-            string val = llList2String(actions,0);
-            actions = llDeleteSubList(actions,0,0);
-            list split = llParseString2List(val, ["$"], []);
-            string task = llList2String(split, 0); 
-            if(task == Interact$TASK_TELEPORT){
-				vector to = (vector)llList2String(split,1); 
-				to+=prPos(targ);
-				RLV$cubeTask(SupportcubeBuildTeleport(to));
-				raiseEvent(InteractEvt$TP, "");
-			} 
-			else if(task == Interact$TASK_PLAY_SOUND || task == Interact$TASK_TRIGGER_SOUND){
-				key sound = llList2String(split,1);
-				float vol = llList2Float(split,2);
-				if(vol<=0)vol = 1;
-				if(task == Interact$TASK_TRIGGER_SOUND)llTriggerSound(sound, vol);
-				else llPlaySound(sound, vol);
+    else if(script == "#ROOT"){
+		if(evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
+			if(BFL&BFL_RECENT_CLICK)return;
+			
+			if(!preInteract(targ))return;
+			
+			
+			integer ainfo = llGetAgentInfo(llGetOwner());
+			if(ainfo&AGENT_SITTING){
+				if(ainfo&AGENT_SITTING){
+					RLV$unsit(FALSE);
+				}
+				return;
 			}
-			else if(task == Interact$TASK_SITON){
-				RLV$sitOn(targ, FALSE); 
-			} 
-			else if(task == Interact$TASK_CLIMB){ 
-						
-				Climb$start(targ, 
-					(rotation)llList2String(split,1), // Rot offset 
-					llList2String(split,2), // Anim passive
-					llList2String(split,3), // Anim active
-					llList2String(split,4), // anim_active_down, 
-					llList2String(split,5), // anim_dismount_top, 
-					llList2String(split,6), // anim_dismount_bottom, 
-					llList2String(split,7), // nodes, 
-					llList2String(split,8) // Climbspeed
-				);
-			}else onInteract(targ, task, llList2List(split,1,-1));
-        }
+			
+			
+			BFL = BFL|BFL_RECENT_CLICK;
+			multiTimer([TIMER_RECENT_CLICK, "", 1, FALSE]);
+			
+			
+			
+			list actions = llParseString2List(targDesc, ["$$"], []);
+			if(llGetListLength(actions)>1){
+				multiTimer([TIMER_RECENT_CLICK, "", 2, FALSE]);
+			}
+			
+			while(llGetListLength(actions)){
+				string val = llList2String(actions,0);
+				actions = llDeleteSubList(actions,0,0);
+				list split = llParseString2List(val, ["$"], []);
+				string task = llList2String(split, 0); 
+				if(task == Interact$TASK_TELEPORT){
+					vector to = (vector)llList2String(split,1); 
+					to+=prPos(targ);
+					RLV$cubeTask(SupportcubeBuildTeleport(to));
+					raiseEvent(InteractEvt$TP, "");
+				} 
+				else if(task == Interact$TASK_PLAY_SOUND || task == Interact$TASK_TRIGGER_SOUND){
+					key sound = llList2String(split,1);
+					float vol = llList2Float(split,2);
+					if(vol<=0)vol = 1;
+					if(task == Interact$TASK_TRIGGER_SOUND)llTriggerSound(sound, vol);
+					else llPlaySound(sound, vol);
+				}
+				else if(task == Interact$TASK_SITON){
+					RLV$sitOn(targ, FALSE); 
+				} 
+				else if(task == Interact$TASK_CLIMB){ 
+							
+					Climb$start(targ, 
+						(rotation)llList2String(split,1), // Rot offset 
+						llList2String(split,2), // Anim passive
+						llList2String(split,3), // Anim active
+						llList2String(split,4), // anim_active_down, 
+						llList2String(split,5), // anim_dismount_top, 
+						llList2String(split,6), // anim_dismount_bottom, 
+						llList2String(split,7), // nodes, 
+						llList2String(split,8) // Climbspeed
+					);
+				}else onInteract(targ, task, llList2List(split,1,-1));
+			}
+		}else if(evt == evt$BUTTON_HELD_SEC){
+			integer btn = (integer)jVal(data, [0]);
+			if(btn == CONTROL_UP)held = (integer)jVal(data, [1]);
+		}else if(evt == evt$BUTTON_PRESS && (integer)data&CONTROL_UP)held = 0;
     }
 }
 

@@ -1,5 +1,9 @@
+#ifndef USE_SHARED
 #define USE_SHARED ["st RLV"]
+#endif 
+#ifndef USE_EVENTS
 #define USE_EVENTS
+#endif
 #include "xobj_core/_CLASS_STATIC.lsl"
 #include "xobj_core/classes/st Supportcube.lsl"
 #include "xobj_core/classes/st RLV.lsl"
@@ -99,9 +103,9 @@ mount(){
     // Position cube at node and start
     vector p = offset2global(llList2Vector(nodes, onNode));
 	
-	debug("Mounting");
+	debugUncommon("Mounting");
     if(llKey2Name(CUBE) == ""){
-        debug("Spawning cube");
+        debugUncommon("Spawning cube");
 		RLV$cubeTask(([
             SupportcubeBuildTask(Supportcube$tSetPos, [p]),
             SupportcubeBuildTask(Supportcube$tSetRot, [rot*ladder_root_rot])
@@ -280,7 +284,7 @@ default
                 return;
             }
 
-			debug("Climb start: "+PARAMS);
+			debugUncommon("Climb start: "+PARAMS);
             ladder = tr(method_arg(0));
             rot = (rotation)method_arg(1);
             anim_passive = tr(method_arg(2));
@@ -302,7 +306,7 @@ default
             
             if(llGetListLength(nodes) == 4)mount();
 			#ifdef DEBUG
-			else debug("Invalid node length: "+(string)llGetListLength(nodes));
+			else debugRare("Invalid node length: "+(string)llGetListLength(nodes));
 			#endif
         }
     }

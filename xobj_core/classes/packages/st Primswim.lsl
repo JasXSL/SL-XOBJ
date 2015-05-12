@@ -1,6 +1,10 @@
+#ifndef USE_EVENTS
 #define USE_EVENTS
+#endif
 #if PrimswimCfg$USE_WINDLIGHT==1
-	#define USE_SHARED ["st RLV"]
+	#ifndef USE_SHARED
+		#define USE_SHARED ["st RLV"]
+	#endif
 #endif
 
 #include "xobj_core/classes/st Supportcube.lsl"

@@ -35,11 +35,11 @@ default
         if(method$byOwner){
             if(METHOD == AnimHandlerMethod$anim){
                 if(~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
-                    llOwnerSay("Error: Anim permissions lacking, reattach  your HUD.");
+                    debugRare("Error: Anim permissions lacking, reattach  your HUD.");
                     return;
                 }
                 if(llGetInventoryType(method_arg(0)) != INVENTORY_ANIMATION && method_arg(0) != "sit"){
-                    llOwnerSay("Error: Anim not found: "+method_arg(0));
+                    debugRare("Error: Anim not found: "+method_arg(0));
                     return;
                 }
                 integer start = (integer)method_arg(1);
