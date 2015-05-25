@@ -141,6 +141,7 @@
 #define RLVMethod$limitCamDist 13		// (float)dist <0 = clear, 0 = force mouselook
 #define RLVMethod$preventTP 14			// (bool)prevent
 #define RLVMethod$preventFly 15			// (bool)Prevent
+#define RLVMethod$addSprint 16			// (float)perc
 
 
 // Events
@@ -163,6 +164,6 @@
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$limitCamDist, [limit], TNN)
 #define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventTP, [prevent], TNN)
 #define RLV$preventFly(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventFly, [prevent], TNN)
-
+#define RLV$addSprint(perc) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$addSprint, [perc], TNN)
 
 

@@ -48,8 +48,8 @@
 #define TARG_PCS 4
 #define TARG_NPCS 8
 // packages is strided [(int)stacks, (arr)package...]
-string FX_buildWrapper(integer id, integer min_objs, integer max_objs, list packages){
-    return llList2Json(JSON_ARRAY, [id, min_objs, max_objs]+packages);
+string FX_buildWrapper(integer min_objs, integer max_objs, list packages){
+    return llList2Json(JSON_ARRAY, [min_objs, max_objs]+packages);
 }
 
 
@@ -94,7 +94,7 @@ string FX_buildCondition(integer cond, list vars){
 #define FX_EVTS 9
 #define FX_TAGS 10
 #define FX_MIN_CONDITIONS 11	// 0 = ALL
-string FX_buildPackage(float dur, float tick, integer flags, integer maxstacks, string name, string desc, integer texture, list fxobjs, list conditions, list evts, list tags, integer fxMinConditions){
+string FX_buildPackage(float dur, float tick, integer flags, integer maxstacks, string name, string desc, key texture, list fxobjs, list conditions, list evts, list tags, integer fxMinConditions){
     return llList2Json(JSON_ARRAY, FX_fround(dur)+FX_fround(tick)+[flags, maxstacks, name, desc, texture, llList2Json(JSON_ARRAY, fxobjs),llList2Json(JSON_ARRAY, conditions),llList2Json(JSON_ARRAY, evts), llList2Json(JSON_ARRAY, tags), fxMinConditions]);
 }
 

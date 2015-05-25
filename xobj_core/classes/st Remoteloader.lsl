@@ -41,6 +41,7 @@ default
 #define RemoteloaderMethod$asset 1		// (str)asset - Gives an inventory item to sender
 #define RemoteloaderMethod$attach 2		// (str)asset
 #define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam
+#define RemoteloaderMethod$detach 4		// (str)asset
 
 #ifndef RemoteloaderConf$slaves
 #define RemoteloaderConf$slaves 5
@@ -48,6 +49,10 @@ default
 
 // Preprocessor shortcuts
 #define Remoteloader$attach(asset) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+#define Remoteloader$attachTo(target, asset) runMethod((string)target, "st Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+#define Remoteloader$detachFrom(target, asset) runMethod((string)target, "st Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
+
+
 #define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
 #define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
 

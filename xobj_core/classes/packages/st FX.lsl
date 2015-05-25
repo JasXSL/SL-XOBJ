@@ -219,6 +219,7 @@ addPackage(string sender, list package, integer stacks){
     multiTimer(["F_"+(string)PID, "", dur, FALSE]);
     if(tick>0)
         multiTimer(["T_"+(string)PID, "", tick, TRUE]);
+		
     raiseEvent(FXEvt$effectAdded, mkarr(([sender, stacks, mkarr(package)])));
     //runPackage(sender, package, CS);
     onEvt("", INTEVENT_ONADD, (string)PID);
@@ -266,26 +267,25 @@ default
         if(method$isCallback)return;
 
         if(METHOD == FXMethod$run){
+
             key sender = method_arg(0);
             string wrapper = method_arg(1);
             list packages = llJson2List(wrapper);
-            integer min_objs = llList2Integer(packages,1);
-            integer max_objs = llList2Integer(packages,2);
-            packages = llDeleteSubList(packages, 0, 2);
-            
+            integer min_objs = llList2Integer(packages,0);
+            integer max_objs = llList2Integer(packages,1);
+			packages = llDeleteSubList(packages, 0, 1);
+			
             list successful;
             integer i;
             for(i=0; i<llGetListLength(packages); i+=2){
                 string p = llList2String(packages, i+1);
                 if(preCheck(sender, p))successful+=[llList2Integer(packages,i), p];
-                if(llGetListLength(successful)>=max_objs)packages = [];
+                if(llGetListLength(successful)>=max_objs && max_objs != 0)packages = [];
             }
             
             if(llGetListLength(successful)<min_objs){
-                debug("No objs passed fx filter");
                 return;
             }
-            
             
             for(i=0; i<llGetListLength(successful); i+=2){
                 addPackage(sender, llJson2List(llList2String(successful,i+1)), llList2Integer(successful,i));

@@ -6,6 +6,7 @@
 #include "xobj_core/classes/st Attached.lsl"
 #include "xobj_core/classes/st RLV.lsl"
 
+#define outputSprint() llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot])
 
 // Conf
 string CURRENT_FOLDER;
@@ -150,7 +151,7 @@ timerEvent(string id, string data){
         }
         if(sprint<0)sprint = 0;
         else if(sprint > RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
-        llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot]);
+        outputSprint();
     }else if(id == TIMER_SPRINT_START_REGEN){
         multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
     }
@@ -324,7 +325,11 @@ default
             #if RLVcfg$USE_SPRINT==1
             if(METHOD == RLVMethod$sprintFadeModifier)sprintFadeModifier = (float)method_arg(0);
             else if(METHOD == RLVMethod$sprintRegenModifier)sprintRegenModifier = (float)method_arg(0);
-            
+            else if(METHOD == RLVMethod$addSprint){
+				sprint+=(float)method_arg(0)*RLVcfg$limitSprint;
+				if(sprint>RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
+				outputSprint();
+			}
             #endif
         }
         if(METHOD == RLVMethod$setSprintPercent){

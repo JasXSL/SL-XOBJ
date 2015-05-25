@@ -47,13 +47,13 @@ string db2(integer task, string script, list sub, string val){
 			return "";
 		}
 		llClearLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2));
-		llMessageLinked(LINK_ROOT, DB2_DELETE, script, "");
+		llMessageLinked(LINK_SET, DB2_DELETE, script, "");
 		debugCommon("Deleting shared: "+script);
 		return "0";
 	}
 	// Create new
 	if(pos==-1){
-		llMessageLinked(LINK_ROOT, DB2_ADD, mkarr(([llGetScriptName(), script, mkarr(sub), val])), "");
+		llMessageLinked(LINK_SET, DB2_ADD, mkarr(([llGetScriptName(), script, mkarr(sub), val])), "");
 		#ifndef SCRIPT_IS_ROOT
 		debugCommon("Saving shared delayed");
 		#endif

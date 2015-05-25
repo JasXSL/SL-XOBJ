@@ -35,3 +35,5 @@
 #define Attached$remove(attachmentName) runOmniMethod("st Attached", AttachedMethod$remove, [], TARG_NULL, NORET, attachmentName)
 #define Attached$removeThis() runMethod((string)LINK_SET, "st Attached", AttachedMethod$remove, [], TNN)
 
+
+onAttach(){}

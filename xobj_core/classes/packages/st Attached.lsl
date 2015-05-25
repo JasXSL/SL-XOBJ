@@ -63,7 +63,7 @@ default
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
         }
     }
-	
+
 	#define LISTEN_LIMIT_BY_NAME
 	#define LISTEN_LIMIT_ALLOW_WILDCARD
 	#include "xobj_core/_LISTEN.lsl"

@@ -41,33 +41,36 @@ default
             SENDER_SCRIPT - (var)parameters
             CB - The callback you specified when you sent a task
         */
-        if(method$byOwner){
-            if(nr == METHOD_CALLBACK){ 
-                return;
-            }
-            
-            if(METHOD == RemoteloaderMethod$load){
-                //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
-                slave++;
-                //qd("Slave: "+(string)slave+" script: "+method_arg(0)+" from "+llKey2Name(id));
-                llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, method_arg(0), (integer)method_arg(1), (integer)method_arg(2)]), "rm_slave");
-                if(slave>=RemoteloaderConf$slaves)slave = 0;
-            }
-            else if(METHOD == RemoteloaderMethod$asset){
-                llGiveInventory(id, method_arg(0));
-            }else if(METHOD == RemoteloaderMethod$attach){
-                //llOwnerSay("Rezzing: "+method_arg(0));
-                llRezAtRoot(method_arg(0), llGetPos(), ZERO_VECTOR, ZERO_ROTATION, 1);
-                
-                if(CB != ""){
-                    delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
-                    return;
-                }
-            }
-            else if(METHOD == RemoteloaderMethod$rez){
-                llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));
-            }
+
+        if(nr == METHOD_CALLBACK){ 
+            return;
         }
+            
+        if(METHOD == RemoteloaderMethod$load){
+            //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
+            slave++;
+            //qd("Slave: "+(string)slave+" script: "+method_arg(0)+" from "+llKey2Name(id));
+            llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, method_arg(0), (integer)method_arg(1), (integer)method_arg(2)]), "rm_slave");
+            if(slave>=RemoteloaderConf$slaves)slave = 0;
+        }
+        else if(METHOD == RemoteloaderMethod$asset){
+            llGiveInventory(id, method_arg(0));
+        }else if(METHOD == RemoteloaderMethod$attach){
+            //llOwnerSay("Rezzing: "+method_arg(0));
+            llRezAtRoot(method_arg(0), llGetPos(), ZERO_VECTOR, ZERO_ROTATION, 1);
+                
+            if(CB != ""){
+                delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
+				return;
+			}
+        }
+		else if(METHOD == RemoteloaderMethod$detach){
+			runOmniMethod("st Attached", AttachedMethod$remove, [method_arg(0)], TARG_NULL, NORET, method_arg(0));
+		}
+        else if(METHOD == RemoteloaderMethod$rez){
+			llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));
+        }
+        
 
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 

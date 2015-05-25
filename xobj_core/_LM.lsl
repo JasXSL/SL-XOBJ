@@ -104,6 +104,7 @@ link_message(integer link, integer nr, string str, key id){
 	#else 
 		#ifdef USE_SHARED
 	else if(nr == DB2_UPDATE){
+			debugCommon("DB2 Update");
 			list data = llJson2List(str);
 			list d = USE_SHARED; DB2_CACHE = [];
 			
@@ -111,6 +112,7 @@ link_message(integer link, integer nr, string str, key id){
 				DB2_CACHE = data;
 				return;
 			}
+			debugCommon("Cycling shared: "+mkarr(d));
 			list_shift_each(d, v, 
 				integer pos = llListFindList(data, [v]);
 				if(~pos)DB2_CACHE += llList2List(data, pos, pos+2);

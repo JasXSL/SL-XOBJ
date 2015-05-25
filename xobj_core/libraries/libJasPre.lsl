@@ -139,6 +139,7 @@ list bitArrToList(integer int, integer bytesize){
 // PRIM FUNCTIONS //
 // Gets prim info by a uuid
 #define prPos(prim) llList2Vector(llGetObjectDetails(prim, [OBJECT_POS]),0)
+#define prRot(prim) llList2Rot(llGetObjectDetails(prim, [OBJECT_ROT]),0)
 #define prDesc(prim) (string)llGetObjectDetails(prim, [OBJECT_DESC])
 #define prLinkedToMe(prim) (llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0) == llGetKey())
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)

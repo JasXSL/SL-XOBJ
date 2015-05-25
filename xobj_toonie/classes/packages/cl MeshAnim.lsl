@@ -62,16 +62,19 @@ integer BFL = 0;
 
 
 startAnim(string name, integer restart){
-	integer i;
+	integer i; integer found;
 	while(i<llGetListLength(MAIN_CACHE)){
 		if(llList2String(MAIN_CACHE, i) == name){
 			integer f = llList2Integer(MAIN_CACHE, i+3)|MeshAnimFlag$PLAYING;
 			MAIN_CACHE = llListReplaceList(MAIN_CACHE, [f], i+3, i+3);
+			found = TRUE;
 		}
 		i+=llList2Integer(MAIN_CACHE, i+1);
 	}
-	debugCommon("Set Running: "+name);
-	if(restart)CURRENT_ANIM = "";
+	if(!found)return;
+	if(restart && name == CURRENT_ANIM){
+		CURRENT_ANIM = "";
+	}
     refreshAnims();
 }
 
@@ -102,12 +105,13 @@ refreshAnims(){
 	debugCommon("Refresh anim");
     string top; integer pri; float speed; integer flags; integer i; integer topnr; integer toplen;
 	
-	
 	while(i<llGetListLength(MAIN_CACHE)){
 		integer f = llList2Integer(MAIN_CACHE, i+3);
 		if(f&MeshAnimFlag$PLAYING){
 			integer p = llList2Integer(MAIN_CACHE, i+2);
+			
 			if(p>=pri){
+				//qd("Anim: "+llList2String(MAIN_CACHE, i)+" Prio is now the highest: "+(string)p);
 				flags = f;
 				pri = p; 
 				top = llList2String(MAIN_CACHE, i);
@@ -118,6 +122,7 @@ refreshAnims(){
 		}
 		i+=llList2Integer(MAIN_CACHE, i+1);
 	}
+	
 	
 	//qd("Top: "+(string)top);
 	if(top == "" || top != CURRENT_ANIM){
