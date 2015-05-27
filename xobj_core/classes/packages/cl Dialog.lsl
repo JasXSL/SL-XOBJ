@@ -88,6 +88,11 @@ private_loadPage(integer offset){
         buttons = [DialogConf$prevButton, DialogConf$nextButton]+llList2List(buttons, page*10, page*10+9);
         this$setProperty(DialogVar$page, page); 
     }
+	integer i;
+	for(i=0; i<llGetListLength(buttons); i++){
+		string b = llList2String(buttons, i);
+		if(llStringLength(b)>23)buttons = llListReplaceList(buttons, [llGetSubString(b,0,23)], i, i);
+	}
     
     integer chan = (integer)this(DialogVar$chan);
     key targ = (key)this(DialogVar$user);
