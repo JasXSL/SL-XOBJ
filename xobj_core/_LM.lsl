@@ -80,6 +80,7 @@ link_message(integer link, integer nr, string str, key id){
 							debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
 							db2$rootSend();
 							db2(DB2$SET, script, l, jVal(str, [3]));
+							sendCallback(id, sender, stdMethod$setShared, "", "", llList2Json(JSON_ARRAY, ([script, jVal(str,[2])])), jVal(str, [4]));
 						}
 						return;
 					}
