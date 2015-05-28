@@ -55,6 +55,7 @@ default
 
 #define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
 #define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
+#define Remoteloader$loadInt(script, pin, startparam, sender) runMethod((string)LINK_ALL_OTHERS, "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam, sender], TNN)
 
 
 
