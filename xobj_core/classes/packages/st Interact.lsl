@@ -16,7 +16,11 @@ key targ;
 integer held;
 
 
+
 onEvt(string script, integer evt, string data){ 
+	#ifdef USE_EVENT_OVERRIDE
+	evt(script, evt, data);
+	#endif
     if(script == "st RLV" && evt == evt$SCRIPT_INIT){
         init();
     }

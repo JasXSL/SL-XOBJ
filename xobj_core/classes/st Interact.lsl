@@ -32,6 +32,7 @@
 	
 */
 
+// #define USE_EVENT_OVERRIDE to expose an evt(string script, integer evt, string data) function that is run before onEvt
 
 #define Interact$TASK_DESC "D"				// [(str)text] - Text that shows on your HUD
 #define Interact$TASK_TELEPORT "P"			// *[(vec)offset] - Teleports you
@@ -48,6 +49,9 @@
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
 
 // * Implemented by default. Though you might need to install a module for it.
+
+
+
 
 /*
 
