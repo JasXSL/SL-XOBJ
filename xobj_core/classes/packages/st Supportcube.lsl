@@ -92,11 +92,12 @@ default
         if(change&CHANGED_LINK){
             if(llAvatarOnSitTarget() == llGetOwner()){
                 llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-                if(BFL&BFL_ON_SIT){
+                llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.1,.1,.1>]);
+				if(BFL&BFL_ON_SIT){
                     BFL = BFL&~BFL_ON_SIT;
                     runTask();
                 }
-            }
+            }else llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.5,.5,.5>]);
         }
     }
     
