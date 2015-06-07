@@ -54,25 +54,7 @@ listen(integer chan, string name, key id, string message){
     }
 	#endif
 	
-	
-	
-	
-	if(llGetSubString(message, 0, 0) == "*")message = llDeleteSubString(message,0,0);
-    #ifdef LISTEN_LIMIT_BY_NAME
-	else{
-		string pn = llGetObjectName();
-		if(llGetSubString(message, 0, llStringLength(pn)-1) == pn){
-			if(llGetSubString(message,0,llStringLength(pn)-1) == pn)message = llDeleteSubString(message, 0, llStringLength(pn)-1);
-			else message = llDeleteSubString(message,0,0);
-		}else{
-			debugUncommon("Call rejected because name doesn't match in LISTEN_LIMIT_BY_NAME @ _LISTEN.lsl: "+message);
-			debugUncommon("INPUT: '"+llGetSubString(message, 0, llStringLength(pn)-1)+"' EXPECTED: '"+pn+"'");
-			return;
-		}
-	}
-	#endif
-	
-	
+
 	string expected = getToken(id, llGetOwner(), llGetSubString(message,0,15));
 	if(llGetSubString(message, 0, llStringLength(expected)-1) != getToken(id, llGetOwner(), llGetSubString(message,0,15))){
 		debugUncommon("Token rejected, call: "+message+" expected "+expected);

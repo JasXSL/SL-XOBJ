@@ -1,7 +1,7 @@
 #define USE_EVENTS
-#include "xobj_core/classes/st Interact.lsl"
-#include "xobj_core/classes/st RLV.lsl"
-#include "xobj_core/classes/st Climb.lsl"
+#include "xobj_core/classes/jas Interact.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
+#include "xobj_core/classes/jas Climb.lsl"
   
 integer BFL;
 #define BFL_RECENT_CLICK 1      // Recently interacted

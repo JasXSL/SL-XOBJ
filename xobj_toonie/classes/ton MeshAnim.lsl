@@ -2,13 +2,13 @@
 	
 	Mesh anim lets you cycle through object faces like frames ^.^
 	cl MeshAnim does not store data hardcoded in the script, but is meant to be remoteloaded
-	You need st Remoteloader installed
+	You need jxRemoteloader installed
 	
 	Usage:
 	Start by looking for the MeshAnim ini event. If you're not remoteloading you can add the animation objects directly
 	
 	onEvt(string script, integer evt, string data){
-		if(script == "cl MeshAnim"){
+		if(script == "toMeshAnim"){
 			if(evt == evt$SCRIPT_INIT){
 			
 			}
@@ -56,7 +56,7 @@
 	-------------------------------------
 	
 	Suggested frame event handler
-	Put inside onEvt if(script == "cl MeshAnim")
+	Put inside onEvt if(script == "ton MeshAnim")
 	
 	if(evt == evt$MESH_ANIM_FRAME_EVENT){
             list split = llParseString2List(data, [";"], []);
@@ -182,15 +182,15 @@
 #endif
 
 // Method hooks
-#define MeshAnim$startAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$startAnim, [animName], TNN)
-#define MeshAnim$restartAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$startAnim, [animName, true], TNN)
+#define MeshAnim$startAnim(animName) runMethod((string)LINK_SET, "ton MeshAnim", MeshAnimMethod$startAnim, [animName], TNN)
+#define MeshAnim$restartAnim(animName) runMethod((string)LINK_SET, "ton MeshAnim", MeshAnimMethod$startAnim, [animName, true], TNN)
 
-#define MeshAnim$stopAnim(animName) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$stopAnim, [animName], TNN)
-#define MeshAnim$stopAll() runMethod((string)LINK_ROOT, "cl MeshAnim", MeshAnimMethod$stopAll, [], TNN)
-#define MeshAnim$resume() runMethod((string)LINK_ROOT, "cl MeshAnim", MeshAnimMethod$resume, [], TNN)
+#define MeshAnim$stopAnim(animName) runMethod((string)LINK_SET, "ton MeshAnim", MeshAnimMethod$stopAnim, [animName], TNN)
+#define MeshAnim$stopAll() runMethod((string)LINK_ROOT, "ton MeshAnim", MeshAnimMethod$stopAll, [], TNN)
+#define MeshAnim$resume() runMethod((string)LINK_ROOT, "ton MeshAnim", MeshAnimMethod$resume, [], TNN)
 
-#define MeshAnim$rem(anim) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$rem, [anim], TNN)
-#define MeshAnim$add(anim, data, flags, priority) runMethod((string)LINK_SET, "cl MeshAnim", MeshAnimMethod$add, [anim, data, flags, priority], TNN)
+#define MeshAnim$rem(anim) runMethod((string)LINK_SET, "ton MeshAnim", MeshAnimMethod$rem, [anim], TNN)
+#define MeshAnim$add(anim, data, flags, priority) runMethod((string)LINK_SET, "ton MeshAnim", MeshAnimMethod$add, [anim, data, flags, priority], TNN)
 
 
 

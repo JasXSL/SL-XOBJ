@@ -1,6 +1,6 @@
 // Preprocessor shortcuts
-#include "xobj_core/classes/st Rezzed.lsl" 
-#include "xobj_core/classes/st Remoteloader.lsl" 
+#include "xobj_core/classes/jas Rezzed.lsl" 
+#include "xobj_core/classes/jas Remoteloader.lsl" 
 
 // Include local head and class type
 #include "xobj_core/_CLASS_STATIC.lsl"

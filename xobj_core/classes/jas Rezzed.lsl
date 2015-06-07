@@ -17,7 +17,7 @@
 #define RezzedMethod$remove 0			// NULL
  
 
-#define Rezzed$remove(itemname) runOmniMethod("st Rezzed", RezzedMethod$remove, [], TARG_NULL, NORET, itemname)
+#define Rezzed$remove(itemname) runOmniMethod("jas Rezzed", RezzedMethod$remove, [], TARG_NULL, NORET, itemname)
 
 
 

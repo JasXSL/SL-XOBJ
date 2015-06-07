@@ -47,9 +47,9 @@
 
 // Preprocessor shortcuts
 // (key)user or "" for self, (str)message, (list)buttons, (int)menuID
-#define Dialog$spawn(user, message, buttons, menuID, callback) runMethod((string)LINK_THIS, "cl Dialog", DialogMethod$spawn, [user, message, llList2Json(JSON_ARRAY, buttons), menuID], TARG_NULL, callback, "")
+#define Dialog$spawn(user, message, buttons, menuID, callback) runMethod((string)LINK_THIS, "jas Dialog", DialogMethod$spawn, [user, message, llList2Json(JSON_ARRAY, buttons), menuID], TARG_NULL, callback, "")
 // Checks in LM callback section if a callback method is a dialog callback, ex if(Dialog$isCallback){}
-#define Dialog$isCallback (SENDER_SCRIPT == "cl Dialog" && METHOD == DialogMethod$spawn)
+#define Dialog$isCallback (SENDER_SCRIPT == "jas Dialog" && METHOD == DialogMethod$spawn)
 // Creates the following vars inside the if(Dialog$isCallback) statement: integer menu; string message; key clicker;
 #define Dialog$fetchCallback() integer menu = (integer)llJsonGetValue(PARAMS, ["menu"]); string message = llJsonGetValue(PARAMS, ["message"]); key clicker = llJsonGetValue(PARAMS, ["user"]);
 

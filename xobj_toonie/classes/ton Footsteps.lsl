@@ -9,14 +9,14 @@
 	}
 	
 	Install:
-	1. Create a new script and name it st Footsteps
+	1. Create a new script and name it toFootsteps
 	2. Include your _core.lsl file
 	3. Include any other files you want
 	4. add onThud(float z){} which is raised when landing heavily
-	5. 	#include "xobj_toonie/classes/packages/st Footsteps.lsl"
+	5. 	#include "xobj_toonie/classes/packages/ton Footsteps.lsl"
 	6. Compile and enjoy ^.^
 	
-	See xobj_core/classes/st Interact.lsl for object descriptions
+	See xobj_core/classes/jas Interact.lsl for object descriptions
 	
 */
 

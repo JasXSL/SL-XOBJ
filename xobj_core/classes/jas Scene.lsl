@@ -6,7 +6,7 @@
 #define evt$SCENE_ON_END_EVENT 2	// {t:(int)type} Scene has gone into onEnd state 
 #define evt$SCENE_KILL_EVENT 3		// {t:(int)type} Scene has been killed
 
-#define Scene$start(scenedata) runMethod((string)LINK_THIS, "st Scene", SceneMethod$start, [scenedata], TNN)
-#define Scene$stop() runMethod((string)LINK_THIS, "st Scene", SceneMethod$stop, [], TNN)
-#define Scene$getMonsterScene(targ, monster, posOffset, rotOffset, selfCastMonsterID) runMethod(targ, "st Scene", SceneMethod$getMonsterScene, [monster, posOffset, rotOffset, selfCastMonsterID], TARG_NULL, llGetScriptName(), "")
+#define Scene$start(scenedata) runMethod((string)LINK_THIS, "jas Scene", SceneMethod$start, [scenedata], TNN)
+#define Scene$stop() runMethod((string)LINK_THIS, "jas Scene", SceneMethod$stop, [], TNN)
+#define Scene$getMonsterScene(targ, monster, posOffset, rotOffset, selfCastMonsterID) runMethod(targ, "jas Scene", SceneMethod$getMonsterScene, [monster, posOffset, rotOffset, selfCastMonsterID], TARG_NULL, llGetScriptName(), "")
 

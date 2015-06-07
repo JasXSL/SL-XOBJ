@@ -4,7 +4,7 @@
 #define USE_EVENTS
 
 #include "xobj_core/_ROOT.lsl"
-#include "xobj_core/classes/st FX.lsl"
+#include "xobj_core/classes/jas FX.lsl"
 //#include "situation/_lib_effects.lsl"
 
 

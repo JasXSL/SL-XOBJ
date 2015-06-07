@@ -1,7 +1,7 @@
 #include "xobj_core/_CLASS_STATIC.lsl"
-#include "xobj_core/classes/st SoundspaceAux.lsl"
-#include "xobj_core/classes/st Interact.lsl"
-#include "xobj_core/classes/st Soundspace.lsl"
+#include "xobj_core/classes/jas SoundspaceAux.lsl"
+#include "xobj_core/classes/jas Interact.lsl"
+#include "xobj_core/classes/jas Soundspace.lsl"
 
 
 integer BFL;

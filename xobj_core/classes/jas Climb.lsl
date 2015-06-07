@@ -16,8 +16,8 @@
 #define ClimbMethod$start 1		// [(key)ladder, (rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (arr)nodes, (float)climbspeed]
 
 
-#define Climb$start(ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed) runMethod((string)LINK_ROOT, "st Climb", ClimbMethod$start, ([ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed]), TNN)
-//#define Climb$start(data) runMethod((string)LINK_ROOT, "st Climb", ClimbMethod$start, data, TNN)
+#define Climb$start(ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed) runMethod((string)LINK_ROOT, "jas Climb", ClimbMethod$start, ([ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed]), TNN)
+//#define Climb$start(data) runMethod((string)LINK_ROOT, "jas Climb", ClimbMethod$start, data, TNN)
 
 #define ClimbEvt$start 1		// (key)ladder
 #define ClimbEvt$end 2			// (key)ladder

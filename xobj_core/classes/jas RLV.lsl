@@ -9,7 +9,7 @@
 	
 	Install the support cube
 	1. Create a new box, it can be any size but I recommend a default 0.5x0.5x0.5 cube.
-	2. Create a script in it, name the script "st Supportcube"
+	2. Create a script in it, name the script "jas Supportcube"
 	3. #include "xobj_core/classes/st Supportcube.lsl"
 	4. #define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
 	5. Include your project _core.lsl file
@@ -19,7 +19,7 @@
 	It's important that they are added in that order, #define LISTEN_OVERRIDE will NOT work if it gets added AFTER _core.lsl
 	
 	Install st RLV
-	1. Create a new script in your HUD (root prim recommended) and named it "st RLV"
+	1. Create a new script in your HUD (root prim recommended) and named it "jas RLV"
 	2. Include your _core.lsl file
 	3. #include "xobj_core/classes/packages/st RLV.lsl"
 	4. Optionally you can change some config settings, do that above the includes.
@@ -149,21 +149,21 @@
 
 
 // Shortcuts
-#define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$setFolder, [folder], TNN)
-#define RLV$setSubFolder(folder) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$setSubFolder, [folder], TNN)
-#define RLV$cubeTask(tasks) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$cubeTask, tasks, TNN)
-#define RLV$keepAttached(item) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$keepAttached, [item], TNN)
-#define RLV$remAttached(item) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$remAttached, [item], TNN)
-#define RLV$sprintFadeModifier(multiplier) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sprintFadeModifier, [multiplier], TNN)
-#define RLV$sprintRegenModifier(multiplier) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sprintRegenModifier, [multiplier], TNN)
-#define RLV$sitOn(uuid, prevent_unsit) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
-#define RLV$unsit(override) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$unsit, [override], TNN)
-#define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$windlightPreset, [preset], TNN)
-#define RLV$resetWindlight() runMethod((string)LINK_ROOT, "st RLV", RLVMethod$resetWindlight, [], TNN)
+#define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFolder, [folder], TNN)
+#define RLV$setSubFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setSubFolder, [folder], TNN)
+#define RLV$cubeTask(tasks) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$cubeTask, tasks, TNN)
+#define RLV$keepAttached(item) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$keepAttached, [item], TNN)
+#define RLV$remAttached(item) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$remAttached, [item], TNN)
+#define RLV$sprintFadeModifier(multiplier) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sprintFadeModifier, [multiplier], TNN)
+#define RLV$sprintRegenModifier(multiplier) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sprintRegenModifier, [multiplier], TNN)
+#define RLV$sitOn(uuid, prevent_unsit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
+#define RLV$unsit(override) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$unsit, [override], TNN)
+#define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset], TNN)
+#define RLV$resetWindlight() runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$resetWindlight, [], TNN)
 
-#define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$limitCamDist, [limit], TNN)
-#define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventTP, [prevent], TNN)
-#define RLV$preventFly(prevent) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$preventFly, [prevent], TNN)
-#define RLV$addSprint(perc) runMethod((string)LINK_ROOT, "st RLV", RLVMethod$addSprint, [perc], TNN)
+#define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
+#define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventTP, [prevent], TNN)
+#define RLV$preventFly(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventFly, [prevent], TNN)
+#define RLV$addSprint(perc) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$addSprint, [perc], TNN)
 
 

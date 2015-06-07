@@ -6,7 +6,7 @@
 	- st PrimswimAux
 
 	You will also need 2 animations, swim and swim_idle
-	1. Create a new script, name it "st Primswim"
+	1. Create a new script, name it "jas Primswim"
 	2. Include your _core.lsl file
 	3. Define any config options you want
 	4. Create a function integer checkForceStop(){return FALSE;}
@@ -16,7 +16,7 @@
 	
 	
 	How to install st PrimswimAux:
-	1. Create a new script, name it "st PrimswimAux"
+	1. Create a new script, name it "jas PrimswimAux"
 	2. Include your _core.lsl file
 	3. #include "xobj_core/classes/packages/st PrimswimAux.lsl"
 	4. Compile.
@@ -111,7 +111,7 @@
 #endif
 
 
-#define Primswim$airpockets(airpockets) runMethod((string)LINK_ROOT, "st Primswim", PrimswimMethod$airpockets, airpockets, TNN)
+#define Primswim$airpockets(airpockets) runMethod((string)LINK_ROOT, "jas Primswim", PrimswimMethod$airpockets, airpockets, TNN)
 
 // events raised
 #define PrimswimEvt$onWaterEnter 1

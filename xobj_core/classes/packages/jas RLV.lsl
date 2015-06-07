@@ -1,10 +1,10 @@
 #ifndef USE_SHARED
 #define USE_SHARED [cls$name]
 #endif
-#include "xobj_core/classes/st Supportcube.lsl"
-#include "xobj_core/classes/st Remoteloader.lsl"
-#include "xobj_core/classes/st Attached.lsl"
-#include "xobj_core/classes/st RLV.lsl"
+#include "xobj_core/classes/jas Supportcube.lsl"
+#include "xobj_core/classes/jas Remoteloader.lsl"
+#include "xobj_core/classes/jas Attached.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
 
 #define outputSprint() llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot])
 
@@ -27,7 +27,7 @@ float sprintRegenModifier = 1;
 
 
 // Include the general class functionality - Make a full include to grab any private stuff
-#include "xobj_core/classes/st RLV.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
 
 
 
@@ -177,9 +177,11 @@ timerEvent(string id, string data){
 #endif
 	if(id == TIMER_INIT_DLY){
         llOwnerSay("@"+RLVcfg$initDly);
-        if(llGetOwner() == "a13c0286-419f-4699-9e14-703432507160"){
-            llOwnerSay("@clear");
+        /*
+		if(llGetOwner() == "a13c0286-419f-4699-9e14-703432507160"){
+            //llOwnerSay("@clear");
         }
+		*/
     }
 } 
 

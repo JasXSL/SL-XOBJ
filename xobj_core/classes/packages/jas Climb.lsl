@@ -5,10 +5,10 @@
 #define USE_EVENTS
 #endif
 #include "xobj_core/_CLASS_STATIC.lsl"
-#include "xobj_core/classes/st Supportcube.lsl"
-#include "xobj_core/classes/st RLV.lsl"
-#include "xobj_core/classes/st AnimHandler.lsl"
-#include "xobj_core/classes/st Climb.lsl"
+#include "xobj_core/classes/jas Supportcube.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
+#include "xobj_core/classes/jas AnimHandler.lsl"
+#include "xobj_core/classes/jas Climb.lsl"
 
 
 init(){
@@ -52,7 +52,7 @@ setCubePos(vector pos){
     if(CUBE == "" || llKey2Name(CUBE) == ""){
         CUBE = db2$get("st RLV", [RLVShared$supportcube]);
     }
-    //rot*ladder_root_rot
+    //rot*ladder_root_rot'
     llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]));
 }
 

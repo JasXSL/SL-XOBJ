@@ -1,5 +1,5 @@
 #include "xobj_core/_CLASS_STATIC.lsl"
-#include "xobj_core/classes/st SoundspaceAux.lsl"
+#include "xobj_core/classes/jas SoundspaceAux.lsl"
 
 float vol_max = 1;
 float vol;

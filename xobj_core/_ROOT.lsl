@@ -11,6 +11,7 @@
 #include "xobj_core/libraries/partiCat.lsl"
 #include "xobj_core/_CLASS_STATIC.lsl"
 
+
 /*
 	Header vars that you can use in each script:
 	#define SCRIPT_IS_ROOT <- Always define this on top of #ROOT
@@ -47,6 +48,8 @@
 #define debug(text) _dbg(text, DEBUG_USER)
 #endif
 
+
+
 // These constants should be overwritten and defined in your _core.lsl file for each project
 #ifndef PC_SALT
 	// Define and set to any integer in your _core.lsl file, it will offset your playerchan. It's not recommended to use the same number for multiple projects.
@@ -58,9 +61,7 @@
 #endif
 
 // This generates a channel for each agent's scripts
-integer playerChan(key id){
-    return -llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT);
-}
+#define playerChan(id) -llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT)
 
 #ifndef OVERRIDE_TOKEN
 // This generates a salted hash for your project. Feel free replace the content of this function with an algorithm of your own.
@@ -94,32 +95,33 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 // Standard methods
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers.
-#define stdMethod$insert -1		// callback = (int)success
-#define stdMethod$remove -2		// callback = (int)amount_of_objects_removed
 #define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root. Note that this is only sent when db2 return "0" for asynchronous
-//#define stdMethod$interact -3	// [st Interact] - To sent an interact call to a prim (Removed, replaced with events)
+
 
 // General methods.
 // Putting CALLBACK_NONE in the callback field will prevent callbacks from being sent when raising a method
-#define CALLBACK_NONE JSON_NULL
+#define CALLBACK_NONE ""
 // Synonym
 #define NORET CALLBACK_NONE
 // TARG_NULL is just two empty strings
-#define TARG_NULL "", ""
+#define TARG_NULL 
 // Use this if you are making a call to a module that's not a package module, does not need to send a callback, and does not need to be called by name
-#define TNN "", "", CALLBACK_NONE, ""
+#define TNN ""
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
 // If you a script to listen to override, you have to define that BEFORE you include root
 // Ex:
 /*
 	
-	#include "xobj_core/classes/st Supportcube.lsl"
+	#include "xobj_core/classes/jxSupportcube.lsl"
 	#define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
 	#include "toonie_rezzed/_core.lsl"
-	#include "xobj_core/classes/packages/st Supportcube.lsl"
+	#include "xobj_core/classes/packages/jxSupportcube.lsl"
 
 */ 
+
+
+
 initiateListen(){
 	debugUncommon("Listening on "+(string)playerChan(llGetOwner()));
 	llListen(playerChan(llGetOwner()), "", "", "") ;
@@ -132,52 +134,41 @@ initiateListen(){
 }
 
 // Disregard these, they're just preprocessor shortcuts
-#define stdObjCom(methodType, uuidOrLink, customTarg, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), customTarg+getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
-#define stdOmniCom(methodType, customTarg, className, data) llRegionSay(playerChan(llGetOwner()), customTarg+getToken(llGetKey(), llGetOwner(), "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
+#define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
+#define stdOmniCom(methodType, className, data) llRegionSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "");
 #define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender);
-#define sendCallback(sender, senderScript, method, search, in, cbdata, cb) list CB_OP = [method, search, in, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, "*", senderScript, CB_OP);}
+#define sendCallback(sender, senderScript, method, cbdata, cb) list CB_OP = [method, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, senderScript, CB_OP);}
+//#define sendCallback(sender, senderScript, method, cbdata, cb) llOwnerSay("Deleteme");
 
-#define fwdMethod(link, className, method, data, sender) fwdIntCom(RUN_METHOD, link, className, [method, "", "", mkarr(data), llGetScriptName()], sender)
+#define fwdMethod(link, className, method, data, sender) fwdIntCom(RUN_METHOD, link, className, [method, mkarr(data), llGetScriptName()], sender)
+
 
 // This is the standard way to run a method on a module. See the readme files on how to use it properly.
-runMethod(string uuidOrLink, string className, integer method, list data, string findObj, string in, string callback, string customTarg){
-	list op = [method, findObj, in, llList2Json(JSON_ARRAY, data), llGetScriptName()];
-	if(callback != JSON_NULL)op+=[callback];
-	string pre = customTarg;
-	if(pre == "")pre = "*";
-	if((key)uuidOrLink){stdObjCom(RUN_METHOD, uuidOrLink, pre, className, op);}
+runMethod(string uuidOrLink, string className, integer method, list data, string callback){
+	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
+	if(callback)op+=[callback];
+	if((key)uuidOrLink){stdObjCom(RUN_METHOD, uuidOrLink, className, op);}
 	else{ stdIntCom(RUN_METHOD, uuidOrLink, className, op);}
 }
 
 // Tries to run a method on all viable scripts in the region
 runOmniMethod(string className, integer method, list data, string findObj, string in, string callback, string customTarg){
 	string pre = customTarg;
-	if(pre == "")pre = "*";
-	list op = [method, findObj, in, llList2Json(JSON_ARRAY, data), llGetScriptName()];
-	if(callback != JSON_NULL)op+=[callback];
-	stdOmniCom(RUN_METHOD, pre, className, op);
+	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
+	if(callback)op+=[callback];
+	stdOmniCom(RUN_METHOD, className, op);
 }
 
 // Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little
-runLimitMethod(string className, integer method, list data, string findObj, string in, string callback, string customTarg, float range){
+runLimitMethod(string className, integer method, list data, string callback, float range){
 	string pre = customTarg;
-	if(pre == "")pre = "*";
-	list op = [method, findObj, in, llList2Json(JSON_ARRAY, data), llGetScriptName()];
-	if(callback != JSON_NULL)op+=[callback];
-	if(range>96)stdOmniCom(RUN_METHOD, pre, className, op);
-	else if(range>20)llShout(playerChan(llGetOwner()), pre+getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else if(range>10)llSay(playerChan(llGetOwner()), pre+getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else llSay(playerChan(llGetOwner()), pre+getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-}
-
-// Shortcut function to insert an object into a package module
-insert(integer link, string className, list data, string callback){
-	runMethod((string)link, className, stdMethod$insert, data, TARG_NULL, callback, "");
-}
-// Shortcut function to remove an object from a package module
-remove(integer link, string className, string search, string in, string callback){
-	runMethod((string)link, className, search, in, callback, "");
+	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
+	if(callback)op+=[callback];
+	if(range>96)stdOmniCom(RUN_METHOD, className, op);
+	else if(range>20)llShout(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else if(range>10)llSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else llSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
 }
 
 // Placeholder function for events. Copy paste this and fill it with code in each module that needs to listen to events.
@@ -186,9 +177,7 @@ onEvt(string script, integer evt, string data){
 }
 
 // Standard function to raise an event.
-raiseEvent(integer evt, string data){
-	llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, [llGetScriptName(), data]), (string)evt);
-}
+#define raiseEvent(evt, data) llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, ([llGetScriptName(), data])), (string)evt)
 
 // Code used to reset the linkset's scripts
 #define resetAllOthers() llMessageLinked(LINK_SET, RESET_ALL, llGetScriptName(), "")

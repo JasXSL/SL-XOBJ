@@ -1,11 +1,11 @@
 
 #include "xobj_core/_CLASS_STATIC.lsl"
-#include "xobj_core/classes/st Supportcube.lsl"
-#include "xobj_core/classes/st RLV.lsl"
-#include "xobj_core/classes/st AnimHandler.lsl"
-#include "xobj_core/classes/st Climb.lsl"
-#include "xobj_core/classes/st Primswim.lsl"
-#include "xobj_core/classes/st PrimswimAux.lsl"
+#include "xobj_core/classes/jas Supportcube.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
+#include "xobj_core/classes/jas AnimHandler.lsl"
+#include "xobj_core/classes/jas Climb.lsl"
+#include "xobj_core/classes/jas Primswim.lsl"
+#include "xobj_core/classes/jas PrimswimAux.lsl"
 
 
 list airpockets; 

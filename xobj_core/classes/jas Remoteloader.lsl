@@ -48,14 +48,14 @@ default
 #endif
 
 // Preprocessor shortcuts
-#define Remoteloader$attach(asset) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
-#define Remoteloader$attachTo(target, asset) runMethod((string)target, "st Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
-#define Remoteloader$detachFrom(target, asset) runMethod((string)target, "st Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
+#define Remoteloader$attach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+#define Remoteloader$attachTo(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+#define Remoteloader$detachFrom(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
 
 
-#define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "st Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
-#define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
-#define Remoteloader$loadInt(script, pin, startparam, sender) runMethod((string)LINK_ALL_OTHERS, "st Remoteloader", RemoteloaderMethod$load, [script, pin, startparam, sender], TNN)
+#define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
+#define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
+#define Remoteloader$loadInt(script, pin, startparam, sender) runMethod((string)LINK_ALL_OTHERS, "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam, sender], TNN)
 
 
 

@@ -11,10 +11,10 @@
 #define FXEvt$effectStacksChanged 4		// [(key)caster, (int)stacks, (arr)package]
 
 
-#define FX$send(target, sender, wrapper) runMethod(target, "st FX", FXMethod$run, ([sender, wrapper]), TNN)
-#define FX$run(sender, wrapper) runMethod((string)LINK_SET, "st FX", FXMethod$run, ([sender, wrapper]), TNN)
-#define FX$refresh() runMethod((string)LINK_SET, "st FX", FXMethod$refresh, [], TNN)
-#define FX$rem(raiseEvt, name, tag, sender, pid) runMethod((string)LINK_SET, "st FX", FXMethod$rem, ([raiseEvt, name, tag, sender, pid]), TNN)
+#define FX$send(target, sender, wrapper) runMethod(target, "jas FX", FXMethod$run, ([sender, wrapper]), TNN)
+#define FX$run(sender, wrapper) runMethod((string)LINK_SET, "jas FX", FXMethod$run, ([sender, wrapper]), TNN)
+#define FX$refresh() runMethod((string)LINK_SET, "jas FX", FXMethod$refresh, [], TNN)
+#define FX$rem(raiseEvt, name, tag, sender, pid) runMethod((string)LINK_SET, "jas FX", FXMethod$rem, ([raiseEvt, name, tag, sender, pid]), TNN)
 
 
 #ifndef fx$COND_HAS_PACKAGE_NAME
@@ -94,6 +94,8 @@ string FX_buildCondition(integer cond, list vars){
 #define FX_EVTS 9
 #define FX_TAGS 10
 #define FX_MIN_CONDITIONS 11	// 0 = ALL
+
+
 string FX_buildPackage(float dur, float tick, integer flags, integer maxstacks, string name, string desc, key texture, list fxobjs, list conditions, list evts, list tags, integer fxMinConditions){
     return llList2Json(JSON_ARRAY, FX_fround(dur)+FX_fround(tick)+[flags, maxstacks, name, desc, texture, llList2Json(JSON_ARRAY, fxobjs),llList2Json(JSON_ARRAY, conditions),llList2Json(JSON_ARRAY, evts), llList2Json(JSON_ARRAY, tags), fxMinConditions]);
 }

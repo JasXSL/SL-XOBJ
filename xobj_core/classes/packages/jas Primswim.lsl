@@ -7,14 +7,14 @@
 	#endif
 #endif
 
-#include "xobj_core/classes/st Supportcube.lsl"
-#include "xobj_core/classes/st RLV.lsl"
-#include "xobj_core/classes/st AnimHandler.lsl"
-#include "xobj_core/classes/st Climb.lsl"
-#include "xobj_core/classes/st Primswim.lsl"
-#include "xobj_core/classes/st PrimswimAux.lsl"
-#include "xobj_core/classes/st Interact.lsl"
-#include "xobj_core/classes/st Soundspace.lsl"
+#include "xobj_core/classes/jas Supportcube.lsl"
+#include "xobj_core/classes/jas RLV.lsl"
+#include "xobj_core/classes/jas AnimHandler.lsl"
+#include "xobj_core/classes/jas Climb.lsl"
+#include "xobj_core/classes/jas Primswim.lsl"
+#include "xobj_core/classes/jas PrimswimAux.lsl"
+#include "xobj_core/classes/jas Interact.lsl"
+#include "xobj_core/classes/jas Soundspace.lsl"
 
 
 string wl_preset;

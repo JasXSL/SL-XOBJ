@@ -33,7 +33,7 @@ You can use LM_PRE to inject code at the top of link_message
 #ifndef LM_BOTTOM
 // Top goes here
 link_message(integer link, integer nr, string str, key id){
-	//if(llGetScriptName() == "st Status")
+	//if(llGetScriptName() == "dnp Status")
 	//qd("("+llGetScriptName()+") "+(string)nr+" :: "+str+" :: "+(string)id);
 	
 	#ifdef LM_PRE
@@ -80,7 +80,7 @@ link_message(integer link, integer nr, string str, key id){
 							debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
 							db2$rootSend();
 							db2(DB2$SET, script, l, jVal(str, [3]));
-							sendCallback(id, sender, stdMethod$setShared, "", "", llList2Json(JSON_ARRAY, ([script, jVal(str,[2])])), jVal(str, [4]));
+							sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
 						}
 						return;
 					}
@@ -91,7 +91,7 @@ link_message(integer link, integer nr, string str, key id){
 		}else{
 			db2$rootSend();
 			db2(DB2$SET, script, llJson2List(jVal(str, [2])), jVal(str, [3]));
-			sendCallback(id, sender, stdMethod$setShared, "", "", llList2Json(JSON_ARRAY, ([script, jVal(str,[2])])), jVal(str, [4]));
+			sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
 		}
 		
 	}else if(nr == DB2_DELETE){
@@ -124,7 +124,6 @@ link_message(integer link, integer nr, string str, key id){
 	#endif
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
-		
 		string CB = JSON_NULL;
 		integer s_LEN = llStringLength(llGetScriptName());
 		// Make sure this script is the receiver
@@ -134,50 +133,18 @@ link_message(integer link, integer nr, string str, key id){
 		list s_DATA = llJson2List(llGetSubString(str, s_LEN, -1));
 		integer METHOD = llList2Integer(s_DATA, 0);
 		
-		string SEARCH = llList2String(s_DATA, 1); 	// Searchstring
-		string IN = llList2String(s_DATA, 2);	// Property
-		
-		#ifdef SCRIPT_IS_PACKAGE
-		list WORK_OBJS = __search(SEARCH, IN);
-		if(nr == METHOD_CALLBACK)WORK_OBJS = [];
-		#endif
-		string PARAMS = llList2String(s_DATA, 3);
-		string SENDER_SCRIPT = llList2String(s_DATA, 4);
-		if(llGetListLength(s_DATA)>4){
-			CB = llList2String(s_DATA, 5);
-		}
+		string PARAMS = llList2String(s_DATA, 1);
+		string SENDER_SCRIPT = llList2String(s_DATA, 2);
+		CB = llList2String(s_DATA, 3);
 		s_DATA = [];
-	#ifdef SCRIPT_IS_PACKAGE
-		while(llGetListLength(WORK_OBJS)){
-			cls$setIndex(llList2Integer(WORK_OBJS, 0));
-			WORK_OBJS = llDeleteSubList(WORK_OBJS, 0, 0);
-			
-			// StdMethods
-			if(METHOD == stdMethod$remove){
-				if(!UNINITIALIZED){ 
-					this$remove();
-					CB_DATA= llListReplaceList(CB_DATA, [llList2Integer(CB_DATA,0)+1], 0, 0);
-					#ifdef DEBUG
-					llOwnerSay("Removed an object, remaining: "+llDumpList2String(_OBJECTS, "\n"));
-					#endif
-				}
-			}else{
-
-	#endif
-
-#else
-			// Bottom goes here
-	#ifdef SCRIPT_IS_PACKAGE
-			}
-		}
-		if(METHOD == stdMethod$insert){
-			CB_DATA = [__add(llJson2List(PARAMS))];
-		}
-	#endif
 		
-		if(CB != JSON_NULL && CB != "" && !(method$isCallback)){
+		
+#else
+		// Bottom goes here
+		
+		if(CB != "" && !(method$isCallback)){
 			debugCommon("Sending callback. CB is: "+CB+" DATA: "+llList2Json(JSON_ARRAY, CB_DATA)+" and targ is: "+(string)llKey2Name(id));
-			sendCallback(id, SENDER_SCRIPT, METHOD, SEARCH, IN, llList2Json(JSON_ARRAY, CB_DATA), CB);
+			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB);
 		}
 		
 	}else if(nr == RESET_ALL && str != llGetScriptName()){

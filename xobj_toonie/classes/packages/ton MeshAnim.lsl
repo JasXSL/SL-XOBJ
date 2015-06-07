@@ -1,6 +1,6 @@
 #define USE_EVENTS
-#include "xobj_core/classes/st Remoteloader.lsl"
-#include "xobj_toonie/classes/cl MeshAnim.lsl"
+#include "xobj_core/classes/jas Remoteloader.lsl"
+#include "xobj_toonie/classes/toMeshAnim.lsl"
 
 
 
