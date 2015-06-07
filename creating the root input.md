@@ -1,6 +1,8 @@
 The root input file (usually just named #ROOT, but you can name it whatever) is used to accept inputs and forward them to the right scripts.
 You can create it any way you want, but here's my recommended one:
 
+```
+#define SCRIPT_IS_ROOT
 #include "myFirstProject/_core.lsl"
 
 default 
@@ -12,16 +14,14 @@ default
     state_entry()
     {
         resetAllOthers();
-        llListen(playerChan(llGetOwner()), "", "", "");
-        if(llGetAttached()){
+        initiateListen();
+        if(llGetAttached())
             llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS);
-        }
     }
 
     
     touch_start(integer total){
         if(llDetectedKey(0) != llGetOwner())return;
-        string ln = llGetLinkName(llDetectedLinkNumber(0));
         raiseEvent(evt$TOUCH_START, llList2Json(JSON_ARRAY, [llDetectedLinkNumber(0), llDetectedKey(0)]));
     }
     touch_end(integer total){ 
@@ -48,7 +48,7 @@ default
 
     #include "xobj_core/_LISTEN.lsl"
 }
-
+```
 
 
 
