@@ -107,6 +107,7 @@ Let's create an in-world box to run your method.
 5. Add to the top of the script: #include "myFirstProject/classes/mfp Main.lsl"
 6. Add the following code into the new #ROOT script's default{}
 
+```
 	#include "xobj_core/_LM.lsl" 
 	/* 
 	    Included in all these calls:
@@ -128,6 +129,7 @@ Let's create an in-world box to run your method.
 	   
 	#define LM_BOTTOM  
 	#include "xobj_core/_LM.lsl"
+```
 
 This receives a callback from st Main and outputs that it was a success.
 
