@@ -21,7 +21,7 @@ onEvt(string script, integer evt, string data){
 	#ifdef USE_EVENT_OVERRIDE
 	evt(script, evt, data);
 	#endif
-    if(script == "st RLV" && evt == evt$SCRIPT_INIT){
+    if(script == "jas RLV" && evt == evt$SCRIPT_INIT){
         init();
     }
     else if(script == "#ROOT"){

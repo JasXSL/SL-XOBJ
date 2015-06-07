@@ -51,7 +51,7 @@ cubeTask(list tasks){
         
         if(llKey2Name(supportcube) != ""){
 			debugUncommon("Running cube tasks on "+(string)playerChan(llGetOwner()));
-            runMethod((string)supportcube, "st Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
+            runMethod((string)supportcube, "jas Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
             cubetasks = [];
         }else{
 			debugUncommon("Spawning cube");
@@ -75,7 +75,7 @@ public_addAttached(string item){
         KEEP_ATTACHED += [item, ""];
     }else if(llKey2Name(llList2Key(KEEP_ATTACHED, idx+1)) != "")return;
     // Attach
-    runMethod((string)LINK_ALL_OTHERS, "st Remoteloader", RemoteloaderMethod$attach, [item], TARG_NULL, item, "");
+    runMethod((string)LINK_ALL_OTHERS, "jas Remoteloader", RemoteloaderMethod$attach, [item], item);
     if(KEEP_ATTACHED)multiTimer([TIMER_ATTACHED_CHECK, "", 10, TRUE]);
 }
 public_remAttached(string item){
@@ -84,7 +84,7 @@ public_remAttached(string item){
         key targ = llList2Key(KEEP_ATTACHED, idx+1);
         KEEP_ATTACHED = llDeleteSubList(KEEP_ATTACHED, idx, idx+1);
     }
-    runOmniMethod("st Attached", AttachedMethod$remove, [], TARG_NULL, NORET, item);
+    runOmniMethod("jas Attached", AttachedMethod$remove, [item], "");
     if(KEEP_ATTACHED == [])multiTimer([TIMER_ATTACHED_CHECK]);
 }
 #endif

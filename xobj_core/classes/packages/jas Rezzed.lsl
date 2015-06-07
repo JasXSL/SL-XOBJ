@@ -12,7 +12,7 @@ default
 			llSleep(.25);
             integer pin = llFloor(llFrand(0xFFFFFFF));
 			llSetRemoteScriptAccessPin(pin);
-            runMethod(llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+            runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
         } 
     }
     

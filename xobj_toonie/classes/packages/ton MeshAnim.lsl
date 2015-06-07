@@ -1,6 +1,6 @@
 #define USE_EVENTS
 #include "xobj_core/classes/jas Remoteloader.lsl"
-#include "xobj_toonie/classes/toMeshAnim.lsl"
+#include "xobj_toonie/classes/ton MeshAnim.lsl"
 
 
 
@@ -165,10 +165,10 @@ refreshAnims(){
 
 #ifdef MeshAnimConf$remoteloadOnAttachedIni
 onEvt(string script, integer evt, string data){
-	if(script == "st Attached" && evt == evt$SCRIPT_INIT){
+	if(script == "jas Attached" && evt == evt$SCRIPT_INIT){
 		integer pin = llFloor(llFrand(0xFFFFFF));
 		llSetRemoteScriptAccessPin(pin);
-		runMethod(llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+		runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
 	}
 }
 #endif

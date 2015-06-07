@@ -132,17 +132,16 @@ link_message(integer link, integer nr, string str, key id){
 		
 		list s_DATA = llJson2List(llGetSubString(str, s_LEN, -1));
 		integer METHOD = llList2Integer(s_DATA, 0);
-		
 		string PARAMS = llList2String(s_DATA, 1);
 		string SENDER_SCRIPT = llList2String(s_DATA, 2);
 		CB = llList2String(s_DATA, 3);
+				
 		s_DATA = [];
 		
 		
 #else
 		// Bottom goes here
-		
-		if(CB != "" && !(method$isCallback)){
+		if(CB != JSON_INVALID && (CB != "" || CB_DATA != []) && !(method$isCallback)){
 			debugCommon("Sending callback. CB is: "+CB+" DATA: "+llList2Json(JSON_ARRAY, CB_DATA)+" and targ is: "+(string)llKey2Name(id));
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB);
 		}

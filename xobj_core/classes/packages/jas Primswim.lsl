@@ -3,7 +3,7 @@
 #endif
 #if PrimswimCfg$USE_WINDLIGHT==1
 	#ifndef USE_SHARED
-		#define USE_SHARED ["st RLV"]
+		#define USE_SHARED ["jas RLV"]
 	#endif
 #endif
 
@@ -168,7 +168,7 @@ enterWater(){
 	debug("Entered water");
 	
 	#if PrimswimCfg$USE_WINDLIGHT==1
-    wl_preset = db2$get("st RLV", [RLVShared$windlight]);
+    wl_preset = db2$get("jas RLV", [RLVShared$windlight]);
     #endif
 
     //dif=llGetVel()*.25;
@@ -559,7 +559,7 @@ integer checkClimbout(){
                     SupportcubeBuildTask(Supportcube$tSetPos, [pos]),
                     SupportcubeBuildTask(Supportcube$tSetRot, ([llRotBetween(<-1,0,0>, n)])),
                     SupportcubeBuildTask(Supportcube$tForceSit, [FALSE, TRUE]),
-                    SupportcubeBuildTask(Supportcube$tRunMethod, [llGetKey(), "st AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])]),
+                    SupportcubeBuildTask(Supportcube$tRunMethod, [llGetKey(), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])]),
                     
                     SupportcubeBuildTask(Supportcube$tDelay, [1.5]),
                     SupportcubeBuildTask(Supportcube$tForceUnsit, [])
@@ -605,7 +605,7 @@ default
         llSensor(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI);
         llSleep(1);
         multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
-        if(llGetInventoryType("st PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("st PrimswimAux");
+        if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
         debug((string)PrimswimCfg$USE_WINDLIGHT);
 		memLim(1.5);

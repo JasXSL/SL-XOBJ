@@ -78,8 +78,8 @@ default
 		debugCommon("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);
         if((float)llGetObjectDesc()){
-			debug("Setting death timer");
-            runMethod(llGetOwner(), "st RLV", RLVMethod$cubeFlush, [], TNN);
+			debugUncommon("Setting death timer");
+            runMethod(llGetOwner(), "jas RLV", RLVMethod$cubeFlush, [], TNN);
             multiTimer([TIMER_DIE, "", (float)llGetObjectDesc(), TRUE]);
         }
 		multiTimer([TIMER_CHECK, "", 10, TRUE]);

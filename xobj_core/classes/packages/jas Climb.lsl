@@ -1,5 +1,5 @@
 #ifndef USE_SHARED
-#define USE_SHARED ["st RLV"]
+#define USE_SHARED ["jas RLV"]
 #endif 
 #ifndef USE_EVENTS
 #define USE_EVENTS
@@ -50,7 +50,7 @@ float perc;
 
 setCubePos(vector pos){
     if(CUBE == "" || llKey2Name(CUBE) == ""){
-        CUBE = db2$get("st RLV", [RLVShared$supportcube]);
+        CUBE = db2$get("jas RLV", [RLVShared$supportcube]);
     }
     //rot*ladder_root_rot'
     llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]));
@@ -212,7 +212,7 @@ findNearestNode(){
 }
 
 onEvt(string script, integer evt, string data){
-    if(script == "st RLV" && evt == RLVevt$supportcubeSpawn){
+    if(script == "jas RLV" && evt == RLVevt$supportcubeSpawn){
         CUBE = data;
     }
     else if(script == "#ROOT" && BFL&BFL_CLIMBING){

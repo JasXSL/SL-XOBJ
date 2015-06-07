@@ -78,7 +78,7 @@
                     preanim = anim;
                 }
                 integer start = !llList2Integer(split,2);
-                runMethod(llGetOwner(), "st AnimHandler", AnimHandlerMethod$anim, [anim, start], TNN);
+                runMethod(llGetOwner(), "jas AnimHandler", AnimHandlerMethod$anim, [anim, start], TNN);
             }else if(task == FRAME_PARTICLES){
                 if(llList2Integer(split,1) == 0){
                     lnParts("SPLAT", [  

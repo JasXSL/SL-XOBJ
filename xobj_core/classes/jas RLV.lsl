@@ -121,7 +121,7 @@
 
 
 
-#include "xobj_core/classes/st Supportcube.lsl" // Required
+#include "xobj_core/classes/jas Supportcube.lsl" // Required
 
 // Methods //
 #define RLVMethod$setFolder 0			// str folder		Current top level folder ex #RLV/BARE/Lynx/<folder>

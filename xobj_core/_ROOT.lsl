@@ -61,7 +61,7 @@
 #endif
 
 // This generates a channel for each agent's scripts
-#define playerChan(id) -llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT)
+#define playerChan(id) (-llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT))
 
 #ifndef OVERRIDE_TOKEN
 // This generates a salted hash for your project. Feel free replace the content of this function with an algorithm of your own.
@@ -100,13 +100,11 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 // General methods.
 // Putting CALLBACK_NONE in the callback field will prevent callbacks from being sent when raising a method
-#define CALLBACK_NONE ""
+#define CALLBACK_NONE JSON_INVALID
 // Synonym
 #define NORET CALLBACK_NONE
-// TARG_NULL is just two empty strings
-#define TARG_NULL 
 // Use this if you are making a call to a module that's not a package module, does not need to send a callback, and does not need to be called by name
-#define TNN ""
+#define TNN CALLBACK_NONE
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
 // If you a script to listen to override, you have to define that BEFORE you include root
@@ -153,8 +151,7 @@ runMethod(string uuidOrLink, string className, integer method, list data, string
 }
 
 // Tries to run a method on all viable scripts in the region
-runOmniMethod(string className, integer method, list data, string findObj, string in, string callback, string customTarg){
-	string pre = customTarg;
+runOmniMethod(string className, integer method, list data, string callback){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
 	stdOmniCom(RUN_METHOD, className, op);
@@ -162,7 +159,6 @@ runOmniMethod(string className, integer method, list data, string findObj, strin
 
 // Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little
 runLimitMethod(string className, integer method, list data, string callback, float range){
-	string pre = customTarg;
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
 	if(range>96)stdOmniCom(RUN_METHOD, className, op);

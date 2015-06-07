@@ -59,10 +59,10 @@ setSoundspace(){
     integer i;
     for(i=0; i<llGetListLength(soundspaces); i+=2){
         if(llList2String(soundspaces,i) == cs){
-            runMethod((string)LINK_SET, "st SoundspaceAux", SoundspaceAuxMethod$stop, [recent], TNN);
+            runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$stop, [recent], TNN);
             recent++;
             if(recent>2)recent = 1;
-            runMethod((string)LINK_SET, "st SoundspaceAux", SoundspaceAuxMethod$start, [recent, llList2String(soundspaces,i+1), csv], TNN);
+            runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$start, [recent, llList2String(soundspaces,i+1), csv], TNN);
             return;
         }
     }
@@ -70,7 +70,7 @@ setSoundspace(){
 clearSoundspace(){
     currentsound = "";
     groundsound = "";
-    runMethod((string)LINK_SET, "st SoundspaceAux", SoundspaceAuxMethod$stop, [-1], TNN);
+    runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$stop, [-1], TNN);
  
 }
 

@@ -42,7 +42,7 @@ default
             llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEMP_ON_REZ, TRUE]);
             integer pin = llFloor(llFrand(0xFFFFFFF));
 			llSetRemoteScriptAccessPin(pin);
-            runMethod(llGetOwner(), "st Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+            runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
         } 
     }
     
@@ -58,13 +58,12 @@ default
 		
 		if(llGetStartParameter() == 2){
             llOwnerSay("@acceptpermission=add");
-            runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], TARG_NULL, NORET, llGetObjectName());
+            runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], "");
             raiseEvent(evt$SCRIPT_INIT, "");
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
         }
     }
 
-	#define LISTEN_LIMIT_BY_NAME
 	#define LISTEN_LIMIT_ALLOW_WILDCARD
 	#include "xobj_core/_LISTEN.lsl"
     
@@ -88,7 +87,8 @@ default
         */
 		if(method$byOwner){
 			if(METHOD == AttachedMethod$remove){
-                kill();
+				if(method_arg(0) == llGetObjectName() || id == "")
+					kill();
             }
 		}
         

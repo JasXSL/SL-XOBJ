@@ -25,7 +25,7 @@ default
             string script = llList2String(delayed_callbacks,pos*dcs+1);
             integer method = llList2Integer(delayed_callbacks,pos*dcs+3);
             string callback = llList2String(delayed_callbacks, pos*dcs+2);
-            sendCallback((string)LINK_SET, script, method, "", "", id, callback);
+            sendCallback((string)LINK_SET, script, method, id, callback);
             delayed_callbacks = llDeleteSubList(delayed_callbacks, pos*dcs, pos*dcs+dcs-1);
         }
     } 
@@ -53,7 +53,6 @@ default
 			list dta = llJson2List(PARAMS);
 			if(id == "")id = llList2String(dta, -1);
 			
-            //qd("Slave: "+(string)slave+" script: "+method_arg(0)+" from "+llKey2Name(id));
 			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, llList2String(dta, 0), llList2Integer(dta, 1), llList2Integer(dta, 2)]), "rm_slave");
             if(slave>=RemoteloaderConf$slaves)slave = 0;
         }
@@ -69,7 +68,7 @@ default
 			}
         }
 		else if(METHOD == RemoteloaderMethod$detach){
-			runOmniMethod("st Attached", AttachedMethod$remove, [method_arg(0)], TARG_NULL, NORET, method_arg(0));
+			runOmniMethod("jas Attached", AttachedMethod$remove, [method_arg(0)], TNN);
 		}
         else if(METHOD == RemoteloaderMethod$rez){
 			llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));

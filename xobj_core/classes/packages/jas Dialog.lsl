@@ -16,13 +16,13 @@ integer findByKey(string id){
 
 
 // Methods
-spawn(key senderObj, key id, string message, string buttons, integer menu, string callback, string script){
+spawn(key senderObj, key id, string message, list buttons, integer menu, string callback, string script){
     if(id == "")id = llGetOwner(); 
     // Remove previous
     remove(id);
 	
 	#if DialogConf$ownerOnly == 1
-    if(id != llGetOwner())return FALSE;
+    if(id != llGetOwner())return;
     #endif
 	
 	integer chan = -llCeil(llFrand(0xFFFFFFF));
@@ -32,7 +32,7 @@ spawn(key senderObj, key id, string message, string buttons, integer menu, strin
     multiTimer([id, "", DialogConf$timeout, FALSE]);
     #endif
 	
-    loadPage(0); // loads current page
+    loadPage(id, 0); // loads current page
 }
 
 remove(key id){
@@ -72,7 +72,7 @@ loadPage(key id, integer offset){
 
 // Events 
 timerEvent(string id, string data){
-    private_removeListener(id);
+    remove(id);
 }
 
 default 
@@ -80,8 +80,8 @@ default
     listen(integer chan, string name, key id, string message){
 		integer pos = findByKey(id);
 		if(~pos){
-            if(message == DialogConf$nextButton)loadPage(1);
-            else if(message == DialogConf$prevButton)loadPage(-1);
+            if(message == DialogConf$nextButton)loadPage(id, 1);
+            else if(message == DialogConf$prevButton)loadPage(id, -1);
             else{
                 key senderID = llList2String(objects, pos+9);
                 sendCallback(
@@ -90,7 +90,7 @@ default
                     DialogMethod$spawn, 				// Method
                     llList2Json(JSON_OBJECT, [			// CBData
                         "message", message,  
-                        "menu", this(DialogVar$menu),
+                        "menu", llList2Integer(objects, pos+1),
 						"user", id
                     ]), 
                     llList2String(objects, pos+3)			// Callback
@@ -113,19 +113,17 @@ default
     */
 	if(method$isCallback)return;
     
-    if(nr == RUN_METHOD){
-        if(METHOD == DialogMethod$spawn){
-            spawn(
-                id,
-                (key)method_arg(0),
-                method_arg(1),
-                method_arg(2),
-                (integer)method_arg(3), 
-                CB,
-                SENDER_SCRIPT
-            );
-            return; // Prevent default callback
-        }
+    if(METHOD == DialogMethod$spawn){
+        spawn(
+            id,
+            (key)method_arg(0),
+            method_arg(1),
+            llJson2List(method_arg(2)),
+            (integer)method_arg(3), 
+            CB,
+            SENDER_SCRIPT
+        );
+        return; // Prevent default callback
     }
         
 
