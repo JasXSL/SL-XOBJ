@@ -1,4 +1,4 @@
-The root input file (usually just named #ROOT, but you can name it whatever) is used to accept inputs and forward them to the right scripts.
+The root input file is used to accept inputs and forward them to the right scripts.
 You can create it any way you want, but here's my recommended one:
 
 ```
