@@ -73,7 +73,6 @@ integer preCheck(key sender, string package){
     integer min = (integer)jVal(package, [FX_MIN_CONDITIONS]);
     integer all = llGetListLength(conds);
     if(min == 0)min = all;
-    
     integer successes;
     integer add = TRUE;
     integer parsed;
@@ -81,8 +80,11 @@ integer preCheck(key sender, string package){
     // loop through all conditions
     list_shift_each(conds, cond, {
         list condl = llJson2List(cond);
-        integer c = llList2Integer(condl,0);
+
+		integer c = llList2Integer(condl,0);
         list dta = llDeleteSubList(condl,0,0);
+		
+		
         integer inverse;
         if(c<0)inverse = TRUE;
         c = llAbs(c);
@@ -97,6 +99,7 @@ integer preCheck(key sender, string package){
                     if(~llListFindList(dta, [jVal(pdata, [FX_NAME])]))found = TRUE;
                 }
             }else{
+				
                 list_shift_each(dta, t, {
                     if(~llListFindList(TAG_CACHE, [(integer)t])){
                         found = TRUE;
@@ -105,21 +108,21 @@ integer preCheck(key sender, string package){
                 })
             }
             // Not found and required
-            if(!found){if(!inverse){
-                add = FALSE;
-                debug("Package failed cause required fx name not found.");
-            }}            
-            else if(inverse){// Found and required not to be
-                add = FALSE;
-                debug("Package failed cause required NOT fx name found.");
-            }
+            if(!found){
+				add = FALSE;
+				if(!inverse)debugUncommon("Package failed cause required fx name/tag not found.");
+			}            
+            else if(inverse)// Found and required not to be
+                debugUncommon("Package failed cause required NOT fx name/tag found.");
         }
-        else add = checkCondition(sender, inverse, c, dta);
-        
+        else add = checkCondition(sender, c, dta);
+		
+        if(inverse)add = !add;
+
         successes+=add;
         if(successes>=min)return TRUE;
         parsed++;
-        if(successes+parsed<min)return FALSE;   // No way this can generate enough successes now
+        if(successes+(min-parsed)<min)return FALSE;   // No way this can generate enough successes now
     })
     return successes>=min;
 }
@@ -323,7 +326,6 @@ default
                     if(raiseEvent)onEvt("", INTEVENT_ONREMOVE, (string)i);
                     
                     raiseEvent(FXEvt$effectRemoved, mkarr(([llList2String(PACKAGES, i+1), llList2Integer(PACKAGES, i+3), p])));
-                    
                     // Remove from evt cache
                     list evts = llJson2List(jVal(p, [FX_EVTS]));
                     list_shift_each(evts, val, {

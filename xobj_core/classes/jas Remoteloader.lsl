@@ -49,6 +49,7 @@ default
 
 // Preprocessor shortcuts
 #define Remoteloader$attach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+#define Remoteloader$detach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
 #define Remoteloader$attachTo(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
 #define Remoteloader$detachFrom(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
 

@@ -1,3 +1,15 @@
+/*
+
+	You'll need a few functions.
+	
+	Run whenever a spell needs to check condition - Targ can also be "PC" and "NPC" in which case it's up to the developer to scan for those
+		integer checkCondition(key caster, integer cond, list data){return TRUE;}
+	
+	Events are run automatically on packages. They are then sent to evtListener where you can write your own onEvt actions if you want
+		evtListener(string script, integer evt, string data){}
+
+*/
+
 #define FXMethod$run 1					// (key)sender, (obj)wrapper - Runs a package on a player
 #define FXMethod$refresh 2				// Runs a user defined refresh() function to check status updates etc
 #define FXMethod$rem 3					// raiseEvt, name, tag, sender, pid - Use "" to disregard a value
@@ -30,12 +42,7 @@
 // Lets you save the spell packages as a shared array. It will likely risk overflowing if you add more than a handful of spells.
 // If saved, shared will be the strided array [(int)pid, (key)caster, (arr)package, (int)stacks]
 
-// User defined functions (overwrite these in your implementation)
-	// Run whenever a spell needs to check condition
-	integer checkCondition(key caster, integer inverse, integer cond, list data){return TRUE;}
-	// Targ can also be "PC" and "NPC" in which case it's up to the developer to scan for those
-	// Events are run automatically on packages. They are then sent to evtListener where you can write your own onEvt actions if you want
-	evtListener(string script, integer evt, string data){}
+
 	
 	
 // Note, you'll probably want a sheet to keep track of FX types

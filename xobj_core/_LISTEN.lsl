@@ -46,8 +46,8 @@ listen(integer chan, string name, key id, string message){
 		if(llGetOwnerKey(id) != llGetOwner())return;
 		#endif
         if(llGetSubString(message, 0, 5) == "debug "){ // script, method, param1, param2...
-            list split = llCSV2List(llGetSubString(message, 6, -1));
-            list op = [llList2Integer(split,1), "", "", llList2Json(JSON_ARRAY, llDeleteSubList(split, 0, 1)), ""];
+			list split = llCSV2List(llGetSubString(message, 6, -1));
+            list op = [llList2Integer(split,1), llList2Json(JSON_ARRAY, llDeleteSubList(split, 0, 1)), ""];
             llMessageLinked(LINK_SET, RUN_METHOD, llList2String(split,0)+llList2Json(JSON_ARRAY, op), id);
         }
         return;

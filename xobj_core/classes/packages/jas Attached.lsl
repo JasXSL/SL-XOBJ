@@ -2,8 +2,7 @@
 
 // Preprocessor shortcuts
 #include "xobj_core/classes/jas Remoteloader.lsl" 
-// Include local head and class type
-#include "xobj_core/_CLASS_STATIC.lsl"
+
 
 #define TIMER_CHECK_ATTACH "a"
 
@@ -48,12 +47,8 @@ default
     
     state_entry()
     {
-		llListen(playerChan(llGetOwner()), "", "", "");
-		llListen(0, "", llGetOwner(), "");
-		#ifdef LISTEN_OVERRIDE
-		llListen(LISTEN_OVERRIDE, "", "", "");
-		#endif
-        llSetStatus(STATUS_PHANTOM, TRUE);
+		initiateListen();
+		llSetStatus(STATUS_PHANTOM, TRUE);
         memLim(1.5);
 		
 		if(llGetStartParameter() == 2){
@@ -64,7 +59,6 @@ default
         }
     }
 
-	#define LISTEN_LIMIT_ALLOW_WILDCARD
 	#include "xobj_core/_LISTEN.lsl"
     
     run_time_permissions(integer perm){
@@ -87,7 +81,7 @@ default
         */
 		if(method$byOwner){
 			if(METHOD == AttachedMethod$remove){
-				if(method_arg(0) == llGetObjectName() || id == "")
+				if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*")
 					kill();
             }
 		}
