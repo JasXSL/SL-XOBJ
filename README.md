@@ -113,7 +113,7 @@ XOBJ uses a few standard functions to send or receive data:
     - className : The script to run the method on, by name. Ex: "jas Dialog"
     - method : A method defined in the recipient's header file. Ex: DialogMethod$spawn
     - data : Any parameters the method accepts, ex: [llGetOwner(), "A standard yes/no button", llList2Json(JSON_ARRAY, ["Yes", "No"]), 0]
-    - callback : A string you'd like to receive as a callback upon successfully running the method. An empty string "" will prevent the script from sending a callback.
+    - callback : A string you'd like to receive as a callback upon successfully running the method. Use the constants NORET, JSON_INVALID or TNN will prevent callbacks. An empty string "", " " etc will only do a callback if there's any data to callback. Anything else will return your callback string, even if there was no other data to return.
     
 A lot of the header scripts have predefined shortcuts also, so you won't have to type out all of that. For an example, jas Dialog has predefined:
   Dialog$spawn(user, message, buttons, menuID, callback)
