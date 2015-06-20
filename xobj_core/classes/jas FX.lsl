@@ -9,6 +9,7 @@
 		evtListener(string script, integer evt, string data){}
 
 */
+#include "xobj_core/libraries/fx_shortcuts.lsl"
 
 #define FXMethod$run 1					// (key)sender, (obj)wrapper - Runs a package on a player
 #define FXMethod$refresh 2				// Runs a user defined refresh() function to check status updates etc
@@ -16,6 +17,8 @@
 										// if sender is prefixed with ! it will remove everyone BUT that attacker
 #define FXMethod$setPCs 4				// (arr)pc_keys - Set PC keys on send to PC events
 #define FXMethod$setNPCs 5				// (arr)pc_keys - Set NPC keys to send to on NPC events
+
+
 
 #define FXEvt$runEffect 1				// [(key)caster, (int)stacks, (arr)package]
 #define FXEvt$effectAdded 2				// [(key)caster, (int)stacks, (arr)package]
@@ -83,10 +86,11 @@ string FX_buildCondition(integer cond, list vars){
 
 // Packages are the effect objects bound to an FX wrapper. A wrapper can contain multiple packages, and a package can contain multiple fx objects
 // These are general package flags
-#define PF_ALLOW_WHEN_DEAD 1        // Package is not removed and can be added when player is dead
-#define PF_DETRIMENTAL 2            // Package is detrimental.
-#define PF_UNDISPELLABLE 4			// 
-#define PF_UNIQUE 8					// Only one player can have this
+#define PF_ALLOW_WHEN_DEAD 0x1        // Package is not removed and can be added when player is dead
+#define PF_DETRIMENTAL 0x2            // Package is detrimental.
+#define PF_UNDISPELLABLE 0x4			// 
+#define PF_UNIQUE 0x8					// Only one player can have this
+#define PF_EVENT_ON_OVERWRITE 0x16		// Raises the removal event even when overwritten. Only works together with PF_UNIQUE
 // an integer PID gets added on the end when added to FX
 
 #define FX_DUR 0

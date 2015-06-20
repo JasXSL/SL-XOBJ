@@ -30,6 +30,7 @@ if(script != cls$name){
         }
     }
     
+	
     while(llGetListLength(packages)){
         string id = llList2String(packages, 0);
         packages = llDeleteSubList(packages, 0, 0);
@@ -38,6 +39,7 @@ if(script != cls$name){
         
         list evts = llJson2List(jVal(llList2String(PACKAGES, (integer)id+2), [9]));
 
+		
         while(llGetListLength(evts)){
             string evdata = llList2String(evts, 0);
             evts = llDeleteSubList(evts, 0, 0);
@@ -46,7 +48,7 @@ if(script != cls$name){
                 string wrapper = jVal(evdata, [4]);
                 integer targ = (integer)jVal(evdata, [2]);
                 integer maxtargs = (integer)jVal(evdata, [3]);
-                    
+				
                 if(targ&TARG_VICTIM || (targ&TARG_CASTER && sender == "s")){FX$run(llGetOwner(), wrapper);}
                 if(targ&TARG_CASTER){FX$send(sender, sender, wrapper);}
                 if(targ&TARG_PCS){
@@ -165,8 +167,9 @@ addPackage(string sender, list package, integer stacks){
     float tick = llList2Float(package, 1);
     integer mstacks = llList2Integer(package, 3); 
     integer CS = 1;
+
     
-    // Remove if unique flag is set
+	
     if(mstacks){
         list exists = find([llList2String(package,4)], [sender], [], []);
         if(exists){
@@ -192,8 +195,15 @@ addPackage(string sender, list package, integer stacks){
     PID++;
     
     
-    // Create indexing function here for events
-    if(flags&PF_UNIQUE)FX$rem(FALSE, llList2String(package, 4), 0, "!"+(string)sender, 0);
+    // Remove if unique
+    if(flags&PF_UNIQUE){
+		list find = find([llList2String(package, 4)], [], [], []);
+		integer i;
+		for(i=0; i<llGetListLength(find); i++){
+			FX$rem(flags&PF_EVENT_ON_OVERWRITE, "", 0, "", llList2Integer(PACKAGES, llList2Integer(find, i)));
+		}
+		//FX$rem(FALSE, llList2String(package, 4), 0, "!"+(string)sender, 0);
+	}
     
     list evts = llJson2List(llList2String(package, 9));
     while(llGetListLength(evts)){
@@ -287,12 +297,14 @@ default
             }
             
             if(llGetListLength(successful)<min_objs){
-                return;
+                CB_DATA = [FALSE];
             }
-            
-            for(i=0; i<llGetListLength(successful); i+=2){
-                addPackage(sender, llJson2List(llList2String(successful,i+1)), llList2Integer(successful,i));
-            }
+            else{
+				CB_DATA = [llGetListLength(successful)/2];
+				for(i=0; i<llGetListLength(successful); i+=2){
+					addPackage(sender, llJson2List(llList2String(successful,i+1)), llList2Integer(successful,i));
+				}
+			}
         }
         else if(METHOD == FXMethod$rem){
             integer raiseEvent = (integer)method_arg(0); 
@@ -311,12 +323,15 @@ default
             
             integer i; 
             for(i=0; i<llGetListLength(PACKAGES) && llGetListLength(PACKAGES); i+=PSTRIDE){
+				//key caster = llList2String(PACKAGES, i+1);
                 string p = llList2String(PACKAGES, i+2);
+				string n = jVal(p, [4]);
+				
                 list tags = [];
                 if(tag)tags = llJson2List(jVal(p, [10]));
                     
                 if(
-                    (name=="" || name == jVal(p, [4])) &&
+                    (name=="" || name == n) &&
                     (!tag || llListFindList(tags, [tag])) && 
                     (sender=="" || (sender == llList2String(PACKAGES, i+1) || (llGetSubString(sender,0,0) == "!" && llList2String(PACKAGES, i+1) != llGetSubString(sender,1,-1)))) &&
                     (!pid || llList2Integer(PACKAGES, i) == pid)
@@ -324,9 +339,11 @@ default
                     
                     string pid_rem = llList2String(PACKAGES, i);
                     if(raiseEvent)onEvt("", INTEVENT_ONREMOVE, (string)i);
-                    
+		
+					
                     raiseEvent(FXEvt$effectRemoved, mkarr(([llList2String(PACKAGES, i+1), llList2Integer(PACKAGES, i+3), p])));
-                    // Remove from evt cache
+                    
+					// Remove from evt cache
                     list evts = llJson2List(jVal(p, [FX_EVTS]));
                     list_shift_each(evts, val, {
                         string find = jVal(val, [1])+"_"+jVal(val, [0]);
