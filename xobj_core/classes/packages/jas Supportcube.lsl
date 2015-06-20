@@ -21,6 +21,7 @@ runTask(){
         if(t == Supportcube$tSetPos)llSetRegionPos((vector)llList2String(params,0));
         else if(t == Supportcube$tSetRot)llSetRot((rotation)llList2String(params,0));
         else if(t == Supportcube$tForceSit){
+			llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.1,.1,.1>]);
             if(llAvatarOnSitTarget() != llGetOwner()){
                 string add = ",unsit=y";
                 if(llList2Integer(params,0))add = ",unsit=n";
@@ -92,7 +93,6 @@ default
         if(change&CHANGED_LINK){
             if(llAvatarOnSitTarget() == llGetOwner()){
                 llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-                llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.1,.1,.1>]);
 				if(BFL&BFL_ON_SIT){
                     BFL = BFL&~BFL_ON_SIT;
                     runTask();

@@ -31,7 +31,7 @@
 
 #define AttachedMethod$remove 0			// NULL
 
-#define Attached$remove(attachmentName) runOmniMethod("jas Attached", AttachedMethod$remove, [], TARG_NULL, NORET, attachmentName)
+#define Attached$remove(attachmentName) runOmniMethod("jas Attached", AttachedMethod$remove, [attachmentName], TNN)
 #define Attached$removeThis() runMethod((string)LINK_SET, "jas Attached", AttachedMethod$remove, [], TNN)
 
 

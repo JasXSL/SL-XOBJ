@@ -161,6 +161,7 @@ runOmniMethod(string className, integer method, list data, string callback){
 runLimitMethod(string className, integer method, list data, string callback, float range){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
+	
 	if(range>96)stdOmniCom(RUN_METHOD, className, op);
 	else if(range>20)llShout(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
 	else if(range>10)llSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
