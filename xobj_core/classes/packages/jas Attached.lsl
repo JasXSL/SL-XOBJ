@@ -36,6 +36,7 @@ kill(){
 default
 { 
     on_rez(integer start){
+		llSetStatus(STATUS_PHANTOM, TRUE);
         if(start == 1){
 			llSleep(.25);
             llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEMP_ON_REZ, TRUE]);

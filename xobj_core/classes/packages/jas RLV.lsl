@@ -34,7 +34,7 @@ float sprintRegenModifier = 1;
 integer BFL;
 #define BFL_SPRINTING 1
 #define BFL_RUN_LOCKED 2
- 
+#define BFL_SPRINT_STARTED 0x4
 
 #define TIMER_SPRINT_CHECK "a"
 #define TIMER_SPRINT_QUICK "b"
@@ -106,6 +106,28 @@ public_setFolder(string folder){
 }
 #endif
 
+#if RLVcfg$USE_SPRINT==1
+damageSprint(float amount){
+	sprint-=llFabs(amount);
+    if(sprint<=0){
+		sprint = 0;
+        
+		if(~BFL&BFL_RUN_LOCKED){
+			BFL = BFL|BFL_RUN_LOCKED;
+			llOwnerSay("@alwaysrun=n,temprun=n");
+		}
+    }
+	
+	if(~BFL&BFL_SPRINT_STARTED){
+		multiTimer([TIMER_SPRINT_START_REGEN]);
+		BFL = BFL|BFL_SPRINT_STARTED;
+	}
+	
+	
+	outputSprint();
+}
+#endif
+
 // Events
 timerEvent(string id, string data){
 #if RLVcfg$USE_SPRINT==1
@@ -122,20 +144,17 @@ timerEvent(string id, string data){
             BFL=BFL|BFL_SPRINTING;
         }
         else{
-            if(BFL&BFL_SPRINTING){
+            if(BFL&BFL_SPRINT_STARTED){
                 multiTimer([TIMER_SPRINT_QUICK]);
                 multiTimer([TIMER_SPRINT_START_REGEN, "", 3, FALSE]);
+				BFL = BFL&~BFL_SPRINT_STARTED;
             }
             BFL = BFL&~BFL_SPRINTING;
         }
     }else if(id == TIMER_SPRINT_QUICK){
         if(BFL&BFL_SPRINTING){
-            sprint-=.1*sprintFadeModifier;
-            if(sprint<=0 && ~BFL&BFL_RUN_LOCKED){
-                multiTimer([id]);
-                BFL = BFL|BFL_RUN_LOCKED;
-                llOwnerSay("@alwaysrun=n,temprun=n");
-            }
+            damageSprint(.1*sprintFadeModifier);
+			return;
         }else{
             if(BFL&BFL_RUN_LOCKED){
                 llOwnerSay("@alwaysrun=y,temprun=y");
@@ -176,7 +195,9 @@ timerEvent(string id, string data){
     }
 #endif
 	if(id == TIMER_INIT_DLY){
-        llOwnerSay("@"+RLVcfg$initDly);
+        llOwnerSay("@alwaysrun=y,temprun=y");
+		llOwnerSay("@"+RLVcfg$initDly);
+		
         /*
 		if(llGetOwner() == "a13c0286-419f-4699-9e14-703432507160"){
             //llOwnerSay("@clear");
@@ -328,7 +349,13 @@ default
             if(METHOD == RLVMethod$sprintFadeModifier)sprintFadeModifier = (float)method_arg(0);
             else if(METHOD == RLVMethod$sprintRegenModifier)sprintRegenModifier = (float)method_arg(0);
             else if(METHOD == RLVMethod$addSprint){
-				sprint+=(float)method_arg(0)*RLVcfg$limitSprint;
+				float a = (float)method_arg(0);
+				if(a<0){
+					damageSprint(a*RLVcfg$limitSprint);
+					return;
+				}
+				
+				sprint+=a*RLVcfg$limitSprint;
 				if(sprint>RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
 				outputSprint();
 			}

@@ -145,6 +145,7 @@ list bitArrToList(integer int, integer bytesize){
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
 // Check if prim is in front of me
 #define prAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llGetRot()); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llList2Vector(odata, 0)-llGetPos())); var = llRot2Angle(bet);} 
+// Check if I am in front of prim if VAR > PI_BY_TWO
 #define myAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llList2Rot(odata, 1)); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llGetPos()-llList2Vector(odata, 0))); var = llRot2Angle(bet);} 
 
 

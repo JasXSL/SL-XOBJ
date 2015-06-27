@@ -83,7 +83,7 @@ onEvt(string script, integer evt, string data){
 						llList2String(split,7), // nodes, 
 						llList2String(split,8) // Climbspeed
 					);
-				}else onInteract(targ, task, llList2List(split,1,-1));
+				}else if(task == Interact$TASK_INTERACT) onInteract(targ, task, llList2List(split,1,-1));
 			}
 		}else if(evt == evt$BUTTON_HELD_SEC){
 			integer btn = (integer)jVal(data, [0]);
