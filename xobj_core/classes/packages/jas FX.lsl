@@ -22,6 +22,8 @@ onEvt(string script, integer evt, string data){
     // Packages to work on
 if(script != cls$name){
     list packages = [];
+	
+	// If internal event, run on a specific ID by data
     if(script == "")packages = find([], [], [], [(integer)data]);
     else{
         integer pos = llListFindList(EVT_INDEX, [script+"_"+(string)evt]);
@@ -30,7 +32,6 @@ if(script != cls$name){
         }
     }
     
-	
     while(llGetListLength(packages)){
         string id = llList2String(packages, 0);
         packages = llDeleteSubList(packages, 0, 0);
@@ -45,19 +46,21 @@ if(script != cls$name){
             evts = llDeleteSubList(evts, 0, 0);
             
             if(script+"_"+(string)evt == jVal(evdata, [1])+"_"+jVal(evdata,[0])){
+				
                 string wrapper = jVal(evdata, [4]);
                 integer targ = (integer)jVal(evdata, [2]);
                 integer maxtargs = (integer)jVal(evdata, [3]);
+				if(maxtargs == 0)maxtargs = -1;
 				
-                if(targ&TARG_VICTIM || (targ&TARG_CASTER && sender == "s")){FX$run(llGetOwner(), wrapper);}
-                if(targ&TARG_CASTER){FX$send(sender, sender, wrapper);}
+                if(targ&TARG_VICTIM || (targ&TARG_CASTER && sender == "s")){FX$run(llGetOwner(), wrapper); maxtargs--;}
+                if(targ&TARG_CASTER && maxtargs != 0){FX$send(sender, sender, wrapper); maxtargs--;}
                 if(targ&TARG_PCS){
                     integer i;
-                    for(i=0; i<llGetListLength(PCS); i++){FX$send(llList2String(PCS,i), llGetOwner(), wrapper);}
+                    for(i=0; i<llGetListLength(PCS) && maxtargs!=0; i++){FX$send(llList2String(PCS,i), llGetOwner(), wrapper); maxtargs--;}
                 }
                 if(targ&TARG_NPCS){
                     integer i;
-                    for(i=0; i<llGetListLength(NPCS); i++){FX$send(llList2String(NPCS,i), llGetOwner(), wrapper);}
+                    for(i=0; i<llGetListLength(NPCS) && maxtargs != 0; i++){FX$send(llList2String(NPCS,i), llGetOwner(), wrapper); maxtargs--;}
                 }
             }
         }
@@ -78,7 +81,11 @@ integer preCheck(key sender, string package){
     integer successes;
     integer add = TRUE;
     integer parsed;
-    
+	integer flags = (integer)jVal(package, [FX_FLAGS]);
+	
+	if(~flags&PF_ALLOW_WHEN_DEAD){
+		if(isDead())return FALSE;
+	}
     // loop through all conditions
     list_shift_each(conds, cond, {
         list condl = llJson2List(cond);
@@ -134,17 +141,30 @@ list find(list names, list senders, list tags, list pids){
         integer add = FALSE; string p = llList2String(PACKAGES,  i+2);
         string n = jVal(p, [4]);
         string u = llList2String(PACKAGES, i+1);
-        if(~llListFindList(names, [n]))add = TRUE;
+        if(~llListFindList(names, [n])){
+			add = TRUE;
+		}
         if(!add){
-            if(llListFindList(senders, [u]))add = TRUE;
+            if(~llListFindList(senders, [u])){
+				add = TRUE;
+				debugUncommon("Sender exists: "+u+" in "+mkarr(senders));
+			}
         }
         if(!add){
-            if(llListFindList(pids, [llList2Integer(PACKAGES, i)]))add = TRUE;
+            if(~llListFindList(pids, [llList2Integer(PACKAGES, i)])){
+				add = TRUE;
+				debugUncommon("PID exists: "+llList2String(PACKAGES, i));
+			}
         }
+		
+		// Scan tags
         if(!add){
             integer x; list t = llJson2List(jVal(p, [10]));
             for(x = 0; x<llGetListLength(tags) && !add; x++){
-                if(~llListFindList(tags, llList2List(t, x, x)))add = TRUE;
+                if(~llListFindList(tags, llList2List(t, x, x))){
+					add = TRUE;
+					debugUncommon("Tag exists "+llList2String(t, x));
+				}
             }
         }
         if(add)out+=i;
@@ -198,6 +218,7 @@ addPackage(string sender, list package, integer stacks){
     // Remove if unique
     if(flags&PF_UNIQUE){
 		list find = find([llList2String(package, 4)], [], [], []);
+		
 		integer i;
 		for(i=0; i<llGetListLength(find); i++){
 			FX$rem(flags&PF_EVENT_ON_OVERWRITE, "", 0, "", llList2Integer(PACKAGES, llList2Integer(find, i)));
@@ -338,7 +359,7 @@ default
                 ){
                     
                     string pid_rem = llList2String(PACKAGES, i);
-                    if(raiseEvent)onEvt("", INTEVENT_ONREMOVE, (string)i);
+                    if(raiseEvent)onEvt("", INTEVENT_ONREMOVE, (string)pid_rem);
 		
 					
                     raiseEvent(FXEvt$effectRemoved, mkarr(([llList2String(PACKAGES, i+1), llList2Integer(PACKAGES, i+3), p])));

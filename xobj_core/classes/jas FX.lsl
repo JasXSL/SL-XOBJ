@@ -5,13 +5,19 @@
 	Run whenever a spell needs to check condition - Targ can also be "PC" and "NPC" in which case it's up to the developer to scan for those
 		integer checkCondition(key caster, integer cond, list data){return TRUE;}
 	
+	Run when receiving an event to check if you are dead
+		integer isDead(){}
+	
 	Events are run automatically on packages. They are then sent to evtListener where you can write your own onEvt actions if you want
 		evtListener(string script, integer evt, string data){}
-
+	
+	
 */
 #include "xobj_core/libraries/fx_shortcuts.lsl"
 
 #define FXMethod$run 1					// (key)sender, (obj)wrapper - Runs a package on a player
+#define FXMethod$send FXMethod$run					// (Synonym for above)
+
 #define FXMethod$refresh 2				// Runs a user defined refresh() function to check status updates etc
 #define FXMethod$rem 3					// raiseEvt, name, tag, sender, pid - Use "" to disregard a value
 										// if sender is prefixed with ! it will remove everyone BUT that attacker
@@ -89,7 +95,7 @@ string FX_buildCondition(integer cond, list vars){
 #define PF_ALLOW_WHEN_DEAD 0x1        // Package is not removed and can be added when player is dead
 #define PF_DETRIMENTAL 0x2            // Package is detrimental.
 #define PF_UNDISPELLABLE 0x4			// 
-#define PF_UNIQUE 0x8					// Only one player can have this
+#define PF_UNIQUE 0x8					// Makes the name unique
 #define PF_EVENT_ON_OVERWRITE 0x16		// Raises the removal event even when overwritten. Only works together with PF_UNIQUE
 // an integer PID gets added on the end when added to FX
 
