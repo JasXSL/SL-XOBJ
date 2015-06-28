@@ -43,7 +43,7 @@ timerEvent(string id, string data){
         d++;
         raiseEvent(evt$BUTTON_HELD_SEC, mkarr(([(integer)llGetSubString(id, 2, -1), d])));
         multiTimer([id, d, 1, FALSE]);
-    }else if(id == "S")BFL = BFL&~BFL_RECENT_SPEAK;
+    }
 }
 
 default 
