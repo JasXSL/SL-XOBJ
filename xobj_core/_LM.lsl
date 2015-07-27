@@ -50,10 +50,15 @@ link_message(integer link, integer nr, string str, key id){
 	#endif
 
 	#ifdef SCRIPT_IS_ROOT
-	else if(nr == DB2_ADD){
+	else if(nr == DB2_ADD || nr == DB2_INDEX){
 		string sender = jVal(str, [0]);
 		string script = jVal(str, [1]);
-		debugCommon("Shared Save request received @ root from script "+script);
+		if(nr == DB2_INDEX){
+			debugUncommon("Rebuilding DB2_CACHE.");
+			DB2_CACHE = [];
+		}else{
+			debugCommon("Shared Save request received @ root from script "+script);
+		}
 		if(llListFindList(DB2_CACHE, [script]) == -1){
 			list prims; // Prim IDS
 			list idx;	// Prim NR
@@ -73,18 +78,32 @@ link_message(integer link, integer nr, string str, key id){
 				integer x;
 				for(x=0; x<9; x++){
 					if(llListFindList(DB2_CACHE, [llList2Integer(flat,i), x]) == -1){
-						DB2_CACHE += [script, llList2Integer(flat,i), x];
-						list l = llJson2List(jVal(str, [2]));
-						if(isset(jVal(str, [3])) || l != []){
-							// Newly added, save data
-							debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
-							db2$rootSend();
-							db2(DB2$SET, script, l, jVal(str, [3]));
-							sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
+						if(nr == DB2_INDEX){
+							string dta = (string)llGetLinkMedia(llList2Integer(flat, i), x, [PRIM_MEDIA_HOME_URL]);
+							integer n = llSubStringIndex(dta, "{");
+							if (n > 0) {
+								script = llGetSubString(dta, 0, n-1);
+								debugUncommon("FOUND DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
+								DB2_CACHE += [script, llList2Integer(flat,i), x];
+							}
+						}else{
+							DB2_CACHE += [script, llList2Integer(flat,i), x];
+							list l = llJson2List(jVal(str, [2]));
+							if(isset(jVal(str, [3])) || l != []){
+								// Newly added, save data
+								debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
+								db2$rootSend();
+								db2(DB2$SET, script, l, jVal(str, [3]));
+								sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
+							}
+							return;
 						}
-						return;
 					}
 				}
+			}
+			if(nr == DB2_INDEX){
+				db2$rootSend();
+				return;
 			}
 			debugRare("FATAL ERROR: Not enough DB prims to store this many shared items.");
 			
