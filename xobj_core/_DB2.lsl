@@ -12,6 +12,7 @@ list DB2_CACHE;
 #endif
 
 #define db2$rootSend() llMessageLinked(LINK_SET, DB2_UPDATE, mkarr(DB2_CACHE), "")
+#define db2$index() llMessageLinked(LINK_SET, DB2_INDEX, "", "")
 #define db2$get(script, sub) db2(DB2$GET, script, sub, "")
 #define db2$set(sub, val) db2(DB2$SET, llGetScriptName(), sub, val)
 #define db2$setOther(script, sub, val) db2(DB2$SET, script, sub, val)
@@ -31,8 +32,8 @@ string db2(integer task, string script, list sub, string val){
 	#ifndef SCRIPT_IS_ROOT
 	debugCommon("Data to save: "+val);
 	#endif
-	integer pos = llListFindList(DB2_CACHE, [script]); 
-	string dta = (string)llGetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]);
+	integer pos = llListFindList(DB2_CACHE, [script]);
+	string dta = llGetSubString((string)llGetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]), llStringLength(script), -1);
 	if(task == DB2$GET){
 		if(pos==-1){
 			debugRare("Unable to get data. "+script+" not found in "+llList2CSV(DB2_CACHE));
@@ -40,7 +41,7 @@ string db2(integer task, string script, list sub, string val){
 		}
 		return jVal(dta, sub);
 	}
-	string set = llJsonSetValue(dta,sub,val);
+	string set = script+llJsonSetValue(dta,sub,val);
 	if(!isset(val) && sub == []){
 		if(pos == -1){
 			debugRare("Trying to delete unset shared: "+script);
