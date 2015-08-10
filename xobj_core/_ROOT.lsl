@@ -92,6 +92,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define DB2_ADD -5				// [(str)sender, (str)script[, (obj)data]] = (str)script - Data is passed along if this is the first time the script is seen
 #define DB2_UPDATE -6			// str = (arr)data
 #define DB2_DELETE -7			// str = (str)script
+#define DB2_REFRESHME -8		// refreshes db2 on the script and sends a callback
 
 // Standard methods
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers.

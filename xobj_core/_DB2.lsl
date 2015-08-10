@@ -4,8 +4,11 @@
 #endif
 #endif
 
+// Optional definitions
+// #define DB2_PRESERVE_ON_RESET		- Lets you preserve the DB2 at the cost of a single face. Please purge your data clearDB2() before turning this feature on
 
-list DB2_CACHE;
+#define DB2$STRIDE 3
+list DB2_CACHE; // [(str)script, (int)prim, (int)face]
 
 #ifndef db2$prefix
 #define db2$prefix "DB"
@@ -19,7 +22,34 @@ list DB2_CACHE;
 
 #define DB2$get(script, sub) db2$get(script, sub)
 #define DB2$set(sub, val) db2$set(sub, val)
+
 #define DB2$setOther(script, sub, val) db2$setOther(script, sub, val)
+
+// Force DB2 to refresh the cache in this script
+#ifdef DB2_PRESERVE_ON_RESET
+	DB2_ini(){
+		integer nr;
+		for(nr=1; nr<llGetNumberOfPrims(); nr++){
+			string name = llGetLinkName(nr); 
+			if(llGetSubString(name,0,llStringLength(db2$prefix)-1) == db2$prefix && llGetSubString(name,llStringLength(db2$prefix),-1) == "0"){
+				DB2_CACHE = llJson2List((string)llGetLinkMedia(nr, 0, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]));
+				
+				// If root and DB2 is empty, then store the cache
+				#ifdef SCRIPT_IS_ROOT
+				if(llList2String(DB2_CACHE,0) != "_INDEX_")
+					DB2_CACHE=["_INDEX_", nr, 0]+DB2_CACHE;
+				#endif
+				
+				return;
+			}
+		}
+	}
+	#define DB2$ini() DB2_ini()
+#else
+	#define DB2$ini() llMessageLinked(LINK_ROOT, DB2_REFRESHME, cls$name, "")
+#endif 
+#define db2$ini() DB2$ini()
+
 
 #define DB2_NAME 0
 #define DB2_PRIM 1
@@ -32,10 +62,11 @@ string db2(integer task, string script, list sub, string val){
 	debugCommon("Data to save: "+val);
 	#endif
 	integer pos = llListFindList(DB2_CACHE, [script]); 
-	string dta = (string)llGetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL]);
+	string dta;
+	if(~pos)dta = (string)llGetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]);
 	if(task == DB2$GET){
 		if(pos==-1){
-			debugRare("Unable to get data. "+script+" not found in "+llList2CSV(DB2_CACHE));
+			debugRare("Unable to get data. "+script+" not found in "+llList2CSV(DB2_CACHE))
 			return "";
 		}
 		return jVal(dta, sub);
@@ -43,7 +74,7 @@ string db2(integer task, string script, list sub, string val){
 	string set = llJsonSetValue(dta,sub,val);
 	if(!isset(val) && sub == []){
 		if(pos == -1){
-			debugRare("Trying to delete unset shared: "+script);
+			debugRare("Trying to delete unset shared: "+script)
 			return "";
 		}
 		llClearLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2));
@@ -55,14 +86,14 @@ string db2(integer task, string script, list sub, string val){
 	if(pos==-1){
 		llMessageLinked(LINK_SET, DB2_ADD, mkarr(([llGetScriptName(), script, mkarr(sub), val])), "");
 		#ifndef SCRIPT_IS_ROOT
-		debugCommon("Saving shared delayed");
+		debugCommon("Saving shared delayed")
 		#endif
 		return "0";
 	}else{
 		#ifndef SCRIPT_IS_ROOT
-		debugCommon("Saving instantly onto "+llGetLinkName(llList2Integer(DB2_CACHE, pos+1))+" face: "+llList2String(DB2_CACHE, pos+2)+" data: "+val);
+		debugCommon("Saving instantly onto "+llGetLinkName(llList2Integer(DB2_CACHE, pos+1))+" face: "+llList2String(DB2_CACHE, pos+2)+" data: "+val)
 		#endif
-		llSetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, llGetSubString(set,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(set,1024,2047), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
+		llSetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, llGetSubString(set,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(set,1024,2047), PRIM_MEDIA_WHITELIST, llGetSubString(set, 2048, 3071), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
 	}
 	return "1";
 }

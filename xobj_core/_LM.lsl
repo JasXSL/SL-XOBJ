@@ -63,12 +63,11 @@ link_message(integer link, integer nr, string str, key id){
 					idx += (integer)llGetSubString(n,llStringLength(db2$prefix), -1);
 				}	
 			)
-			integer i; list flat;
+			integer i; list flat; // Flat is a list of prim IDs
 			for(i=0; i<llGetListLength(idx); i++)flat += 0;
-			
 			for(i=0; i<llGetListLength(idx); i++)flat = llListReplaceList(flat, llList2List(prims,i,i), llList2Integer(idx,i),llList2Integer(idx,i));
-			if(llList2Integer(flat,0) == 0)flat = llDeleteSubList(flat,0,0);
-			// DB can start with 0 or 1
+
+			// DB now HAS to start with 0
 			for(i=0; i<llGetListLength(flat); i++){
 				integer x;
 				for(x=0; x<9; x++){
@@ -80,13 +79,20 @@ link_message(integer link, integer nr, string str, key id){
 							debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
 							db2$rootSend();
 							db2(DB2$SET, script, l, jVal(str, [3]));
+							
 							sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
 						}
+						#ifdef DB2_PRESERVE_ON_RESET
+
+						if(llGetListLength(DB2_CACHE)/DB2$STRIDE <2){debugRare("Fatal error: if DB2_PRESERVE_ON_RESET is set, you must call db2$ini(); before trying to store data")}
+						else db2(DB2$SET, "_INDEX_", [], mkarr(DB2_CACHE));
+						
+						#endif
 						return;
 					}
 				}
 			}
-			debugRare("FATAL ERROR: Not enough DB prims to store this many shared items.");
+			debugRare("FATAL ERROR: Not enough DB prims to store this many shared items.")
 			
 		}else{
 			db2$rootSend();
@@ -101,6 +107,9 @@ link_message(integer link, integer nr, string str, key id){
 			DB2_CACHE = llDeleteSubList(DB2_CACHE, pos, pos+2);
 			db2$rootSend();
 		}
+	}else if(nr == DB2_REFRESHME){
+		db2$rootSend();
+		sendCallback(id, str, stdMethod$setShared, "[]", "");
 	}
 	#else 
 		#ifdef USE_SHARED
