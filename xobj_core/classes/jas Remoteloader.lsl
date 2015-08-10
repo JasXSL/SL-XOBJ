@@ -8,6 +8,7 @@
 	4. Create a new script in your inventory, name it _slave1
 	5. Paste the following code into it and compile:
 	
+	
 default
 {
     state_entry(){llSetMemoryLimit(llGetUsedMemory()*2);}
@@ -28,8 +29,8 @@ default
 	6. Drag the script into the same prim as you put st Remoteloader. Drag it in 5 times to create 5 copies of it.
 	7. Rename the _slave scripts into _slave1, _slave2, _slave3, _slave4, _slave5
 	8. These scripts will be used to speed up remoteloading, to circumvent the long delay caused by it.
+	9. Make sure jas Remoteloader is on drive
 	
-	This module can be used to rez, attach, or remoteload items and scripts.
 	
 */
 

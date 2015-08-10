@@ -148,6 +148,7 @@
 // Remoteload the latest cl MeshAnim from HUD if st Attached is initialized
 //#define MeshAnimConf$remoteloadOnAttachedIni		
 //#define MeshAnimConf$animStartEvent
+//#define MeshAnimConf$remoteloadOnRez
 
 								
 #define MeshAnimEvt$frame 0	// Raised when a non-integer frame is discovered

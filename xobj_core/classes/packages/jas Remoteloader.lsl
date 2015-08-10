@@ -1,5 +1,7 @@
 // Conf
 #include "xobj_core/classes/jas Remoteloader.lsl" 
+#include "xobj_core/classes/jas Attached.lsl" 
+
 #include "xobj_core/_CLASS_STATIC.lsl"
 
 integer slave = 0;
