@@ -3,6 +3,8 @@
 #include "xobj_core/classes/jas RLV.lsl"
 #include "xobj_core/classes/jas Climb.lsl"
   
+// List of additional (string)keys to allow
+list additionalAllow;
 integer BFL;
 #define BFL_RECENT_CLICK 1      // Recently interacted
 
@@ -27,7 +29,6 @@ onEvt(string script, integer evt, string data){
     else if(script == "#ROOT"){
 		if(evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
 			if(BFL&BFL_RECENT_CLICK)return;
-			
 			if(!preInteract(targ))return;
 			
 			
@@ -46,9 +47,6 @@ onEvt(string script, integer evt, string data){
 			
 			
 			list actions = llParseString2List(targDesc, ["$$"], []);
-			if(llGetListLength(actions)>1){
-				multiTimer([TIMER_RECENT_CLICK, "", 2, FALSE]);
-			}
 			
 			while(llGetListLength(actions)){
 				string val = llList2String(actions,0);
@@ -83,7 +81,7 @@ onEvt(string script, integer evt, string data){
 						llList2String(split,7), // nodes, 
 						llList2String(split,8) // Climbspeed
 					);
-				}else if(task == Interact$TASK_INTERACT) onInteract(targ, task, llList2List(split,1,-1));
+				}else onInteract(targ, task, llList2List(split,1,-1));
 			}
 		}else if(evt == evt$BUTTON_HELD_SEC){
 			integer btn = (integer)jVal(data, [0]);
@@ -111,18 +109,34 @@ timerEvent(string id, string data){
                     vector ascale = llGetAgentSize(llGetOwner());
                     start = llGetPos()+<0,0,ascale.z*.25>;
                 }
-                list ray = llCastRay(start, start+fwd, [RC_REJECT_TYPES, RC_REJECT_AGENTS]);
+				list ray = llCastRay(start, start+fwd, []);
     
                 if(llList2Integer(ray,-1) > 0){
-                    if(prRoot(llGetOwner()) != prRoot(llList2Key(ray,0))){
-                        string td = prDesc(llList2Key(ray,0));
+					
+					key k = llList2Key(ray,0);
+					
+					if(~llListFindList(additionalAllow, [(string)k])){
+						targ = llList2Key(ray,0);
+						targDesc = "CUSTOM";
+						onDesc(targ, "CUSTOM");
+						return;
+					}
+						
+					
+					#ifdef InteractConf$USE_ROOT
+					k = prRoot(k);
+					#endif
+
+                    if(prRoot(llGetOwner()) != prRoot(k)){
+						
+                        string td = prDesc(k);
                         list descparse = llParseString2List(td, ["$$"], []);
         
                         list_shift_each(descparse, val, {
                             list parse = llParseString2List(val, ["$"], []);
                             if(llList2String(parse,0) == Interact$TASK_DESC){
                                 targDesc = td;
-                                targ = llList2Key(ray,0);
+                                targ = k;
                                 onDesc(targ, llList2String(parse, 1));
                                 return;
                             }
