@@ -142,7 +142,7 @@
 #define RLVMethod$preventTP 14			// (bool)prevent
 #define RLVMethod$preventFly 15			// (bool)Prevent
 #define RLVMethod$addSprint 16			// (float)perc
-
+#define RLVMethod$turnTowards 17		// (vec)region_pos - Faces the avatar towards a location
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
@@ -160,6 +160,7 @@
 #define RLV$unsit(override) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$unsit, [override], TNN)
 #define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset], TNN)
 #define RLV$resetWindlight() runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$resetWindlight, [], TNN)
+#define RLV$turnTowards(pos) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$turnTowards, [pos], TNN)
 
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
 #define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventTP, [prevent], TNN)

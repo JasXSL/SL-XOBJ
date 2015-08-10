@@ -286,87 +286,99 @@ default
         return;
     }
     
-    if(nr == RUN_METHOD){ 
-        if(method$byOwner){
-            #if RLVcfg$USE_FOLDERS==1
-			if(METHOD == RLVMethod$setFolder)
-                public_setFolder(method_arg(0));
-            else if(METHOD == RLVMethod$setSubFolder){
-                public_setSubFolder(method_arg(0));
-            }
-			#endif
+
+    if(method$byOwner){
+        #if RLVcfg$USE_FOLDERS==1
+		if(METHOD == RLVMethod$setFolder)
+            public_setFolder(method_arg(0));
+        else if(METHOD == RLVMethod$setSubFolder){
+            public_setSubFolder(method_arg(0));
+        }
+		#endif
 			
 			
-			if(METHOD == RLVMethod$cubeTask){
-				debugCommon("Received cubetasks: "+PARAMS);
-                cubeTask(llJson2List(PARAMS));
-            }
+		if(METHOD == RLVMethod$cubeTask){
+			debugCommon("Received cubetasks: "+PARAMS);
+            cubeTask(llJson2List(PARAMS));
+        }
 			
-			#if RLVcfg$USE_KEEPATTACH==1
-			if(METHOD == RLVMethod$keepAttached)
-                public_addAttached(method_arg(0));
-            else if(METHOD == RLVMethod$remAttached)
-                public_remAttached(method_arg(0)); 
-			#endif
-            			
-			if(METHOD == RLVMethod$cubeFlush){
-                cubeTask([]);
-            }else if(METHOD == RLVMethod$sitOn){
-                string add = "";
-                if((integer)method_arg(1))add = ",unsit=n";
-                llOwnerSay("@sit:"+method_arg(0)+"=force"+add);
-            }else if(METHOD == RLVMethod$unsit){
-                string add = "";
-                if((integer)method_arg(0))add="unsit=y,";
-                llOwnerSay("@"+add+"unsit=force");
-            }else if(METHOD == RLVMethod$limitCamDist){
-				if((float)method_arg(0)<0)llOwnerSay("@camdistmax=y");
+		#if RLVcfg$USE_KEEPATTACH==1
+		if(METHOD == RLVMethod$keepAttached)
+			public_addAttached(method_arg(0));
+        else if(METHOD == RLVMethod$remAttached)
+			public_remAttached(method_arg(0)); 
+		#endif
+           			
+		if(METHOD == RLVMethod$cubeFlush){
+			cubeTask([]);
+        }else if(METHOD == RLVMethod$sitOn){
+            string add = "";
+            if((integer)method_arg(1))add = ",unsit=n";
+            llOwnerSay("@sit:"+method_arg(0)+"=force"+add);
+        }else if(METHOD == RLVMethod$unsit){
+            string add = "";
+            if((integer)method_arg(0))add="unsit=y,";
+            llOwnerSay("@"+add+"unsit=force");
+        }else if(METHOD == RLVMethod$limitCamDist){
+			if((float)method_arg(0)<0)llOwnerSay("@camdistmax=y");
 				else llOwnerSay("@camdistmax:"+method_arg(0)+"=n");
 			}
-			else if(METHOD == RLVMethod$preventTP){
-				string app = "y";
-				if(!(integer)method_arg(0))app = "n";
-				llOwnerSay("@tploc="+app+",tplure="+app);
-			}
-			else if(METHOD == RLVMethod$preventFly){
-				string app = "y";
-				if(!(integer)method_arg(0))app = "n";
-				llOwnerSay("@fly="+app);
-			}
+		else if(METHOD == RLVMethod$preventTP){
+			string app = "y";
+			if(!(integer)method_arg(0))app = "n";
+			llOwnerSay("@tploc="+app+",tplure="+app);
+		}
+		else if(METHOD == RLVMethod$preventFly){
+			string app = "y";
+			if(!(integer)method_arg(0))app = "n";
+			llOwnerSay("@fly="+app);
+		}
 
-			#if RLVcfg$USE_WINDLIGHT==1
-			if(METHOD == RLVMethod$windlightPreset){
-                db2$set([RLVShared$windlight], method_arg(0));
-                llOwnerSay("@setenv_preset:"+method_arg(0)+"=force");
-            }
-            else if(METHOD == RLVMethod$resetWindlight){
-                db2$set([RLVShared$windlight], RLVcfg$defaultWindlight);
-                llOwnerSay("@setenv_preset:"+RLVcfg$defaultWindlight+"=force"); 
-            }
-			#endif
+		#if RLVcfg$USE_WINDLIGHT==1
+		if(METHOD == RLVMethod$windlightPreset){
+            db2$set([RLVShared$windlight], method_arg(0));
+            llOwnerSay("@setenv_preset:"+method_arg(0)+"=force");
+        }
+        else if(METHOD == RLVMethod$resetWindlight){
+            db2$set([RLVShared$windlight], RLVcfg$defaultWindlight);
+            llOwnerSay("@setenv_preset:"+RLVcfg$defaultWindlight+"=force"); 
+        }
+		#endif
             
-            #if RLVcfg$USE_SPRINT==1
-            if(METHOD == RLVMethod$sprintFadeModifier)sprintFadeModifier = (float)method_arg(0);
-            else if(METHOD == RLVMethod$sprintRegenModifier)sprintRegenModifier = (float)method_arg(0);
-            else if(METHOD == RLVMethod$addSprint){
-				float a = (float)method_arg(0);
-				if(a<0){
-					damageSprint(a*RLVcfg$limitSprint);
-					return;
-				}
-				
-				sprint+=a*RLVcfg$limitSprint;
-				if(sprint>RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
-				outputSprint();
+        #if RLVcfg$USE_SPRINT==1
+        if(METHOD == RLVMethod$sprintFadeModifier)sprintFadeModifier = (float)method_arg(0);
+        else if(METHOD == RLVMethod$sprintRegenModifier)sprintRegenModifier = (float)method_arg(0);
+        else if(METHOD == RLVMethod$addSprint){
+			float a = (float)method_arg(0);
+			if(a<0){
+				damageSprint(a*RLVcfg$limitSprint);
+				return;
 			}
-            #endif
-        }
-        if(METHOD == RLVMethod$setSprintPercent){
-            #if RLVcfg$USE_SPRINT==1
-            sprint = RLVcfg$limitSprint*(float)method_arg(0);
-            #endif
-        }
+				
+			sprint+=a*RLVcfg$limitSprint;
+			if(sprint>RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
+			outputSprint();
+		}
+        #endif
+		
+		if(METHOD == RLVMethod$turnTowards){
+			vector vec = (vector)method_arg(0)-llGetPos();
+            vector fwd = vec * <0.0, 0.0, -llSin(PI_BY_TWO * 0.5), llCos(PI_BY_TWO * 0.5)>;
+            fwd.z = 0.0;
+            fwd = llVecNorm(fwd);
+             vector left = fwd * <0.0, 0.0, llSin(PI_BY_TWO * 0.5), llCos(PI_BY_TWO * 0.5)>;
+            rotation rot = llAxes2Rot(fwd, left, fwd % left);
+            vector euler = -llRot2Euler(rot);
+            llOwnerSay("@setrot:"+(string)euler.z+"=force");
+		}
+		
     }
+    if(METHOD == RLVMethod$setSprintPercent){
+        #if RLVcfg$USE_SPRINT==1
+        sprint = RLVcfg$limitSprint*(float)method_arg(0);
+        #endif
+    }
+	
     
     #define LM_BOTTOM 
     #include "xobj_core/_LM.lsl"
