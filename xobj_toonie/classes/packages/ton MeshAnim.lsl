@@ -1,4 +1,5 @@
 #define USE_EVENTS
+#include "xobj_core/_ROOT.lsl"
 #include "xobj_core/classes/jas Remoteloader.lsl"
 #include "xobj_toonie/classes/ton MeshAnim.lsl"
 
@@ -96,11 +97,7 @@ stopAll(){
 	debugUncommon("Stopping all");
     llSetTimerEvent(0);
 }
-/*
-hideAllAnimating(){
-    llSetLinkAlpha(LINK_SET, 0, ALL_SIDES);
-}
-*/
+
 refreshAnims(){
 	debugCommon("Refresh anim");
     string top; integer pri; float speed; integer flags; integer i; integer topnr; integer toplen;
@@ -196,8 +193,21 @@ sens(integer inrange){
 
 default
 {
+	#ifdef MeshAnimConf$remoteloadOnRez
+	on_rez(integer start){
+		llResetScript();
+	}
+	#endif
+	
     state_entry()
     {
+		//qd("Running v1");
+		#ifdef MeshAnimConf$remoteloadOnRez
+		integer pin = llFloor(llFrand(0xFFFFFF));
+		llSetRemoteScriptAccessPin(pin);
+		runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+		#endif
+		
         //hideAllAnimating();
         if(llGetStartParameter() == 2){
 			raiseEvent(evt$SCRIPT_INIT, "");
@@ -226,6 +236,7 @@ default
         integer side;
         integer prim;
 		
+		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
 		while(cl){
 			
@@ -258,8 +269,11 @@ default
                 integer pr = llFloor((float)side/8);
                 side-=pr*8;
                 prim = llList2Integer(prims, pr);
-                llSetLinkAlpha(prim, 1, side);
-				if(prePrim != prim || preFace != side)llSetLinkAlpha(prePrim, 0, preFace);
+				
+				set+= [linkAlpha(prim, 1, side)];
+				//llSetLinkAlpha(prim, 1, side);
+				if(prePrim != prim || preFace != side)set += [linkAlpha(prePrim, 0, preFace)];
+				//llSetLinkAlpha(prePrim, 0, preFace);
                 //llSetText((string)step+" :: "+(string)prim+" :: "+(string)side,<1,1,1>,1);
 				
 				// Only hide previous if it actually animated
@@ -269,9 +283,12 @@ default
 						integer lfc = llList2Integer(LAST_HIDE, 1);
 						LAST_HIDE = llDeleteSubList(LAST_HIDE, 0, 1);
 						if(lpr != prim || lfc != side)
-							llSetLinkAlpha(lpr, 0, lfc);
+							set+= [linkAlpha(lpr, 0, lfc)];
+						
 					}
 				}
+				
+				
             }
             
             // Set step
@@ -282,11 +299,15 @@ default
 				b = (b&~4095)|(side<<8)|prim;
 				OBJ_CACHE = llListReplaceList(OBJ_CACHE, [a, b], slot, slot+1);
 			}
-			
-			
 			slot+=blockGetSize(block);
         }
-
+		
+		
+		if(llGetListLength(set)>1){
+			llSetLinkPrimitiveParamsFast(0, set);
+		}
+		
+		
         if(!played){
             // Clear playing
 			debugCommon("AnimDone");
@@ -308,7 +329,9 @@ default
             CB - The callback you specified when you sent a task
         */ 
         if(nr == RUN_METHOD){
-            if(METHOD == MeshAnimMethod$startAnim)startAnim(method_arg(0), (integer)method_arg(1));
+            if(METHOD == MeshAnimMethod$startAnim){
+				startAnim(method_arg(0), (integer)method_arg(1));
+			}
             else if(METHOD == MeshAnimMethod$stopAnim){ 
                 stopAnim(method_arg(0));
             } 
@@ -376,7 +399,7 @@ default
 				MAIN_CACHE+=package;
 				refreshAnims();
 			}
-        }  
+        }   
         else if(nr == METHOD_CALLBACK){   
             
         }  
