@@ -29,6 +29,9 @@
 // Attachments attached through this script
 // #define Attached$detachHash llSHA1String((string)llGetOwner()+"detachall")
 
+// #define Attached$automateMeshAnim - 	Parses standard events from ton MeshAnim. 
+// #define Attached$useExtUpdate - Use a different script to update. Useful for the portal method of spawned assets
+
 #define AttachedMethod$remove 0			// NULL
 
 #define Attached$remove(attachmentName) runOmniMethod("jas Attached", AttachedMethod$remove, [attachmentName], TNN)
