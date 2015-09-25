@@ -19,7 +19,7 @@
 
 
 listen(integer chan, string name, key id, string message){
-	debugCommon("COM received:\n"+message);
+	//debugCommon("COM received:\n"+message);
 	
 	#ifdef LISTEN_LIMIT_FREETEXT
 	LISTEN_LIMIT_FREETEXT
@@ -54,15 +54,18 @@ listen(integer chan, string name, key id, string message){
     }
 	#endif
 	
-
+	#ifndef DISREGARD_TOKEN
 	string expected = getToken(id, llGetOwner(), llGetSubString(message,0,15));
 	if(llGetSubString(message, 0, llStringLength(expected)-1) != getToken(id, llGetOwner(), llGetSubString(message,0,15))){
 		debugUncommon("Token rejected, call: "+message+" expected "+expected);
 		return;
     } 
 	message = llDeleteSubString(message, 0,llStringLength(expected)-1);
+	#endif
+	
 	
 	debugCommon("COM passed: "+llGetSubString(message, llSubStringIndex(message, ":")+1, -1));
+	//qd("COM passed: "+llGetSubString(message, llSubStringIndex(message, ":")+1, -1));
 	
 	//integer targ = LINK_SET;
 	llMessageLinked(LINK_SET, (integer)llGetSubString(message, 0,llSubStringIndex(message, ":")-1), llGetSubString(message, llSubStringIndex(message, ":")+1, -1), id);
