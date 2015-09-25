@@ -64,11 +64,16 @@
 #define playerChan(id) (-llAbs((integer)("0x7"+llGetSubString((string)id, -7,-1))+PC_SALT))
 
 #ifndef OVERRIDE_TOKEN
+	#ifndef DISREGARD_TOKEN
 // This generates a salted hash for your project. Feel free replace the content of this function with an algorithm of your own.
 string getToken(key senderKey, key recipient, string saltrand){
 	if(saltrand == "")saltrand = llGetSubString(llGenerateKey(),0,15);
 	return saltrand+llGetSubString(llSHA1String((string)senderKey+(string)llGetOwnerKey(recipient)+TOKEN_SALT+saltrand),0,15);
 }
+	#else
+#define getToken(a,b,c) ""
+	#endif
+	
 #endif
 // Returns "" on fail, else returns data
 
@@ -134,7 +139,7 @@ initiateListen(){
 
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
-#define stdOmniCom(methodType, className, data) llRegionSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
+#define stdOmniCom(sender, methodType, className, data) llRegionSay(playerChan(sender), getToken(llGetKey(), sender, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "");
 #define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender);
 #define sendCallback(sender, senderScript, method, cbdata, cb) list CB_OP = [method, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, senderScript, CB_OP);}
@@ -155,18 +160,18 @@ runMethod(string uuidOrLink, string className, integer method, list data, string
 runOmniMethod(string className, integer method, list data, string callback){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
-	stdOmniCom(RUN_METHOD, className, op);
+	stdOmniCom(llGetOwner(), RUN_METHOD, className, op);
 }
 
-// Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little
-runLimitMethod(string className, integer method, list data, string callback, float range){
+// Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little, tokenSender should by default be llGetOwner but can be changed if you need to AOE on another person's channel
+runLimitMethod(key tokenSender, string className, integer method, list data, string callback, float range){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
 	
-	if(range>96)stdOmniCom(RUN_METHOD, className, op);
-	else if(range>20)llShout(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else if(range>10)llSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else llSay(playerChan(llGetOwner()), getToken(llGetKey(), llGetOwner(), "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	if(range>96)stdOmniCom(tokenSender, RUN_METHOD, className, op);
+	else if(range>20)llShout(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else if(range>10)llSay(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else llWhisper(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
 }
 
 // Placeholder function for events. Copy paste this and fill it with code in each module that needs to listen to events.
