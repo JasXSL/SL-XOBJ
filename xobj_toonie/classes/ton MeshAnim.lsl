@@ -176,10 +176,11 @@
 #define MeshAnimFlag$LOOPING 1
 #define MeshAnimFlag$PLAYING 2
 #define MeshAnimFlag$DONT_HIDE_PREVIOUS 4
+#define MeshAnimFlag$STOP_ON_END 8				// Stops all animations and prevents any new animations from playing until MeshAnim resume is called
 
 
 #ifndef MeshAnimConf$LIMIT_AGENT_RANGE
-#define MeshAnimConf$LIMIT_AGENT_RANGE 0
+	#define MeshAnimConf$LIMIT_AGENT_RANGE 0
 #endif
 
 // Method hooks

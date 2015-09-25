@@ -60,7 +60,7 @@ list LAST_HIDE;	// (int)link, (int)face to be hidden when a new animation starts
 
 integer BFL = 0;
 #define BFL_AGENTS_IN_RANGE 0x1
-
+#define BFL_STOPPED 0x2
 
 startAnim(string name, integer restart){
 	integer i; integer found;
@@ -72,7 +72,11 @@ startAnim(string name, integer restart){
 		}
 		i+=llList2Integer(MAIN_CACHE, i+1);
 	}
-	if(!found)return;
+	
+	if(!found){
+		debugUncommon("Anim not found "+name+" in cache "+mkarr(MAIN_CACHE));
+		return;
+	}
 	if(restart && name == CURRENT_ANIM){
 		CURRENT_ANIM = "";
 	}
@@ -136,6 +140,7 @@ refreshAnims(){
 		}
     }
 	
+	debugUncommon("Top is "+top);
     if(top == CURRENT_ANIM || top == "")return;
 	
     CURRENT_ANIM = top;
@@ -156,7 +161,9 @@ refreshAnims(){
 	#ifdef MeshAnimConf$animStartEvent
 	raiseEvent(MeshAnimEvt$onAnimStart, CURRENT_ANIM);
 	#endif
-	llSetTimerEvent(SPEED_CACHE);
+	
+	if(~BFL&BFL_STOPPED)
+		llSetTimerEvent(SPEED_CACHE);
 }
 
 
@@ -219,6 +226,7 @@ default
 			raiseEvent(MeshAnimEvt$agentsInRange, "");
 			BFL = BFL|BFL_AGENTS_IN_RANGE;
 		#endif
+		raiseEvent(MeshAnimEvt$agentsInRange, "");
     }
 	
 	attach(key id){llResetScript();}
@@ -226,7 +234,13 @@ default
 	
 	#if MeshAnimConf$LIMIT_AGENT_RANGE>0
 	sensor(integer total){sens(TRUE);}
-	no_sensor(){sens(FALSE);}
+	no_sensor(){
+		if(llGetAttached()){
+			sens(TRUE);
+			llSensorRemove();
+		}
+		else sens(FALSE);
+	}
 	#endif 
 	
     timer(){ 
@@ -238,19 +252,22 @@ default
 		
 		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
+
 		while(cl){
-			
 			blockSplice(cl, block);
-			
 			integer prePrim = blockGetPrePrim(block);
             integer preFace = blockGetPreFace(block);
             integer step = blockGetStep(block);
             
+			
+			
 			list frames = blockGetFrames(block);
 			list prims = blockGetPrims(block);
 			
 			integer maxSteps = llGetListLength(frames);
             integer maxPrims = blockGetNrPrims(block);
+			
+			//qd("Block "+llGetLinkName(llList2Integer(prims, 0))+" max steps "+(string)maxSteps+" max prims : "+(string)maxPrims);
 			
             while(llGetListEntryType(frames, step) == TYPE_STRING && step<llGetListLength(frames)){
                 raiseEvent(MeshAnimEvt$frame, llList2String(frames,step));
@@ -311,7 +328,11 @@ default
         if(!played){
             // Clear playing
 			debugCommon("AnimDone");
-            stopAnim(CURRENT_ANIM);
+            
+			if(FLAG_CACHE&MeshAnimFlag$STOP_ON_END){
+				BFL = BFL|BFL_STOPPED;
+				llSetTimerEvent(0);
+			}else stopAnim(CURRENT_ANIM);
         }else{
 			//qd((string)SPEED_CACHE);
 			llSetTimerEvent(SPEED_CACHE);
@@ -330,29 +351,34 @@ default
         */ 
         if(nr == RUN_METHOD){
             if(METHOD == MeshAnimMethod$startAnim){
+				debugUncommon("Start anim: "+method_arg(0));
 				startAnim(method_arg(0), (integer)method_arg(1));
 			}
             else if(METHOD == MeshAnimMethod$stopAnim){ 
                 stopAnim(method_arg(0));
             } 
+			else if(METHOD == MeshAnimMethod$resume){
+				BFL = BFL&~BFL_STOPPED;
+				refreshAnims();
+			}
             else if(METHOD == MeshAnimMethod$stopAll)stopAll() ;     
 			else if(METHOD == MeshAnimMethod$emulateFrameEvent)raiseEvent(MeshAnimEvt$frame, method_arg(0));
 			else if(METHOD == MeshAnimMethod$rem){
+				debugCommon("Removing anim "+method_arg(0)+" sent from "+SENDER_SCRIPT);
 				integer i; string name = method_arg(0);
-				while(i<llGetListLength(MAIN_CACHE)){
+				while(i<llGetListLength(MAIN_CACHE) && llGetListLength(MAIN_CACHE)){
 					if(llList2String(MAIN_CACHE, i) == name){
 						integer len = llList2Integer(MAIN_CACHE, i+1);
 						MAIN_CACHE = llDeleteSubList(MAIN_CACHE, i, i+len-1);
-						MeshAnim$rem(name);
-						return;
-					}
-					i+=llList2Integer(MAIN_CACHE, i+1);
+					}else i+=llList2Integer(MAIN_CACHE, i+1);
 				}
 				refreshAnims();
 			}
 			else if(METHOD == MeshAnimMethod$add){
 				//(str)package_name, package_length, (int)package_prio, (int)flags, (float)speed, block1data, block2data..
 				// anim, data, flags, priority
+				debugCommon("Adding anim "+method_arg(0));
+				
 				string data = method_arg(1);
 				list package = [method_arg(0), 0, (integer)method_arg(3), (integer)method_arg(2), (float)jVal(data, ["s"])];
 				list json = llJson2List(jVal(data, ["o"]));
