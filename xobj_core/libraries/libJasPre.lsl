@@ -2,6 +2,7 @@
 // They're basically just ways of using the preprocessor to let you do more in less code
 
 
+
 // FOREACH LOOPS //
 // Iterate an lsl list getting index and val, leaving the list as it is
 	#define list_each(input, int, val, fnAction)  integer int; for(int=0; int<llGetListLength(input); int++){ string val=llList2String(input, int); fnAction}
@@ -124,10 +125,12 @@ list bitArrToList(integer int, integer bytesize){
 // Lets you use lowercase true or false
 #define true TRUE
 #define false FALSE
-
+#define null ""
+#define NULL null
 
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)
+#define j(obj, var) llJsonGetValue(obj, [var])
 
 // Quickly set memory limit to a multiplier of current memory used
 #define memLim(multi) llSetMemoryLimit(llCeil((float)llGetUsedMemory()*multi))
@@ -143,13 +146,18 @@ list bitArrToList(integer int, integer bytesize){
 #define prDesc(prim) (string)llGetObjectDetails(prim, [OBJECT_DESC])
 #define prLinkedToMe(prim) (llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0) == llGetKey())
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
-// Check if prim is in front of me
+#define prAttachPoint(prim) llList2Integer(llGetObjectDetails(prim, [OBJECT_ATTACHED_POINT]), 0)
+
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(llVecNorm(fwd * llGetRot()), llVecNorm(llList2Vector(odata, 0)-llGetPos())));} 
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(fwd * llGetRot(), llList2Vector(odata, 0)-llGetPos()));} 
-#define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetPos())/llGetRot()*llEuler2Rot(<0,PI_BY_TWO,0>); var = llAtan2(temp.y,temp.x);}
+// Check if prim is in front of me
+#define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetPos())/llGetRot()*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define prAngX(object, var) prAngle(object, var, ZERO_ROTATION)
 #define prAngZ(object, var) prAngle(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
 
+#define myAng(object, var, rotOffset) float var; {vector temp = (llGetPos()-prPos(object))/prRot(object)*rotOffset; var = llAtan2(temp.y,temp.x);}
+#define myAngX(object, var) myAng(object, var, ZERO_ROTATION)
+#define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
 
 // Check if I am in front of prim if VAR > PI_BY_TWO
 #define myAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llList2Rot(odata, 1)); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llGetPos()-llList2Vector(odata, 0))); var = llRot2Angle(bet);} 
@@ -158,10 +166,16 @@ list bitArrToList(integer int, integer bytesize){
 #define linkAlpha(link, alpha, side) PRIM_LINK_TARGET, link, PRIM_COLOR, side, llList2Vector(llGetLinkPrimitiveParams(link, [PRIM_COLOR, side]), 0), alpha
 
 
+#define boundsHeight(obj, var) float var; {list _bounds = llGetBoundingBox(obj); vector _a =llList2Vector(_bounds, 0); vector _b = llList2Vector(_bounds,1); var = (llFabs(_a.z)+llFabs(_b.z));}
+
+
 
 
 
 // Vectors
 #define vecBetween(a, b, distance) a-(llVecNorm(a-b)*distance)
-
+// For on_rez position
+#define int2vec(input) <((input>>21)&255), ((input>>13)&255), (input&8191)>
+#define vecFloor(input) <llFloor(input.x), llFloor(input.y), llFloor(input.z)>
+#define vec2int(input) ((integer)input.x<<21)|((integer)input.y<<13)|(integer)input.z
 
