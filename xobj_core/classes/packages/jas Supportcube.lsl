@@ -75,6 +75,7 @@ default
     }
     
     state_entry(){
+		llSetStatus(STATUS_PHANTOM, TRUE);
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
 		debugCommon("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);

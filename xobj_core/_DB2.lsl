@@ -93,7 +93,7 @@ string db2(integer task, string script, list sub, string val){
 		#ifndef SCRIPT_IS_ROOT
 		debugCommon("Saving instantly onto "+llGetLinkName(llList2Integer(DB2_CACHE, pos+1))+" face: "+llList2String(DB2_CACHE, pos+2)+" data: "+val)
 		#endif
-		llSetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, llGetSubString(set,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(set,1024,2047), PRIM_MEDIA_WHITELIST, llGetSubString(set, 2048, 3071), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
+		llSetLinkMedia(llList2Integer(DB2_CACHE, pos+1), llList2Integer(DB2_CACHE, pos+2), [PRIM_MEDIA_HOME_URL, llGetSubString(set,0,1023), PRIM_MEDIA_CURRENT_URL, llGetSubString(set,1024,2047), PRIM_MEDIA_WHITELIST, llGetSubString(set, 2048, 3070), PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE]);
 	}
 	return "1";
 }

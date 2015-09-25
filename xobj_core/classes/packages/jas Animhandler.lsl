@@ -32,33 +32,36 @@ default
             SENDER_SCRIPT - (var)parameters
             CB - The callback you specified when you sent a task
         */
+		if(method$isCallback)return;
+		
         if(method$byOwner){
             if(METHOD == AnimHandlerMethod$anim){
-                if(~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
-                    debugRare("Error: Anim permissions lacking, reattach  your HUD.");
-                    return;
-                }
-                if(llGetInventoryType(method_arg(0)) != INVENTORY_ANIMATION && method_arg(0) != "sit"){
-                    debugRare("Error: Anim not found: "+method_arg(0));
-                    return;
-                }
-                integer start = (integer)method_arg(1);
-                float dly = (float)method_arg(2);
-                if(dly){
-                    multiTimer([method_arg(0), start, dly, FALSE]);
-                }
-                
-                if(start){
-                    llStartAnimation(method_arg(0));
-                    //llOwnerSay("Starting: "+method_arg(0));
-                }
-                else{
-                    //llOwnerSay("Stopping: "+method_arg(0));
-                    llStopAnimation(method_arg(0));
-                }
-            }
-            if(nr == METHOD_CALLBACK){ 
-                
+                list anims = [method_arg(0)];
+				if(llJsonValueType((string)anims, []) == JSON_ARRAY)anims = llJson2List((string)anims);
+				integer start = (integer)method_arg(1);
+				float dly = (float)method_arg(2);
+					
+				list_shift_each(anims, anim, 
+					if(~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
+						debugRare("Error: Anim permissions lacking, reattach  your HUD.");
+						return;
+					}
+					if(llGetInventoryType(anim) != INVENTORY_ANIMATION && method_arg(0) != "sit"){
+						debugRare("Error: Anim not found: "+method_arg(0));
+						return;
+					}
+
+					if(dly)
+						multiTimer([method_arg(0), start, dly, FALSE]);
+					
+					
+					if(start)
+						llStartAnimation(anim);
+					
+					else
+						llStopAnimation(anim);
+					
+				)
             }
         }
         

@@ -7,24 +7,28 @@
 	To fully utilize the RLV script, you obviously need RLV enabled in your viewer.
 	You also need to install the supportcube. Here's how to get everything up and running.
 	
+	Add #define SupportcubeCfg$listenOverride channel
+	to your core file with channel being a random integer
+	this will be used to communicate faster with your supportcube
+	
 	Install the support cube
-	1. Create a new box, it can be any size but I recommend a default 0.5x0.5x0.5 cube.
+	1. Create a new box, it can be any size but I recommend a default 0.5x0.5x0.5 cube. Name it "SupportCube"
 	2. Create a script in it, name the script "jas Supportcube"
-	3. #include "xobj_core/classes/st Supportcube.lsl"
-	4. #define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
+	3. #define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
+	4. #include "xobj_core/classes/jas Supportcube.lsl"
 	5. Include your project _core.lsl file
-	6. #include "xobj_core/classes/packages/st Supportcube.lsl"
+	6. #include "xobj_core/classes/packages/jas Supportcube.lsl"
 	7. Save and pick up the object. Make sure its got copy permissions set.
 	
 	It's important that they are added in that order, #define LISTEN_OVERRIDE will NOT work if it gets added AFTER _core.lsl
 	
-	Install st RLV
+	Install jas RLV
 	1. Create a new script in your HUD (root prim recommended) and named it "jas RLV"
 	2. Include your _core.lsl file
-	3. #include "xobj_core/classes/packages/st RLV.lsl"
+	3. #include "xobj_core/classes/packages/jas RLV.lsl"
 	4. Optionally you can change some config settings, do that above the includes.
 	5. Compile the script.
-	6. Drop the supportcube you created into the same prim as the st RLV script.
+	6. Drop the supportcube you created into the same prim as the jas RLV script.
 	
 	
 	

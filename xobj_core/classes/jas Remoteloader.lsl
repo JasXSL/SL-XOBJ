@@ -45,7 +45,7 @@ default
 #define RemoteloaderMethod$detach 4		// (str)asset
 
 #ifndef RemoteloaderConf$slaves
-#define RemoteloaderConf$slaves 5
+	#define RemoteloaderConf$slaves 5
 #endif
 
 // Preprocessor shortcuts

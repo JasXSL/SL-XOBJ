@@ -55,6 +55,7 @@ default
 			list dta = llJson2List(PARAMS);
 			if(id == "")id = llList2String(dta, -1);
 			
+			
 			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, llList2String(dta, 0), llList2Integer(dta, 1), llList2Integer(dta, 2)]), "rm_slave");
             if(slave>=RemoteloaderConf$slaves)slave = 0;
         }

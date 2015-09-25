@@ -212,7 +212,7 @@ public_setSubFolder(string folder){
     SUBFOLDER = folder;
 }
 #endif
-*/
+
 default 
 {
     object_rez(key id){
