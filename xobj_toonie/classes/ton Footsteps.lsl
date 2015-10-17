@@ -9,7 +9,7 @@
 	}
 	
 	Install:
-	1. Create a new script and name it toFootsteps
+	1. Create a new script and name it ton Footsteps
 	2. Include your _core.lsl file
 	3. Include any other files you want
 	4. add onThud(float z){} which is raised when landing heavily

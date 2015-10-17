@@ -17,7 +17,7 @@
 	5. Create a new function: onDesc(key obj, string text)
 	6. Create a new function: integer preInteract(key obj)
 	7. Create a new function: onInit(){}
-	8. #include "xobj_core/classes/packages/st Interact.lsl"
+	8. #include "xobj_core/classes/packages/jas Interact.lsl"
 
 	onInteract will be raised when a user interacts (default fly up) with an object
 	onDesc will be raised when the aimed at description changes or is lost
@@ -25,10 +25,9 @@
 	
 	You can also create an onInit(){} function which is run as the first code of state_entry
 	
-	Required scripts:
-	- st Interact
-	- st RLV
-	- st Climb
+	Required header scripts:
+	- jas RLV
+	- jas Climb
 	
 */
 

@@ -96,8 +96,9 @@ string FX_buildCondition(integer cond, list vars){
 #define PF_DETRIMENTAL 0x2            // Package is detrimental.
 #define PF_UNDISPELLABLE 0x4			// 
 #define PF_UNIQUE 0x8					// Makes the name unique
-#define PF_EVENT_ON_OVERWRITE 0x16		// Raises the removal event even when overwritten. Only works together with PF_UNIQUE
+#define PF_EVENT_ON_OVERWRITE 0x20		// Raises the removal event even when overwritten. Only works together with PF_UNIQUE
 // an integer PID gets added on the end when added to FX
+#define PF_TRIGGER_IMMEDIATE 0x40		// Runs the effect as an instant effect when it's added
 
 #define FX_DUR 0
 #define FX_TICK 1

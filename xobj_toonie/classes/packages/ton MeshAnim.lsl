@@ -399,6 +399,7 @@ default
 					// Put the IDs into an array
 					for(x=0; x<llCeil((float)maxFrame/8) || x<1; x++)idCache+=0;
 					
+
 					// Find all the prims in the linkset and put them to idCache
 					links_each(num, ln, {
 						if(llGetSubString(ln, 0, llStringLength(rootPrimName)-1) == rootPrimName){
@@ -408,8 +409,9 @@ default
 							}
 						}
 					});
-					if(~llListFindList(idCache, [0])){
-						qd("Error: Prims not found for "+method_arg(0)+". Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
+					integer p =llListFindList(idCache, [0]); 
+					if(~p){
+						qd("Error: Prims not found for "+method_arg(0)+" ("+(string)p+"). Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
 						return;
 					}
 					
