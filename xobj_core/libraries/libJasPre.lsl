@@ -5,7 +5,7 @@
 
 // FOREACH LOOPS //
 // Iterate an lsl list getting index and val, leaving the list as it is
-	#define list_each(input, int, val, fnAction)  integer int; for(int=0; int<llGetListLength(input); int++){ string val=llList2String(input, int); fnAction}
+	#define list_each(input, int, val, fnAction)  {integer int; for(int=0; int<llGetListLength(input); int++){ string val=llList2String(input, int); fnAction}}
 	// Ex: list_each(myList, k, v, {llSay(0, (string)k+" => "+v);})
 
 // Iterate  an lsl list, deleting each value after it's been run
@@ -21,7 +21,7 @@
 	// Ex: obj_each(jsonObject, k, v, {llSay(0, k+" => "+v);});
 	
 // Iterate over links with link nr and link name
-	#define links_each(linknum, linkname, fnAction)  integer linknum; for(linknum=1; linknum<=llGetNumberOfPrims(); linknum++){ string linkname=llGetLinkName(linknum); fnAction}
+	#define links_each(linknum, linkname, fnAction)  {integer linknum; for(linknum=1; linknum<=llGetNumberOfPrims(); linknum++){ string linkname=llGetLinkName(linknum); fnAction}}
 	// Ex: links_each(num, name, {llSay(0, "Link #"+(string)num+" is called: "+name);});
 	
 	
@@ -151,7 +151,7 @@ list bitArrToList(integer int, integer bytesize){
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(llVecNorm(fwd * llGetRot()), llVecNorm(llList2Vector(odata, 0)-llGetPos())));} 
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(fwd * llGetRot(), llList2Vector(odata, 0)-llGetPos()));} 
 // Check if prim is in front of me
-#define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetPos())/llGetRot()*rotOffset; var = llAtan2(temp.y,temp.x);}
+#define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetRootPosition())/llGetRootRotation()*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define prAngX(object, var) prAngle(object, var, ZERO_ROTATION)
 #define prAngZ(object, var) prAngle(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
 
