@@ -29,9 +29,9 @@ list DB2_CACHE; // [(str)script, (int)prim, (int)face]
 #ifdef DB2_PRESERVE_ON_RESET
 	DB2_ini(){
 		integer nr;
-		for(nr=1; nr<llGetNumberOfPrims(); nr++){
+		for(nr=1; nr<=llGetNumberOfPrims(); nr++){
 			string name = llGetLinkName(nr); 
-			if(llGetSubString(name,0,llStringLength(db2$prefix)-1) == db2$prefix && llGetSubString(name,llStringLength(db2$prefix),-1) == "0"){
+			if(name == db2$prefix + "0"){
 				DB2_CACHE = llJson2List((string)llGetLinkMedia(nr, 0, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]));
 				
 				// If root and DB2 is empty, then store the cache
