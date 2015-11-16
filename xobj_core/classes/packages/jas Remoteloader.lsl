@@ -9,15 +9,59 @@ integer slave = 0;
 list delayed_callbacks; // [name, script, callback, method]
 integer dcs = 4;
 
+integer BFL;
+#define BFL_QUE 0x1
+
+integer queued;
+list queue;				// [(key)id, (str)script, (int)pin, (int)startparam]
+#define QSTRIDE 4
+
+
+next(){
+	if(BFL&BFL_QUE || queue == []){
+		if(queue == []){
+			multiTimer(["C", "", 4, FALSE]);	// Load finish timer
+		}
+		return;
+	}
+	integer i;
+	for(i=0; i<=RemoteloaderConf$slaves && queue != []; i++){
+		if(slave>=RemoteloaderConf$slaves){
+			BFL = BFL|BFL_QUE;
+			multiTimer(["A", "", 3, FALSE]);
+			multiTimer(["C"]);		// Clear load finish timer
+			return;
+		}else{
+			//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
+			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
+			queue = llDeleteSubList(queue, 0, QSTRIDE-1);
+		}
+		slave++;
+	}
+	multiTimer(["C", "", 4, FALSE]);	// load finish timer
+}
+
+
+timerEvent(string id, string data){
+	if(id == "A"){
+		slave = 0;
+		BFL = BFL&~BFL_QUE;
+		next();
+	}
+	else if(id == "C"){
+		queued = 0;
+		#ifdef onLoadFinish
+		onLoadFinish;
+		#endif
+	}
+}
+
+
 default
 {
     on_rez(integer start){
         llResetScript();
     }
-    state_entry() 
-    {
-        memLim(1.5);
-    } 
     
     object_rez(key id){
         list str = llList2ListStrided(delayed_callbacks, 0,-1, 3);
@@ -31,8 +75,12 @@ default
             delayed_callbacks = llDeleteSubList(delayed_callbacks, pos*dcs, pos*dcs+dcs-1);
         }
     } 
-
-    //timer(){multiTimer([]);}
+	
+	#ifdef stateEntry
+	state_entry(){stateEntry;}
+	#endif
+	
+    timer(){multiTimer([]);}
 
     #include "xobj_core/_LM.lsl"
         /*
@@ -50,14 +98,11 @@ default
             
         if(METHOD == RemoteloaderMethod$load){
             //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
-            slave++;
-
+			queued++;
 			list dta = llJson2List(PARAMS);
 			if(id == "")id = llList2String(dta, -1);
-			
-			
-			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [id, llList2String(dta, 0), llList2Integer(dta, 1), llList2Integer(dta, 2)]), "rm_slave");
-            if(slave>=RemoteloaderConf$slaves)slave = 0;
+			queue+= [id]+llList2List(dta, 0, 2);
+			next();
         }
         else if(METHOD == RemoteloaderMethod$asset){
             llGiveInventory(id, method_arg(0));

@@ -286,8 +286,10 @@ default
         return;
     }
     
-
+	#ifndef RLVcfg$NO_RESTRICT
     if(method$byOwner){
+	#endif
+	
         #if RLVcfg$USE_FOLDERS==1
 		if(METHOD == RLVMethod$setFolder)
             public_setFolder(method_arg(0));
@@ -371,8 +373,9 @@ default
             vector euler = -llRot2Euler(rot);
             llOwnerSay("@setrot:"+(string)euler.z+"=force");
 		}
-		
+	#ifndef RLVcfg$NO_RESTRICT	
     }
+	#endif
     if(METHOD == RLVMethod$setSprintPercent){
         #if RLVcfg$USE_SPRINT==1
         sprint = RLVcfg$limitSprint*(float)method_arg(0);

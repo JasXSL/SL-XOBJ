@@ -26,6 +26,7 @@ onEvt(string script, integer evt, string data){
     if(script == "jas RLV" && evt == evt$SCRIPT_INIT){
         init();
     }
+
     else if(script == "#ROOT"){
 		if(evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
 			if(BFL&BFL_RECENT_CLICK)return;
@@ -70,7 +71,6 @@ onEvt(string script, integer evt, string data){
 					RLV$sitOn(targ, FALSE); 
 				} 
 				else if(task == Interact$TASK_CLIMB){ 
-							
 					Climb$start(targ, 
 						(rotation)llList2String(split,1), // Rot offset 
 						llList2String(split,2), // Anim passive
@@ -122,14 +122,19 @@ timerEvent(string id, string data){
 						return;
 					}
 						
-					
+					string td = prDesc(k);
 					#ifdef InteractConf$USE_ROOT
 					k = prRoot(k);
+					#else
+					if(td == "ROOT"){
+						k = prRoot(k);
+						td = prDesc(k);
+					}
 					#endif
 
                     if(prRoot(llGetOwner()) != prRoot(k)){
 						
-                        string td = prDesc(k);
+                        
                         list descparse = llParseString2List(td, ["$$"], []);
         
                         list_shift_each(descparse, val, {
@@ -159,14 +164,11 @@ timerEvent(string id, string data){
 
 default
 {
-    on_rez(integer mew){
-        llResetScript();
-    }
-    
     state_entry()
     {
         onInit();
 		llSetMemoryLimit(llGetUsedMemory()*2);
+		init();
     }
     
     timer(){multiTimer([]);}

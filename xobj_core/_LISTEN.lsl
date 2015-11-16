@@ -12,6 +12,7 @@
 	#define LISTEN_OVERRIDE (int)chan - Allows the owner to run override messages through the function onListenOverride(integer chan, key id, string message){} Use this only when you need to send lots of commands in rapid succession.
 	#define DEBUG - Outputs all messages to owner
 	#define ALLOW_USER_DEBUG 2=anyone - Lets anyone/owner raise events by saying debug script, method, arg1, arg2...
+	#define ALLOW_USER_DEBUG_KEY (key)id - Limit to a specific key
 	#define LISTEN_LIMIT_FREETEXT - Lets you define freetext code to be injected into _LISTEN
 	
 */
@@ -42,6 +43,9 @@ listen(integer chan, string name, key id, string message){
 	
 	#ifdef ALLOW_USER_DEBUG
     if(chan == 0){
+		#ifdef ALLOW_USER_DEBUG_KEY
+		if(llGetOwnerKey(id) != ALLOW_USER_DEBUG_KEY)return;
+		#endif
 		#if ALLOW_USER_DEBUG!=2
 		if(llGetOwnerKey(id) != llGetOwner())return;
 		#endif
