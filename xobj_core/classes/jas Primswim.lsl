@@ -18,7 +18,7 @@
 	How to install st PrimswimAux:
 	1. Create a new script, name it "jas PrimswimAux"
 	2. Include your _core.lsl file
-	3. #include "xobj_core/classes/packages/st PrimswimAux.lsl"
+	3. #include "xobj_core/classes/packages/jas PrimswimAux.lsl"
 	4. Compile.
 	5. Create a new prim in world, leave it as a .5 x .5 x .5 cube.
 	6. Create a new script in it, name it whatever you want.

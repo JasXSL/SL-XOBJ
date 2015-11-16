@@ -134,12 +134,12 @@ link_message(integer link, integer nr, string str, key id){
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
 		string CB = JSON_NULL;
-		integer s_LEN = llStringLength(llGetScriptName());
+		integer pos = llSubStringIndex(str, "[");
 		// Make sure this script is the receiver
-		if(llGetSubString(str,0,s_LEN-1) != llGetScriptName())return;
+		if(llGetSubString(str,0,pos-1) != llGetScriptName())return;
 		
 		
-		list s_DATA = llJson2List(llGetSubString(str, s_LEN, -1));
+		list s_DATA = llJson2List(llGetSubString(str, pos, -1));
 		integer METHOD = llList2Integer(s_DATA, 0);
 		string PARAMS = llList2String(s_DATA, 1);
 		string SENDER_SCRIPT = llList2String(s_DATA, 2);

@@ -31,6 +31,8 @@ default
 	8. These scripts will be used to speed up remoteloading, to circumvent the long delay caused by it.
 	9. Make sure jas Remoteloader is on drive
 	
+	#define onLoadFinish to any code you want to run when the current queue is complete
+	#define stateEntry to any code you want to put in state entry
 	
 */
 

@@ -78,7 +78,8 @@ dismount(integer atoffset){
     if(atoffset){
         vector gpos = llGetPos();
         vector offset = offset2global(llList2Vector(nodes,0));
-        if(llVecDist(gpos, offset2global(llList2Vector(nodes,-1)))<llVecDist(gpos, offset)){
+		
+        if(~BFL&BFL_DIR_UP){
             offset = offset2global(llList2Vector(nodes,-1));
             anm = anim_dismount_top;
         }
@@ -88,7 +89,7 @@ dismount(integer atoffset){
         setCubePos(offset);
     }
     
-    float to = .05;
+    float to = .1;
     if(isset(anm))to = 1;
     if(anim_passive != ""){
         AnimHandler$anim(anim_passive, FALSE, 0);
@@ -215,7 +216,7 @@ onEvt(string script, integer evt, string data){
     if(script == "jas RLV" && evt == RLVevt$supportcubeSpawn){
         CUBE = data;
     }
-    else if(script == "#ROOT" && BFL&BFL_CLIMBING){
+    else if(script == "#ROOT"){
         integer n = (integer)data;
         integer up = CONTROL_FWD|CONTROL_RIGHT|CONTROL_UP;
         integer dn = CONTROL_BACK|CONTROL_LEFT|CONTROL_DOWN;
@@ -250,6 +251,7 @@ default
     {
         dismount(FALSE);
         init();
+		db2$ini();
     }
     
     timer(){
@@ -280,7 +282,7 @@ default
         if(METHOD == ClimbMethod$start){
             if(BFL&BFL_CLIMBING){
                 dismount(FALSE);
-				debug("Dismount");
+				debugUncommon("Dismount");
                 return;
             }
 
@@ -303,8 +305,10 @@ default
             integer i;
             if(llGetListLength(nodes) == 2)nodes = llList2List(nodes,0,0)+nodes+llList2List(nodes,-1,-1);
             for(i=0; i<llGetListLength(nodes); i++)nodes = llListReplaceList(nodes, [(vector)llList2String(nodes,i)], i, i);
-            
-            if(llGetListLength(nodes) == 4)mount();
+			
+            if(llGetListLength(nodes) == 4){
+				mount();
+			}
 			#ifdef DEBUG
 			else debugRare("Invalid node length: "+(string)llGetListLength(nodes));
 			#endif

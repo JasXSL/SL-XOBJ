@@ -7,14 +7,14 @@
 	#endif
 #endif
 
-#include "xobj_core/classes/jas Supportcube.lsl"
-#include "xobj_core/classes/jas RLV.lsl"
-#include "xobj_core/classes/jas AnimHandler.lsl"
-#include "xobj_core/classes/jas Climb.lsl"
-#include "xobj_core/classes/jas Primswim.lsl"
-#include "xobj_core/classes/jas PrimswimAux.lsl"
-#include "xobj_core/classes/jas Interact.lsl"
-#include "xobj_core/classes/jas Soundspace.lsl"
+#include "../jas Supportcube.lsl"
+#include "../jas RLV.lsl"
+#include "../jas AnimHandler.lsl"
+#include "../jas Climb.lsl"
+#include "../jas Primswim.lsl"
+#include "../jas PrimswimAux.lsl"
+#include "../jas Interact.lsl"
+#include "../jas Soundspace.lsl"
 
 
 string wl_preset;
@@ -40,7 +40,6 @@ integer BFL;
 #define BFL_CONTROLS_TAKEN 512
 #define BFL_AT_SURFACE 1024
 #define BFL_CLIMBING 2048
-#define BFL_SCALING 4096
 
 
 
@@ -165,7 +164,7 @@ enterWater(){
     else llTriggerSound(PrimswimCfg$splashSmall, 1);
     
     raiseEvent(PrimswimEvt$onWaterEnter, "");
-	debug("Entered water");
+	debugUncommon("Entered water");
 	
 	#if PrimswimCfg$USE_WINDLIGHT==1
     wl_preset = db2$get("jas RLV", [RLVShared$windlight]);
@@ -202,6 +201,8 @@ exitWater(){
     toggleCam(FALSE);
     wl_preset = "";
     wl_set = "";
+	
+	debugUncommon("Exited water");
     
 }
 #if PrimswimCfg$USE_WINDLIGHT==1
@@ -244,7 +245,7 @@ timerEvent(string id, string data){
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;
         deepest = 0;
-        
+		
         if(~BFL&BFL_CLIMBING){
             for(i=0;i<llGetListLength(water) && llGetListLength(water);i++){
                 key wID = llList2Key(water,i);
@@ -279,13 +280,16 @@ timerEvent(string id, string data){
                 if(depth>0){
                     atSurface = FALSE;
                 }
+				
+				
+				
                 if(is==-1){ // water removed
                     water = llDeleteSubList(water,i,i);
                     i--; 
                 }else if(is==0){ 
                     is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
                     if(is>deepest)deepest=is;
-                }else if(depth>SURFACE_DEPTH){ // || (is>0 && bottom==ZERO_VECTOR)
+                }else if(depth>SURFACE_DEPTH || atSurface){ // || (is>0 && bottom==ZERO_VECTOR)
                     //if(~BFL&BFL_IN_WATER)llOwnerSay((string)depth+" "+(string)SURFACE_DEPTH+" "+(string)is+" "+(string)bottom);
                     
                     if(i>0){ // INDEX THIS WATER
@@ -339,6 +343,7 @@ timerEvent(string id, string data){
                     // CONTROLS MOVEMENT
                     integer stopped = checkForceStop();
                     
+				
                     if(CONTROL && !stopped){
                         vector fwd; vector left; vector up;
                         if(CONTROL&(CONTROL_FWD|CONTROL_BACK))fwd = llRot2Fwd(llGetCameraRot());
@@ -400,7 +405,7 @@ timerEvent(string id, string data){
                      if(depth<=0 && !water_just_entered && dif.z>-.1 && atSurface){
                         // Then set to swim at surface level
                         if(bottom.z+ascale.z>depth+SURFACE_DEPTH){
-                            SP.z = is-SURFACE_DEPTH-.1-ascale.z/2;
+                            SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
                             BFL = BFL|BFL_AT_SURFACE;
                         }else{
                             BFL = BFL&~BFL_AT_SURFACE;
@@ -422,18 +427,17 @@ timerEvent(string id, string data){
                             // Dive
                             BFL=BFL|BFL_FULLY_SUBMERGED;
                             Soundspace$dive(TRUE);
-                            //sendLocalCom(LINK_ROOT, SCRIPT_SOUNDSPACE, SCRIPT_NO_RET, "", SOUNDSPACE_DIVE, "1");
                         }
                     }else if(BFL&BFL_FULLY_SUBMERGED){
                         // Submerge
                         llTriggerSound(PrimswimCfg$soundSubmerge, .5);
                         Soundspace$dive(FALSE);
-                        //sendLocalCom(LINK_ROOT, SCRIPT_SOUNDSPACE, SCRIPT_NO_RET, "", SOUNDSPACE_DIVE, "0");
                         BFL=BFL&~BFL_FULLY_SUBMERGED;
                     }
                     
                     updateAnimstate();
                     multiTimer([id,"", timerSpeed, FALSE]);
+					// We are submerged, let's return
                     return;
                 }
             }
@@ -450,6 +454,8 @@ timerEvent(string id, string data){
             BFL=BFL&~BFL_FEET_SUBMERGED;
             multiTimer([TIMER_WETFEET_FADE,"", 5, FALSE]);
         }
+		
+		// Couldn't find
         if(BFL&BFL_IN_WATER && ~BFL&BFL_CLIMBING)exitWater();
         updateAnimstate();
         multiTimer([id,"", timerSpeed, FALSE]);
@@ -547,11 +553,12 @@ integer checkClimbout(){
         if(llVecDist(llList2Vector(up, 1), uppos+<0,0,1>)>.5 && llList2Integer(up, -1)!=0){
             list fwd = llCastRay(gpos, gpos+llRot2Fwd(llEuler2Rot(<0,0,vrot.z>)), [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
             vector n = llList2Vector(fwd,2);
+			n = llVecNorm(<n.x,n.y,0>);
             if(llList2Integer(fwd, -1)>0 && llFabs(n.z)<.2){
                 float edge_offset = .1;
                 
                 
-                vector pos = llList2Vector(fwd,1)-llVecNorm(<n.x,n.y,0>)*edge_offset;
+                vector pos = llList2Vector(fwd,1)-n*edge_offset;
                 vector u = llList2Vector(up,1);
                 pos.z = u.z+ascale.z/2;
                 
@@ -559,7 +566,7 @@ integer checkClimbout(){
                     SupportcubeBuildTask(Supportcube$tSetPos, [pos]),
                     SupportcubeBuildTask(Supportcube$tSetRot, ([llRotBetween(<-1,0,0>, n)])),
                     SupportcubeBuildTask(Supportcube$tForceSit, [FALSE, TRUE]),
-                    SupportcubeBuildTask(Supportcube$tRunMethod, [llGetKey(), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])]),
+                    SupportcubeBuildTask(Supportcube$tRunMethod, [llGetLinkKey(LINK_ROOT), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])]),
                     
                     SupportcubeBuildTask(Supportcube$tDelay, [1.5]),
                     SupportcubeBuildTask(Supportcube$tForceUnsit, [])
@@ -593,12 +600,9 @@ onEvt(string script, integer evt, string data){
 
 default
 {
-    on_rez(integer mew){
-        llResetScript();
-    }
-    
     state_entry()
     {
+		llSetText("", ZERO_VECTOR, 0);
         ascale = llGetAgentSize(llGetOwner());
         llStopMoveToTarget();
         setBuoyancy();
@@ -607,12 +611,7 @@ default
         multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
         if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
-        debug((string)PrimswimCfg$USE_WINDLIGHT);
 		memLim(1.5);
-    }
-    
-    attach(key id){
-        if(id != NULL_KEY)llResetScript();
     }
         
     sensor(integer total){ 

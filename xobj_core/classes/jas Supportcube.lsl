@@ -35,11 +35,9 @@
 
 #define SupportcubeOverride$tSetPosAndRot 6		// Tunneled through override - (vec)pos, (rot)rotation
 
-string SupportcubeBuildTask(integer task, list params){
-	return llList2Json(JSON_OBJECT, ["t", task, "p", llList2Json(JSON_ARRAY, params)]);
-}
+#define SupportcubeBuildTask(task, params) llList2Json(JSON_OBJECT, (["t", task, "p", llList2Json(JSON_ARRAY, params)]))
 
-#define SupportcubeBuildTeleport(pos) [SupportcubeBuildTask(Supportcube$tSetPos, [llGetPos()]), SupportcubeBuildTask(Supportcube$tDelay, [.1]), SupportcubeBuildTask(Supportcube$tForceSit, [FALSE, TRUE]), SupportcubeBuildTask(Supportcube$tSetPos, [pos]), SupportcubeBuildTask(Supportcube$tForceUnsit, [])]
+#define SupportcubeBuildTeleport(pos) [SupportcubeBuildTask(Supportcube$tSetPos, [llGetPos()]), SupportcubeBuildTask(Supportcube$tDelay, [.1]), SupportcubeBuildTask(Supportcube$tForceSit, ([FALSE, TRUE])), SupportcubeBuildTask(Supportcube$tSetPos, [pos]), SupportcubeBuildTask(Supportcube$tForceUnsit, [])]
 
 // Listen override lets you send CSVs of TASK, DATA, DATA... to speed up calls
 #ifndef SupportcubeCfg$listenOverride

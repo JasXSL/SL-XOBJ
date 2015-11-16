@@ -47,6 +47,8 @@
 	
 #endif
 
+// #define RLVcfg$NO_RESTRICT <- Makes all RLV methods public. Otherwise they are limited to owner
+
 // Use the sprint limit system
 #ifndef RLVcfg$USE_SPRINT
 	#define RLVcfg$USE_SPRINT 1
@@ -156,6 +158,7 @@
 #define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFolder, [folder], TNN)
 #define RLV$setSubFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setSubFolder, [folder], TNN)
 #define RLV$cubeTask(tasks) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$cubeTask, tasks, TNN)
+#define RLV$cubeTaskOn(targ, tasks) runMethod((string)targ, "jas RLV", RLVMethod$cubeTask, tasks, TNN)
 #define RLV$keepAttached(item) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$keepAttached, [item], TNN)
 #define RLV$remAttached(item) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$remAttached, [item], TNN)
 #define RLV$sprintFadeModifier(multiplier) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sprintFadeModifier, [multiplier], TNN)
@@ -165,6 +168,7 @@
 #define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset], TNN)
 #define RLV$resetWindlight() runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$resetWindlight, [], TNN)
 #define RLV$turnTowards(pos) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$turnTowards, [pos], TNN)
+
 
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
 #define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventTP, [prevent], TNN)

@@ -29,7 +29,7 @@ key targ;
 
 
 onEvt(string script, integer evt, string data){ 
-    if(script == "st Primswim"){
+    if(script == "jas Primswim"){
         
         if(evt == PrimswimEvt$onWaterEnter)BFL = BFL|BFL_SWIMMING;
         else if(evt == PrimswimEvt$onWaterExit)BFL = BFL&~BFL_SWIMMING;

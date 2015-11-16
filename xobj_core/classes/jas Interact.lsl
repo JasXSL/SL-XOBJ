@@ -35,7 +35,7 @@
 
 // #define InteractConf$USE_ROOT			// Uses root prim instead
 
-
+//D$Climb$$CL$<0,0,-.7,.7>$l_p$l_a$l_a$l_d$ $<0,.5,-.5>,<0,.5,-.5>,<0,.5,.8>,<0,-.2,1.5>
 #define Interact$TASK_DESC "D"				// [(str)text] - Text that shows on your HUD
 #define Interact$TASK_TELEPORT "P"			// *[(vec)offset] - Teleports you
 #define Interact$TASK_INTERACT "I"			// NULL - Sends an interact com to the object
@@ -49,6 +49,7 @@
 #define Interact$TASK_FOOTSTEPS "tFS"		// 
 
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
+#define InteractEvt$onInteract 2			// Not built in by default, you can raise this manually if you want
 
 // * Implemented by default. Though you might need to install a module for it.
 

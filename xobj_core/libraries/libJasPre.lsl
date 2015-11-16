@@ -58,7 +58,7 @@
 
 
 // BITWISE OPERATIONS
-#define getBitArr(int, index, bytesize) ((int<<(32-(bytesize*(index+1))))>>(32-bytesize))
+#define getBitArr(int, index, bytesize) ((cds>>(bytesize*index))&((integer)llPow(bytesize, 2)-1))
 #define remBitArr(int, index, bytesize) (int&~(((integer)llPow(bytesize,2)-1)<<(bytesize*index)))
 #define setBitArr(int, set, index, bytesize) (remBitArr(int, index, bytesize)|(set<<(bytesize*index)))
 #define addBitArr(int, set, bytesize) ((int<<bytesize)|set)
@@ -174,7 +174,7 @@ list bitArrToList(integer int, integer bytesize){
 
 // Vectors
 #define vecBetween(a, b, distance) a-(llVecNorm(a-b)*distance)
-// For on_rez position
+// For on_rez position - uses 13+8+8 bits, leaving 3 for config
 #define int2vec(input) <((input>>21)&255), ((input>>13)&255), (input&8191)>
 #define vecFloor(input) <llFloor(input.x), llFloor(input.y), llFloor(input.z)>
 #define vec2int(input) ((integer)input.x<<21)|((integer)input.y<<13)|(integer)input.z
