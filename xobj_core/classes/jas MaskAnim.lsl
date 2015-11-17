@@ -1,19 +1,10 @@
+#include "../../xobj_toonie/classes/ton MeshAnim.lsl"
 /*
 	
 	Mesh anim lets you cycle through object faces like frames ^.^
 	cl MaskAnim does not store data hardcoded in the script, but is meant to be remoteloaded
 	You need jxRemoteloader installed
-	
-	Usage:
-	Start by looking for the MaskAnim ini event. If you're not remoteloading you can add the animation objects directly
-	
-	onEvt(string script, integer evt, string data){
-		if(script == "toMaskAnim"){
-			if(evt == evt$SCRIPT_INIT){
-			
-			}
-		}
-	}
+
 	
 	upon init you can add a new animation object
 	I also recommend you make sure to rename any anims with the same name
@@ -47,14 +38,14 @@
 //#define MaskAnimConf$remoteloadOnRez
 
 								
-#define MaskAnimEvt$frame 0	// Raised when a non-integer frame is discovered
-#define MaskAnimEvt$agentsInRange 1		// Player is within LOD range, start animating
-#define MaskAnimEvt$agentsLost 2		// Out of bounds, the animator will stop
-#define MaskAnimEvt$onAnimStart 3		// (str)anim - Requires the MaskAnimConf
+#define MaskAnimEvt$frame MeshAnimEvt$frame	// Raised when a non-integer frame is discovered
+#define MaskAnimEvt$agentsInRange MeshAnimEvt$agentsInRange		// Player is within LOD range, start animating
+#define MaskAnimEvt$agentsLost MeshAnimEvt$agentsLost		// Out of bounds, the animator will stop
+#define MaskAnimEvt$onAnimStart MeshAnimEvt$onAnimStart		// (str)anim - Requires the MaskAnimConf
 
                                 // Methods //
 
-#define MaskAnimMethod$start 0				// (str)animName
+#define MaskAnimMethod$start 0				// (str)animName, (bool)restart, (bool)override
 #define MaskAnimMethod$stop 1				// (str)animName
 #define MaskAnimMethod$pause 2				// Stops the animation and prevents new animations from firing until resume is sent
 #define MaskAnimMethod$emulateFrameEvent 3	// (var)data - Sends a frame event with data
@@ -62,17 +53,10 @@
 #define MaskAnimMethod$add 5				// name, speed, flags, priority, data
 #define MaskAnimMethod$rem 6				// name
 
-                                // Obj Member Vars //
-#define MaskAnimVal$name "A"
-#define MaskAnimVal$frames "B"
-#define MaskAnimVal$flags "C"
-#define MaskAnimVal$priority "D"
-
-
-#define MaskAnimFlag$LOOPING 1
-#define MaskAnimFlag$PLAYING 2
-#define MaskAnimFlag$DONT_HIDE_PREVIOUS 4
-#define MaskAnimFlag$STOP_ON_END 8				// Stops all animations and prevents any new animations from playing until MaskAnim resume is called
+#define MaskAnimFlag$LOOPING MeshAnimFlag$LOOPING
+#define MaskAnimFlag$PLAYING MeshAnimFlag$PLAYING
+#define MaskAnimFlag$DONT_HIDE_PREVIOUS MeshAnimFlag$DONT_HIDE_PREVIOUS
+#define MaskAnimFlag$STOP_ON_END MeshAnimFlag$STOP_ON_END				// Stops all animations and prevents any new animations from playing until MaskAnim resume is called
 
 
 #ifndef MaskAnimConf$LIMIT_AGENT_RANGE
@@ -82,6 +66,8 @@
 // Method hooks
 #define MaskAnim$start(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName], TNN)
 #define MaskAnim$restart(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName, true], TNN)
+#define MaskAnim$restartOverride(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName, TRUE, TRUE], TNN)
+
 
 #define MaskAnim$stop(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$stop, [animName], TNN)
 #define MaskAnim$pause() runMethod((string)LINK_ROOT, "jas MaskAnim", MaskAnimMethod$pause, [], TNN)
