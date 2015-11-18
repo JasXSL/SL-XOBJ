@@ -178,6 +178,10 @@ refreshAnims(integer restart){
 	}
 	else{
 		need_hide = CURRENT_ANIM;
+		if(flags&MaskAnimFlag$HIDE_PREVIOUS_PRE){
+			toggleMask(need_hide, TRUE);
+			need_hide = "";
+		}
 		debugUncommon("Setting hide to "+need_hide);
 	
 		
