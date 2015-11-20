@@ -246,6 +246,9 @@ default
 		#if RLVcfg$USE_WINDLIGHT==1
 		db2$set([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
 		#endif
+		#if RLVcfg$USE_CAM==1
+		llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
+		#endif
 		memLim(1.5);
     }
     
@@ -297,7 +300,22 @@ default
             public_setSubFolder(method_arg(0));
         }
 		#endif
-			
+		
+		#if RLVcfg$USE_CAM==1
+		if(METHOD == RLVMethod$staticCamera){
+			if(!llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
+			vector pos = (vector)method_arg(0);
+			rotation rot = (rotation)method_arg(1);
+            if(pos == ZERO_VECTOR)return llClearCameraParams();
+			llSetCameraParams([
+				CAMERA_ACTIVE, 1, // 1 is active, 0 is inactive
+				CAMERA_FOCUS, pos+llRot2Fwd(rot), // region relative position
+				CAMERA_FOCUS_LOCKED, TRUE, // (TRUE or FALSE)
+				CAMERA_POSITION, pos, // region relative position
+				CAMERA_POSITION_LOCKED, TRUE // (TRUE or FALSE)
+			]);
+		}
+		#endif
 			
 		if(METHOD == RLVMethod$cubeTask){
 			debugCommon("Received cubetasks: "+PARAMS);

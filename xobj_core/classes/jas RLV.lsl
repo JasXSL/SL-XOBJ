@@ -89,6 +89,11 @@
 	#define RLVcfg$USE_WINDLIGHT 1
 #endif
 
+// Use RLV windlight
+#ifndef RLVcfg$USE_CAM
+	#define RLVcfg$USE_CAM 1
+#endif
+
 
 
 
@@ -149,6 +154,8 @@
 #define RLVMethod$preventFly 15			// (bool)Prevent
 #define RLVMethod$addSprint 16			// (float)perc
 #define RLVMethod$turnTowards 17		// (vec)region_pos - Faces the avatar towards a location
+#define RLVMethod$staticCamera 18		// (vec)region_pos, (rot)rotation - Forces camera to position and rot. If region_pos is 0 it clears
+
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
@@ -168,7 +175,10 @@
 #define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset], TNN)
 #define RLV$resetWindlight() runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$resetWindlight, [], TNN)
 #define RLV$turnTowards(pos) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$turnTowards, [pos], TNN)
-
+#define RLV$targSitOn(targ, uuid, prevent_unsit) runMethod(targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
+#define RLV$targUnsit(targ, override) runMethod(targ, "jas RLV", RLVMethod$unsit, [override], TNN)
+#define RLV$setCamera(targ, pos, rot) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [pos, rot], TNN)
+#define RLV$clearCamera(targ) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [], TNN)
 
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
 #define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventTP, [prevent], TNN)
