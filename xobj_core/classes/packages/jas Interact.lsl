@@ -28,7 +28,12 @@ onEvt(string script, integer evt, string data){
     }
 
     else if(script == "#ROOT"){
-		if(evt == evt$BUTTON_RELEASE && (integer)data&CONTROL_UP){
+		if(evt == evt$BUTTON_RELEASE && (integer)data&(CONTROL_UP
+		#ifdef InteractConf$ALLOW_ML_LCLICK
+		| CONTROL_ML_LBUTTON
+		#endif
+		)
+		){
 			if(BFL&BFL_RECENT_CLICK)return;
 			if(!preInteract(targ))return;
 			

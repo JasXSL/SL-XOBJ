@@ -82,6 +82,7 @@ startAnim(string name, integer restart){
 		debugUncommon("Anim not found "+name+" in cache "+mkarr(MAIN_CACHE));
 		return;
 	}
+	if(name != CURRENT_ANIM)restart = FALSE;			// make sure we don't restart the current anim unless it's playing
     refreshAnims(restart);
 }
 
