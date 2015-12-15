@@ -252,7 +252,10 @@ default
 		
 		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
-
+		
+		
+		
+		
 		while(cl){
 			blockSplice(cl, block);
 			integer prePrim = blockGetPrePrim(block);
@@ -263,7 +266,7 @@ default
 			
 			list frames = blockGetFrames(block);
 			list prims = blockGetPrims(block);
-			
+
 			integer maxSteps = llGetListLength(frames);
             integer maxPrims = blockGetNrPrims(block);
 			
@@ -321,6 +324,7 @@ default
 		
 		
 		if(llGetListLength(set)>1){
+			debugCommon("Setting: "+mkarr(set));
 			llSetLinkPrimitiveParamsFast(0, set);
 		}
 		

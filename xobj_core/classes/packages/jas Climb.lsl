@@ -41,6 +41,8 @@ string anim_passive = "";
 string anim_dismount_top = "";
 string anim_dismount_bottom = "";
 string anim_active_cur;
+string onStart;
+string onEnd;
 
 integer onNode;
 rotation rot;
@@ -96,7 +98,7 @@ dismount(integer atoffset){
     }
     
     multiTimer([TIMER_DISMOUNTING, "", to, FALSE]);
-    raiseEvent(ClimbEvt$end, (string)ladder);
+    raiseEvent(ClimbEvt$end, mkarr(([(string)ladder, onEnd])));
 }
 
 mount(){
@@ -132,7 +134,7 @@ mount(){
     multiTimer([TIMER_INI, 0, 3, FALSE]);
     BFL = BFL|BF_CLIMB_INI;
     BFL = BFL|BFL_CLIMBING;
-    raiseEvent(ClimbEvt$start, (string)ladder);
+    raiseEvent(ClimbEvt$start, mkarr(([(string)ladder, onStart])));
 }
 
 vector offset2global(vector offset){
@@ -277,8 +279,11 @@ default
     }
     */
         
-
+	if(METHOD == ClimbMethod$stop){
+		if(BFL&BFL_CLIMBING) dismount(FALSE);
+	}
     if(id == ""){
+		
         if(METHOD == ClimbMethod$start){
             if(BFL&BFL_CLIMBING){
                 dismount(FALSE);
@@ -297,6 +302,9 @@ default
             anim_dismount_bottom = tr(method_arg(6));
             nodes = llCSV2List(tr(method_arg(7)));
             CLIMBSPEED = (float)tr(method_arg(8));
+			onStart = tr(method_arg(9));
+			onEnd = tr(method_arg(10)); 
+			
 
             if(CLIMBSPEED<=0)CLIMBSPEED = ClimbCfg$defaultSpeed;
             list dta = llGetObjectDetails(ladder, [OBJECT_POS, OBJECT_ROT]);

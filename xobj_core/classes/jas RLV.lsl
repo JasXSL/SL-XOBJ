@@ -159,7 +159,8 @@
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
-
+#define RLVevt$cam_set 2					// (vec)pos - Raised when camera is set
+#define RLVevt$cam_unset 3					// void - Camera unset
 
 // Shortcuts
 #define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFolder, [folder], TNN)

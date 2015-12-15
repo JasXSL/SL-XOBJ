@@ -34,7 +34,8 @@
 // #define USE_EVENT_OVERRIDE to expose an evt(string script, integer evt, string data) function that is run before onEvt
 
 // #define InteractConf$USE_ROOT			// Uses root prim instead
-
+// #define InteractConf$ALLOW_ML_LCLICK 	// Use ml lclick as well for E
+//D$Climb$$CL$<0,.7,.7,0>$c_p$c_a$c_a$ $ $<-5,-.9,0>,<-5,-.9,0>,<5,-.9,0>,<5,-.9,0>
 //D$Climb$$CL$<0,0,-.7,.7>$l_p$l_a$l_a$l_d$ $<0,.5,-.5>,<0,.5,-.5>,<0,.5,.8>,<0,-.2,1.5>
 #define Interact$TASK_DESC "D"				// [(str)text] - Text that shows on your HUD
 #define Interact$TASK_TELEPORT "P"			// *[(vec)offset] - Teleports you

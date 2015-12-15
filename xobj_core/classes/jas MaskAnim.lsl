@@ -52,6 +52,7 @@
 #define MaskAnimMethod$resume 4				// Unpauses the animations
 #define MaskAnimMethod$add 5				// name, speed, flags, priority, data
 #define MaskAnimMethod$rem 6				// name
+#define MaskAnimMethod$forceInRange 7		// (bool)on - Override in range for animations
 
 #define MaskAnimFlag$LOOPING MeshAnimFlag$LOOPING
 #define MaskAnimFlag$PLAYING MeshAnimFlag$PLAYING
@@ -76,6 +77,7 @@
 #define MaskAnim$rem(anim) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$rem, [anim], TNN)
 #define MaskAnim$add(anim, speed, flags, priority, frames) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$add, [anim, speed, flags, priority, frames], TNN)
 
+#define MaskAnim$forceInRange(on) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$forceInRange, [on], TNN)
 
 
 

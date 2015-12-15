@@ -1,5 +1,5 @@
-integer alphaNumeric(string str){
-    if(~llSubStringIndex(llEscapeURL(str), "%"))return FALSE;
+integer alphaNumeric(string s){
+    if(~llSubStringIndex(llEscapeURL(s), "%"))return FALSE;
     return TRUE;
 }
 rotation baserot(){
@@ -147,8 +147,8 @@ float mathToFloat(string al, integer part, string varObj){
      
     if(part == 0){
         for(i=0; i<llGetListLength(split); i++){
-            string str = llStringTrim(llList2String(split,i), STRING_TRIM);
-            if(str == "("){
+            string s = llStringTrim(llList2String(split,i), STRING_TRIM);
+            if(s == "("){
                 integer x; integer ps = 1; list out;
                 for(x = i+1; x<llGetListLength(split); x++){
                     if(llList2String(split,x) == "(")ps++;
@@ -170,13 +170,13 @@ float mathToFloat(string al, integer part, string varObj){
     
     //llOwnerSay("Step: "+(string)part+" : "+llDumpList2String(split, " ")); 
     for(i=0; i<llGetListLength(split); i++){
-        string str = llStringTrim(llList2String(split, i), STRING_TRIM);
-        if(~llListFindList(exp, [str]))action = str;
+        string s = llStringTrim(llList2String(split, i), STRING_TRIM);
+        if(~llListFindList(exp, [s]))action = s;
         else{
             float v;
-            if(llJsonValueType(varObj, [str]) != JSON_INVALID)v = (float)llJsonGetValue(varObj, [str]);
-            else if(part < llGetListLength(parts)-1)v = mathToFloat(str, part+1, varObj);
-            else v = (float)str;
+            if(llJsonValueType(varObj, [s]) != JSON_INVALID)v = (float)llJsonGetValue(varObj, [s]);
+            else if(part < llGetListLength(parts)-1)v = mathToFloat(s, part+1, varObj);
+            else v = (float)s;
 
             if(action == "+")val+=v;
             else if(action == "-")val-=v;
@@ -398,11 +398,11 @@ rotDoor(float angle, float speed, integer steps){
 // Rounds off value to precision decimals
 string round(float value, integer precision){
     if(!precision)return (string)llRound(value);
-    integer int = llFloor(value);
-    integer dec = llRound((1+value-int)*llPow(10, precision));
+    integer i = llFloor(value);
+    integer dec = llRound((1+value-i)*llPow(10, precision));
     integer ex = (integer)llGetSubString((string)dec, 0, 0);
-    if(ex>1){int+=ex-1;}
-    return (string)int+"."+(string)llGetSubString((string)dec, 1,-1);
+    if(ex>1){i+=ex-1;}
+    return (string)i+"."+(string)llGetSubString((string)dec, 1,-1);
 }
 // total is how many x/y frames you have, like if you have 4x2 frames on an animation you put <4, 2,0>
 // frame is the frame of the animation you want

@@ -63,6 +63,7 @@ integer BFL = 0;
 #define BFL_AGENTS_IN_RANGE 0x1
 #define BFL_STOPPED 0x2
 #define BFL_AGENTS_INIT 0x4			// Animations have been started at least once
+#define BFL_AGENTS_IN_RANGE_OVERRIDE 0x8	// Can be set by other scripts, forces animations to play regardless of range
 
 string need_hide = "";				// Need to hide this animation
 
@@ -207,7 +208,7 @@ refreshAnims(integer restart){
 	debugCommon("Starting anim '"+CURRENT_ANIM+"' Speed: "+(string)SPEED_CACHE);
 	debugCommon("OBJ_CACHE = "+mkarr(OBJ_CACHE));
 	#if MaskAnimConf$LIMIT_AGENT_RANGE>0
-	if(~BFL&BFL_AGENTS_IN_RANGE)return;
+	if(~BFL&BFL_AGENTS_IN_RANGE && ~BFL&BFL_AGENTS_IN_RANGE_OVERRIDE)return;
 	#endif
 	if(~BFL&BFL_STOPPED)
 		llSetTimerEvent(SPEED_CACHE);
@@ -225,8 +226,7 @@ onEvt(string script, integer evt, string data){
 #endif
 
 sens(integer inrange){
-	if(inrange){
-		
+	if(inrange || BFL&BFL_AGENTS_IN_RANGE_OVERRIDE){
 		if(~BFL&BFL_AGENTS_IN_RANGE){
 			BFL = BFL|BFL_AGENTS_INIT;
 			#ifdef MaskAnimConf$animStartEvent
@@ -239,7 +239,6 @@ sens(integer inrange){
 		BFL = BFL|BFL_AGENTS_IN_RANGE;
 	}else{
 		if(BFL&BFL_AGENTS_IN_RANGE){
-			
 			raiseEvent(MaskAnimEvt$agentsLost, "");
 			debugUncommon("No player in range, stopping");
 			llSetTimerEvent(0);
@@ -280,12 +279,12 @@ default
         if(llGetStartParameter() == 2){
 			raiseEvent(evt$SCRIPT_INIT, "");
 		}
+		
+		BFL = BFL|BFL_AGENTS_IN_RANGE;
+		raiseEvent(MaskAnimEvt$agentsInRange, "");
+		
 		#if MaskAnimConf$LIMIT_AGENT_RANGE>0
-			BFL = BFL|BFL_AGENTS_IN_RANGE;
 			llSensorRepeat("", "", AGENT, MaskAnimConf$LIMIT_AGENT_RANGE, PI, 2);			
-		#else
-			raiseEvent(MaskAnimEvt$agentsInRange, "");
-			BFL = BFL|BFL_AGENTS_IN_RANGE;
 		#endif
 		raiseEvent(MaskAnimEvt$agentsInRange, "");
     }
@@ -431,88 +430,92 @@ default
             SENDER_SCRIPT - (var)parameters   
             CB - The callback you specified when you sent a task
         */ 
-        if(nr == RUN_METHOD){
-            if(METHOD == MaskAnimMethod$start){
-				debugUncommon("Start anim: "+method_arg(0));
-				if((integer)method_arg(2))BFL = BFL&~BFL_STOPPED;
-				startAnim(method_arg(0), (integer)method_arg(1));
+        if(method$isCallback)return;
+		
+		
+		if(METHOD == MaskAnimMethod$forceInRange){
+			if((int)method_arg(0)){
+				BFL = BFL|BFL_AGENTS_IN_RANGE_OVERRIDE;
+			}else{
+				BFL = BFL&~BFL_AGENTS_IN_RANGE_OVERRIDE;
+				sens(BFL&BFL_AGENTS_IN_RANGE);
 			}
-            else if(METHOD == MaskAnimMethod$stop){ 
-                stopAnim(method_arg(0));
-            } 
-			else if(METHOD == MaskAnimMethod$resume){
-				BFL = BFL&~BFL_STOPPED;
-				llSetTimerEvent(0);
-				refreshAnims(TRUE);
-			}
-            else if(METHOD == MaskAnimMethod$pause)stopAll() ;     
-			else if(METHOD == MaskAnimMethod$emulateFrameEvent)raiseEvent(MaskAnimEvt$frame, method_arg(0));
-			else if(METHOD == MaskAnimMethod$rem)remAnim(method_arg(0));
+		}
+        else if(METHOD == MaskAnimMethod$start){
+			debugUncommon("Start anim: "+method_arg(0));
+			if((integer)method_arg(2))BFL = BFL&~BFL_STOPPED;
+			startAnim(method_arg(0), (integer)method_arg(1));
+		}
+        else if(METHOD == MaskAnimMethod$stop){ 
+            stopAnim(method_arg(0));
+        } 
+		else if(METHOD == MaskAnimMethod$resume){
+			BFL = BFL&~BFL_STOPPED;
+			llSetTimerEvent(0);
+			refreshAnims(TRUE);
+		}
+        else if(METHOD == MaskAnimMethod$pause)stopAll() ;     
+		else if(METHOD == MaskAnimMethod$emulateFrameEvent)raiseEvent(MaskAnimEvt$frame, method_arg(0));
+		else if(METHOD == MaskAnimMethod$rem)remAnim(method_arg(0));
 			
-			else if(METHOD == MaskAnimMethod$add){
-				//(str)package_name, package_length, (int)package_prio, (int)flags, (float)speed, block1data, block2data..
-				// anim, data, flags, priority
-				remAnim(method_arg(0));
-				debugCommon("Adding anim "+method_arg(0));
+		else if(METHOD == MaskAnimMethod$add){
+			//(str)package_name, package_length, (int)package_prio, (int)flags, (float)speed, block1data, block2data..
+			// anim, data, flags, priority
+			remAnim(method_arg(0));
+			debugCommon("Adding anim "+method_arg(0));
+			
+			float speed = (float)method_arg(1);
+			integer flags = (integer)method_arg(2);
+			integer priority = (integer)method_arg(3);
+			list json = llJson2List(method_arg(4));
+			
+			list package = [method_arg(0), 0, priority, flags, speed];
+			while(json){
+			// Build the index 
+				list frames = llJson2List(llList2String(json, 0));	// Contains the prim data
+				json = llDeleteSubList(json,0,0);
 				
-				float speed = (float)method_arg(1);
-				integer flags = (integer)method_arg(2);
-				integer priority = (integer)method_arg(3);
-				list json = llJson2List(method_arg(4));
+				string rootPrimName = llList2String(frames, 0);
+				string texture = llList2String(frames, 1);
+				frames = llDeleteSubList(frames, 0, 1);
 				
-
-				list package = [method_arg(0), 0, priority, flags, speed];
-
-				while(json){
-					// Build the index 
-					list frames = llJson2List(llList2String(json, 0));	// Contains the prim data
-					json = llDeleteSubList(json,0,0);
-					
-					string rootPrimName = llList2String(frames, 0);
-					string texture = llList2String(frames, 1);
-					frames = llDeleteSubList(frames, 0, 1);
-					
-					list idCache = []; 
-					integer x;
-					
-					// Fetch the nr of prims you need for this block
-					integer maxFrame;  
-					for(x=0; x<llGetListLength(frames); x++)
-						if(llList2Integer(frames, x)>maxFrame)maxFrame = llList2Integer(frames,x);
-					// Put the IDs into an array
-					for(x=0; x<llCeil((float)maxFrame/8) || x<1; x++)idCache+=0;
-					
-
+				list idCache = []; 
+				integer x;
+				
+				// Fetch the nr of prims you need for this block
+				integer maxFrame;  
+				for(x=0; x<llGetListLength(frames); x++)
+					if(llList2Integer(frames, x)>maxFrame)maxFrame = llList2Integer(frames,x);
+				// Put the IDs into an array
+				for(x=0; x<llCeil((float)maxFrame/8) || x<1; x++)idCache+=0;
+				
 					// Find all the prims in the linkset and put them to idCache
-					links_each(num, ln, {
-						if(llGetSubString(ln, 0, llStringLength(rootPrimName)-1) == rootPrimName){
-							integer n = (integer)llGetSubString(ln, llStringLength(rootPrimName), -1);
-							if(n<=llGetListLength(idCache)){
-								idCache = llListReplaceList(idCache, [num], n-1, n-1);
-							}
+				links_each(num, ln, {
+					if(llGetSubString(ln, 0, llStringLength(rootPrimName)-1) == rootPrimName){
+						integer n = (integer)llGetSubString(ln, llStringLength(rootPrimName), -1);
+						if(n<=llGetListLength(idCache)){
+							idCache = llListReplaceList(idCache, [num], n-1, n-1);
 						}
-					});
-					integer p =llListFindList(idCache, [0]); 
-					if(~p){
-						qd("Error: Prims not found for "+method_arg(0)+" ("+(string)p+"). Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
-						return;
 					}
-					
-					// Step should naturally be 0, and list length is 3+prims.length+frames.length
-					integer one = (3+llGetListLength(frames+idCache))<<10;
-					// hide should be 0 at start so all we need is the nr of prims in the block
-					integer two = (llGetListLength(idCache)<<12);
-
-					list block = [texture, one, two]+idCache+frames;
-					package += block;
+				});
+				integer p =llListFindList(idCache, [0]); 
+				if(~p){
+					qd("Error: Prims not found for "+method_arg(0)+" ("+(string)p+"). Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
+					return;
 				}
-				package = llListReplaceList(package, [llGetListLength(package)], 1, 1);
-				MAIN_CACHE+=package;
-				toggleMask(method_arg(0), TRUE); // Hide it
-				refreshAnims(FALSE);
+				
+				// Step should naturally be 0, and list length is 3+prims.length+frames.length
+				integer one = (3+llGetListLength(frames+idCache))<<10;
+				// hide should be 0 at start so all we need is the nr of prims in the block
+				integer two = (llGetListLength(idCache)<<12);
+					list block = [texture, one, two]+idCache+frames;
+				package += block;
 			}
-        }
-
+			package = llListReplaceList(package, [llGetListLength(package)], 1, 1);
+			MAIN_CACHE+=package;
+			toggleMask(method_arg(0), TRUE); // Hide it
+			refreshAnims(FALSE);
+		}
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl"  
     

@@ -32,7 +32,7 @@ You can use LM_PRE to inject code at the top of link_message
 
 #ifndef LM_BOTTOM
 // Top goes here
-link_message(integer link, integer nr, string str, key id){
+link_message(integer link, integer nr, string s, key id){
 	//if(llGetScriptName() == "dnp Status")
 	//qd("("+llGetScriptName()+") "+(string)nr+" :: "+str+" :: "+(string)id);
 	
@@ -42,7 +42,7 @@ link_message(integer link, integer nr, string str, key id){
 
 	#ifdef USE_HOTTASKS
 	if(nr == 0 && (string)id == llGetScriptName()){
-		list dta = llJson2List(str);
+		list dta = llJson2List(s);
 		onHotTask(llList2String(dta,0), llDeleteSubList(dta,0,0));
 	}
 	#else
@@ -51,8 +51,8 @@ link_message(integer link, integer nr, string str, key id){
 
 	#ifdef SCRIPT_IS_ROOT
 	else if(nr == DB2_ADD){
-		string sender = jVal(str, [0]);
-		string script = jVal(str, [1]);
+		string sender = jVal(s, [0]);
+		string script = jVal(s, [1]);
 		debugCommon("Shared Save request received @ root from script "+script);
 		if(llListFindList(DB2_CACHE, [script]) == -1){
 			list prims; // Prim IDS
@@ -73,14 +73,14 @@ link_message(integer link, integer nr, string str, key id){
 				for(x=0; x<9; x++){
 					if(llListFindList(DB2_CACHE, [llList2Integer(flat,i), x]) == -1){
 						DB2_CACHE += [script, llList2Integer(flat,i), x];
-						list l = llJson2List(jVal(str, [2]));
-						if(isset(jVal(str, [3])) || l != []){
+						list l = llJson2List(jVal(s, [2]));
+						if(isset(jVal(s, [3])) || l != []){
 							// Newly added, save data
 							debugUncommon("SETTING NEW DATA @ root for script "+script+" at prim "+llList2String(flat, i)+" face "+(string)x);
 							db2$rootSend();
-							db2(DB2$SET, script, l, jVal(str, [3]));
+							db2(DB2$SET, script, l, jVal(s, [3]));
 							
-							sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
+							sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(s,[2])])), jVal(s, [4]));
 						}
 						#ifdef DB2_PRESERVE_ON_RESET
 
@@ -96,26 +96,26 @@ link_message(integer link, integer nr, string str, key id){
 			
 		}else{
 			db2$rootSend();
-			db2(DB2$SET, script, llJson2List(jVal(str, [2])), jVal(str, [3]));
-			sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(str,[2])])), jVal(str, [4]));
+			db2(DB2$SET, script, llJson2List(jVal(s, [2])), jVal(s, [3]));
+			sendCallback(id, sender, stdMethod$setShared, mkarr(([script, jVal(s,[2])])), jVal(s, [4]));
 		}
 		
 	}else if(nr == DB2_DELETE){
-		integer pos = llListFindList(DB2_CACHE, [str]);
-		debugUncommon("Deleting shared: "+str+" @ pos: "+(string)pos);
+		integer pos = llListFindList(DB2_CACHE, [s]);
+		debugUncommon("Deleting shared: "+s+" @ pos: "+(string)pos);
 		if(~pos){
 			DB2_CACHE = llDeleteSubList(DB2_CACHE, pos, pos+2);
 			db2$rootSend();
 		}
 	}else if(nr == DB2_REFRESHME){
 		db2$rootSend();
-		sendCallback(id, str, stdMethod$setShared, "[]", "");
+		sendCallback(id, s, stdMethod$setShared, "[]", "");
 	}
 	#else 
 		#ifdef USE_SHARED
 	else if(nr == DB2_UPDATE){
 			debugCommon("DB2 Update");
-			list data = llJson2List(str);
+			list data = llJson2List(s);
 			list d = USE_SHARED; DB2_CACHE = [];
 			
 			if((string)d == "*"){
@@ -134,12 +134,12 @@ link_message(integer link, integer nr, string str, key id){
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
 		string CB = JSON_NULL;
-		integer pos = llSubStringIndex(str, "[");
+		integer pos = llSubStringIndex(s, "[");
 		// Make sure this script is the receiver
-		if(llGetSubString(str,0,pos-1) != llGetScriptName())return;
+		if(llGetSubString(s,0,pos-1) != llGetScriptName())return;
 		
 		
-		list s_DATA = llJson2List(llGetSubString(str, pos, -1));
+		list s_DATA = llJson2List(llGetSubString(s, pos, -1));
 		integer METHOD = llList2Integer(s_DATA, 0);
 		string PARAMS = llList2String(s_DATA, 1);
 		string SENDER_SCRIPT = llList2String(s_DATA, 2);
@@ -155,15 +155,15 @@ link_message(integer link, integer nr, string str, key id){
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB);
 		}
 		
-	}else if(nr == RESET_ALL && str != llGetScriptName()){
+	}else if(nr == RESET_ALL && s != llGetScriptName()){
 		llResetScript();
 	}
 	#ifdef USE_EVENTS
 	else if(nr == EVT_RAISED){
 		#ifdef EVENTS_NOT_SELF
-		if(llGetSubString(str, 2, llStringLength(llGetScriptName())+1) == llGetScriptName())return;
+		if(llGetSubString(s, 2, llStringLength(llGetScriptName())+1) == llGetScriptName())return;
 		#endif
-		string scr = llJsonGetValue(str, [0]);
+		string scr = llJsonGetValue(s, [0]);
 		integer evt = (integer)((string)id);
 		#ifdef USE_LEGACY_DB
 			#ifndef DISREGARD_SHARED
@@ -172,7 +172,7 @@ link_message(integer link, integer nr, string str, key id){
 			}
 			#endif
 		#endif
-		onEvt(scr, evt, llJsonGetValue(str, [1]));
+		onEvt(scr, evt, llJsonGetValue(s, [1]));
 		
 	}
 	#endif

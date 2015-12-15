@@ -84,7 +84,9 @@ onEvt(string script, integer evt, string data){
 						llList2String(split,5), // anim_dismount_top, 
 						llList2String(split,6), // anim_dismount_bottom, 
 						llList2String(split,7), // nodes, 
-						llList2String(split,8) // Climbspeed
+						llList2String(split,8), // Climbspeed
+						llList2String(split,9), // onStart
+						llList2String(split,10) // onEnd
 					);
 				}else onInteract(targ, task, llList2List(split,1,-1));
 			}

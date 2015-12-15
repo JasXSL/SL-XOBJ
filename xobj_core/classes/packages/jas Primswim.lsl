@@ -122,22 +122,28 @@ float pointSubmerged(vector point){
 updateAnimstate(){
     integer bf_start;
     integer bf_stop;
-
-        if(BFL&BFL_IN_WATER && ~BFA&BFA_IDLE){
-            bf_start = bf_start|BFA_IDLE;
-            BFA = BFA|BFA_IDLE;
-        }else if(~BFL&BFL_IN_WATER & BFA&BFA_IDLE){
-            bf_stop = bf_stop|BFA_IDLE;
-            BFA = BFA&~BFA_IDLE;
-        }
+	integer sitting = llGetAgentInfo(llGetOwner())&AGENT_SITTING;
+	integer forceStop = checkForceStop();
+	
+    if(BFL&BFL_IN_WATER && !sitting && !forceStop){
+		if(~BFA&BFA_IDLE){
+			bf_start = bf_start|BFA_IDLE;
+			BFA = BFA|BFA_IDLE;
+		}
+    }else if(BFA&BFA_IDLE){
+        bf_stop = bf_stop|BFA_IDLE;
+        BFA = BFA&~BFA_IDLE;
+    }
         
-        if(BFL&BFL_SWIMMING && ~BFA&BFA_ACTIVE){
-            bf_start = bf_start|BFA_ACTIVE;
-            BFA = BFA|BFA_ACTIVE;
-        }else if(~BFL&BFL_SWIMMING & BFA&BFA_ACTIVE){
-            bf_stop = bf_stop|BFA_ACTIVE;
-            BFA = BFA&~BFA_ACTIVE;
-        }
+    if(BFL&BFL_SWIMMING && !sitting && !forceStop){
+		if(~BFA&BFA_ACTIVE){
+			bf_start = bf_start|BFA_ACTIVE;
+			BFA = BFA|BFA_ACTIVE;
+		}
+    }else if(BFA&BFA_ACTIVE){
+        bf_stop = bf_stop|BFA_ACTIVE;
+        BFA = BFA&~BFA_ACTIVE;
+    }
     
 	
 	
@@ -242,6 +248,7 @@ float pp;
 
 timerEvent(string id, string data){
     if(id == TIMER_SWIM_CHECK){
+		integer stopped = checkForceStop();
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;
         deepest = 0;
@@ -340,11 +347,9 @@ timerEvent(string id, string data){
                     }
                     
                     
-                    // CONTROLS MOVEMENT
-                    integer stopped = checkForceStop();
-                    
+
 				
-                    if(CONTROL && !stopped){
+                    if(CONTROL && !stopped && ~ainfo&AGENT_SITTING){
                         vector fwd; vector left; vector up;
                         if(CONTROL&(CONTROL_FWD|CONTROL_BACK))fwd = llRot2Fwd(llGetCameraRot());
                         if(CONTROL&CONTROL_BACK)fwd=-fwd;
@@ -370,7 +375,7 @@ timerEvent(string id, string data){
                     }
                     
                     
-                    if(((CONTROL&(CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_DOWN) || (CONTROL&CONTROL_UP&&~BFL&BFL_AT_SURFACE) || llVecMag(<dif.x,dif.y,0>)>.5)) && !stopped){ 
+                    if(~ainfo&AGENT_SITTING && !stopped && ((CONTROL&(CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_DOWN) || (CONTROL&CONTROL_UP&&~BFL&BFL_AT_SURFACE) || llVecMag(<dif.x,dif.y,0>)>.5))){ 
                         if(~BFL&BFL_SWIMMING){
                             BFL=BFL|BFL_SWIMMING;
                             triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
@@ -418,7 +423,7 @@ timerEvent(string id, string data){
                     
                     float t = .5;
                     if(water_just_entered)t=2;
-                    llMoveToTarget(SP, t);
+					if(!stopped)llMoveToTarget(SP, t);
                     
                     
                     // HANDLES DIVING SOUNDS
@@ -561,16 +566,18 @@ integer checkClimbout(){
                 vector pos = llList2Vector(fwd,1)-n*edge_offset;
                 vector u = llList2Vector(up,1);
                 pos.z = u.z+ascale.z/2;
-                
-                RLV$cubeTask(([
+				
+				list tasks = [
                     SupportcubeBuildTask(Supportcube$tSetPos, [pos]),
                     SupportcubeBuildTask(Supportcube$tSetRot, ([llRotBetween(<-1,0,0>, n)])),
-                    SupportcubeBuildTask(Supportcube$tForceSit, [FALSE, TRUE]),
-                    SupportcubeBuildTask(Supportcube$tRunMethod, [llGetLinkKey(LINK_ROOT), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])]),
+                    SupportcubeBuildTask(Supportcube$tForceSit, ([FALSE, TRUE])),
+                    SupportcubeBuildTask(Supportcube$tRunMethod, ([llGetLinkKey(LINK_ROOT), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])])),
                     
                     SupportcubeBuildTask(Supportcube$tDelay, [1.5]),
                     SupportcubeBuildTask(Supportcube$tForceUnsit, [])
-                ]));
+                ];
+                
+                RLV$cubeTask(tasks);
 
                 BFL = BFL|BFL_CLIMBING;
                 multiTimer([TIMER_CLIMB_CD, "", 1, FALSE]);
@@ -588,6 +595,10 @@ integer checkClimbout(){
 }
 
 onEvt(string script, integer evt, string data){
+	#ifdef USE_CUSTOM_EVENTS
+	onCustomEvt(script, evt, data);
+	#endif
+
     if(script == "#ROOT"){
         if(evt == evt$BUTTON_PRESS){
             CONTROL = CONTROL|(integer)data;

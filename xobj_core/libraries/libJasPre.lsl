@@ -21,7 +21,7 @@
 	// Ex: obj_each(jsonObject, k, v, {llSay(0, k+" => "+v);});
 	
 // Iterate over links with link nr and link name
-	#define links_each(linknum, linkname, fnAction)  {integer linknum; for(linknum=1; linknum<=llGetNumberOfPrims(); linknum++){ string linkname=llGetLinkName(linknum); fnAction}}
+	#define links_each(linknum, linkname, fnAction)  {integer linknum; for(linknum=llGetNumberOfPrims()>1; linknum<=llGetNumberOfPrims(); linknum++){ string linkname=llGetLinkName(linknum); fnAction}}
 	// Ex: links_each(num, name, {llSay(0, "Link #"+(string)num+" is called: "+name);});
 	
 	
@@ -127,6 +127,13 @@ list bitArrToList(integer int, integer bytesize){
 #define false FALSE
 #define null ""
 #define NULL null
+
+#define bool integer
+#define parseInt(input) (integer)(input)
+#define str string
+#define int integer
+
+
 
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)

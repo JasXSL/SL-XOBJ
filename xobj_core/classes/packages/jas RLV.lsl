@@ -306,7 +306,11 @@ default
 			if(!llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
 			vector pos = (vector)method_arg(0);
 			rotation rot = (rotation)method_arg(1);
-            if(pos == ZERO_VECTOR)return llClearCameraParams();
+            if(pos == ZERO_VECTOR){
+				raiseEvent(RLVevt$cam_unset, "");
+				return llClearCameraParams();
+			}
+			raiseEvent(RLVevt$cam_set, mkarr([pos]));
 			llSetCameraParams([
 				CAMERA_ACTIVE, 1, // 1 is active, 0 is inactive
 				CAMERA_FOCUS, pos+llRot2Fwd(rot), // region relative position

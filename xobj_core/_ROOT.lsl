@@ -30,22 +30,21 @@
 
 
 #ifndef DEBUG
-#define qd(text) _dbg(text)
-#define _dbg(text) llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text))
-
-#define debug(text)
-#define debugLv(text, lv)
-#define debugCommon(text)
-#define debugUncommon(text)
-#define debugRare(text)
+	#define qd(text) _dbg(text)
+	#define _dbg(text) llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text))
+	#define debug(text)
+	#define debugLv(text, lv)
+	#define debugCommon(text)
+	#define debugUncommon(text)
+	#define debugRare(text)
 #else
-#define qd(text) _dbg(text, 0)
-#define _dbg(text, level) if(level<=DEBUG){llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text));}
-#define debugLv(text, lv) _dbg(text, lv)
-#define debugRare(text) _dbg(text, DEBUG_RARE)
-#define debugUncommon(text) _dbg(text, DEBUG_UNCOMMON)
-#define debugCommon(text) _dbg(text, DEBUG_COMMON)
-#define debug(text) _dbg(text, DEBUG_USER)
+	#define _dbg(text, level) if(level<=DEBUG){llOwnerSay(llGetSubString(llList2String(llParseString2List(llGetTimestamp(), ["T"],[]), 1),0,-5)+" "+__SHORTFILE__+" @ "+(string)__LINE__+": "+(string)(text));}
+	#define qd(text) _dbg(text, 0)
+	#define debugLv(text, lv) _dbg(text, lv)
+	#define debugRare(text) _dbg(text, DEBUG_RARE)
+	#define debugUncommon(text) _dbg(text, DEBUG_UNCOMMON)
+	#define debugCommon(text) _dbg(text, DEBUG_COMMON)
+	#define debug(text) _dbg(text, DEBUG_USER)
 #endif
 
 
