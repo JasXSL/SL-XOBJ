@@ -64,8 +64,8 @@ default
     }
     
     object_rez(key id){
-        list str = llList2ListStrided(delayed_callbacks, 0,-1, 3);
-        integer pos = llListFindList(str, [llKey2Name(id)]);
+        list s = llList2ListStrided(delayed_callbacks, 0,-1, 3);
+        integer pos = llListFindList(s, [llKey2Name(id)]);
         if(~pos){
              
             string script = llList2String(delayed_callbacks,pos*dcs+1);

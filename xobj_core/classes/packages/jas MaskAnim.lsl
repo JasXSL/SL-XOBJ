@@ -227,7 +227,7 @@ onEvt(string script, integer evt, string data){
 
 sens(integer inrange){
 	if(inrange || BFL&BFL_AGENTS_IN_RANGE_OVERRIDE){
-		if(~BFL&BFL_AGENTS_IN_RANGE){
+		if(~BFL&BFL_AGENTS_IN_RANGE && CURRENT_ANIM != ""){
 			BFL = BFL|BFL_AGENTS_INIT;
 			#ifdef MaskAnimConf$animStartEvent
 			raiseEvent(MaskAnimEvt$onAnimStart, CURRENT_ANIM);

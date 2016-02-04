@@ -132,8 +132,12 @@ list bitArrToList(integer int, integer bytesize){
 #define parseInt(input) (integer)(input)
 #define str string
 #define int integer
+#define count(input) llGetListLength(output)
 
+#define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 
+// Shortcut function that creates a 9 figure unix timestamp integer with 1/10th of a second precision
+#define timeSnap() ((integer)(llGetSubString((string)llGetUnixTime(), -8, -1)+llGetSubString(llGetTimestamp(),-7,-7)))
 
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)

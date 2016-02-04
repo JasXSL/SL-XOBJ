@@ -1,5 +1,5 @@
 #define USE_EVENTS
-#include "xobj_toonie/classes/ton Footsteps.lsl"
+#include "../ton Footsteps.lsl"
 #include "xobj_core/classes/jas Interact.lsl"
 #include "xobj_core/classes/jas RLV.lsl"
 #include "xobj_core/classes/jas Primswim.lsl"

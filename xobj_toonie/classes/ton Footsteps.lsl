@@ -110,10 +110,10 @@ init(){
 		(key)"e4aedc26-c31a-307c-4466-87c305ff4888",
 		(key)"2f67fc13-8892-6186-f5ab-c5226e7259bf",
 		"GRV", // Gravel
-		(key)"96231a18-9328-cf5a-21d6-18440b7ee1e8",
-		(key)"b65aaab0-ba50-3651-89c2-3a54958564a4",
-		(key)"e4aedc26-c31a-307c-4466-87c305ff4888",
-		(key)"2f67fc13-8892-6186-f5ab-c5226e7259bf",
+		(key)"2344ea8f-a72b-a1c0-1ca1-33beca50d48d",
+		(key)"808fb5cd-9778-d31b-4fb5-bcb05b5e01bc",
+		(key)"eff6a567-0385-f155-790b-4e750b120ff7",
+		(key)"3a2d4f9c-ae12-694a-225c-d15281e2f61d",
 		"FOL", // Foliage
 		(key)"d88e6d5b-9e62-d6d6-47de-708e0f3aa2d0",
 		(key)"6ccbab84-66bb-b929-7e42-2b7c3bc3c303",
