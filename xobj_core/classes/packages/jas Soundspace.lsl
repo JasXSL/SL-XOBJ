@@ -14,6 +14,9 @@ float currentsoundvol = .5;
 float groundsoundvol = .5;
 string groundsound;  
 
+key overridesound;
+float overridesoundvol = .5;
+
 #define TIMER_GROUNDSPACECHECK "a"
  
 timerEvent(string id, string data){
@@ -43,7 +46,11 @@ integer recent = 1;
 setSoundspace(){
     string cs = currentsound;
     float csv = currentsoundvol;
-    if(BFL&BFL_IN_WATER){
+	if(overridesound){
+		cs = overridesound;
+		csv = overridesoundvol;
+	}
+    else if(BFL&BFL_IN_WATER){
         cs = SP_UNDERWATER;
         csv = .5;
     } 
@@ -55,17 +62,20 @@ setSoundspace(){
         clearSoundspace();
         return;
     }
-
-    integer i;
+	if(cs == currentsound  && csv == currentsoundvol)return;
+	
+	
+	
+	key sound = cs;
+	integer i;
     for(i=0; i<llGetListLength(soundspaces); i+=2){
-        if(llList2String(soundspaces,i) == cs){
-            runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$stop, [recent], TNN);
-            recent++;
-            if(recent>2)recent = 1;
-            runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$start, [recent, llList2String(soundspaces,i+1), csv], TNN);
-            return;
-        }
-    }
+        if(llList2String(soundspaces,i) == cs)sound = llList2String(soundspaces,i+1);
+	}
+	
+	runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$stop, [recent], TNN);
+	recent++;
+    if(recent>2)recent = 1;
+    runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$start, [recent, sound, csv], TNN);
 }
 clearSoundspace(){
     currentsound = "";
@@ -119,40 +129,36 @@ default
     /*
         Included in all these calls:  
         METHOD - (int)method 
-        INDEX - (int)obj_index
         PARAMS - (var)parameters
         SENDER_SCRIPT - (var)parameters
         CB - The callback you specified when you sent a task
     */
-        if(method$isCallback){
-            return;
+    if(method$isCallback){
+        return;
+    }
+		
+	if(METHOD == SoundspaceMethod$override){
+		key s = (key)method_arg(0);
+		if(s){
+			overridesound = s;
+			overridesoundvol = (float)method_arg(1);
+		}else{
+			overridesound = "";
+		}
+		setSoundspace();
+	}
+		
+    if(id != "")return;
+    if(METHOD == SoundspaceMethod$dive){
+        if((integer)method_arg(0) && ~BFL&BFL_IN_WATER){
+            BFL = BFL|BFL_IN_WATER;
+            setSoundspace();
         }
-        if(id != "")return;
-        /*
-        if(task == SOUNDSPACE_GROUND){
-            float v = (float)llJsonGetValue(data, [1]);
-            string ssp = llJsonGetValue(data, [0]);
-            if(ssp != JSON_INVALID){
-                if(groundsound != ssp ||v != groundsoundvol ) {
-                    groundsoundvol = v;
-                    groundsound = ssp;
-                    if(currentsound == "")setSoundspace();
-                }
-            }
+        else if(!(integer)method_arg(0)&& BFL&BFL_IN_WATER){
+            BFL = BFL&~BFL_IN_WATER;
+            setSoundspace();
         }
-        */
-        
-        
-        if(METHOD == SoundspaceMethod$dive){
-            if((integer)method_arg(0) && ~BFL&BFL_IN_WATER){
-                BFL = BFL|BFL_IN_WATER;
-                setSoundspace();
-            }
-            else if(!(integer)method_arg(0)&& BFL&BFL_IN_WATER){
-                BFL = BFL&~BFL_IN_WATER;
-                setSoundspace();
-            }
-        }
+    }
     #define LM_BOTTOM   
     #include "xobj_core/_LM.lsl" 
     
