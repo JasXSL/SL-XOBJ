@@ -68,6 +68,7 @@
 #define MaskAnim$start(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName], TNN)
 #define MaskAnim$restart(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName, true], TNN)
 #define MaskAnim$restartOverride(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$start, [animName, TRUE, TRUE], TNN)
+#define MaskAnim$emulateFrameEvent(data) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$emulateFrameEvent, [data], TNN)
 
 
 #define MaskAnim$stop(animName) runMethod((string)LINK_SET, "jas MaskAnim", MaskAnimMethod$stop, [animName], TNN)

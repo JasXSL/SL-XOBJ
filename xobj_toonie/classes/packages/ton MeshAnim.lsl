@@ -324,7 +324,7 @@ default
 		
 		
 		if(llGetListLength(set)>1){
-			debugCommon("Setting: "+mkarr(set));
+			//debugCommon("Setting: "+mkarr(set));
 			llSetLinkPrimitiveParamsFast(0, set);
 		}
 		
