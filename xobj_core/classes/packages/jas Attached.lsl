@@ -124,7 +124,12 @@ default
 			#ifndef Attached$useExtUpdate
             integer pin = llFloor(llFrand(0xFFFFFFF));
 			llSetRemoteScriptAccessPin(pin);
-            runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+			
+				#ifdef Attached$remoteloadCommand
+				Attached$remoteloadCommand;
+				#else
+				runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+				#endif
 			#endif
 		}	 
     }
@@ -141,6 +146,10 @@ default
             raiseEvent(evt$SCRIPT_INIT, "");
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
         }
+		
+		#ifdef Attached$onSpawn
+		Attached$onSpawn;
+		#endif
 		
 		#ifdef Attached$automateMeshAnim
 		localConfCacheAnims()

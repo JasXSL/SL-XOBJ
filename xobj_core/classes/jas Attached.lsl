@@ -31,11 +31,13 @@
 
 // #define Attached$automateMeshAnim - 	Parses standard events from ton MeshAnim. 
 // #define Attached$useExtUpdate - Use a different script to update. Useful for the portal method of spawned assets
+// #define Attached$onSpawn - Put any code you want to run on rez
+// #define Attached$remoteloadCommand; - Put code in this if you want to override the standard remoteload call
 
 #define AttachedMethod$remove 0			// NULL
 
 #define Attached$remove(attachmentName) runOmniMethod("jas Attached", AttachedMethod$remove, [attachmentName], TNN)
 #define Attached$removeThis() runMethod((string)LINK_SET, "jas Attached", AttachedMethod$remove, [], TNN)
-
+#define Attached$removeTarg(targ) runMethod(targ, "jas Attached", AttachedMethod$remove, ["*"], TNN)
 
 onAttach(){}
