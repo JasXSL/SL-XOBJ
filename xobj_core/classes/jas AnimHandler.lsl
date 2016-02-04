@@ -11,17 +11,22 @@
 	Start = TRUE starts and FALSE stops an anim
 	Repeat_delay = Trigger the animation again in x seconds, recommended 0 to disable
 
+	
+	
 */
-#define AnimHandlerMethod$anim 0			// (str)anim, (int)start, (float)replicate_dly
+//#define AnimHandlerConf$useAudio - Adds the AnimHandlerMethod$sound method
 
-
+#define AnimHandlerMethod$anim 0			// (str)anim, (int)start, (float)replicate_dly, (float)duration
+#define AnimHandlerMethod$remInventory 1	// [(arr)anims]
+#define AnimHandlerMethod$sound 2			// [(key)sound, (float)vol, (int)type, (float)duration] - sending a non-key sound stops. Type of 0 is trigger, 1 is play and 2 is loop. If duration is > 0 then it will llStopSound after that time.. Requires AnimHandlerConf$useAudio defined
 
 
 // Preprocessor shortcuts
 #define AnimHandler$anim(anim, start, repDly) runMethod((string)LINK_SET, "jas AnimHandler", AnimHandlerMethod$anim, ([anim, start, repDly]), TNN)
 #define AnimHandler$targAnim(targ, anim, start) runMethod((string)targ, "jas AnimHandler", AnimHandlerMethod$anim, ([anim, start]), TNN)
-
-
+#define AnimHandler$remInventory(assets) runMethod((string)LINK_SET, "jas AnimHandler", AnimHandlerMethod$remInventory, [mkarr(assets)], TNN)
+#define AnimHandler$startSound(sound, vol, type, duration) runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [sound, vol, type, duration], TNN)
+#define AnimHandler$stopSound() runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [], TNN)
 
 
 
