@@ -100,8 +100,18 @@ default
             //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
 			queued++;
 			list dta = llJson2List(PARAMS);
-			if(id == "")id = llList2String(dta, -1);
-			queue+= [id]+llList2List(dta, 0, 2);
+			if(id == "")id = llList2String(dta, -1);		// Lets you override the ID to send to
+			
+			string s = llList2String(dta, 0);
+			list scripts = [s];
+			if(llJsonValueType(s, []) == JSON_ARRAY){		// Load multiple
+				scripts = llJson2List(s);
+			}
+			list_shift_each(scripts, val,
+				queue+= ([id, val])+llList2List(dta, 1, 2);
+			)
+			
+			
 			next();
         }
         else if(METHOD == RemoteloaderMethod$asset){
@@ -109,7 +119,6 @@ default
         }else if(METHOD == RemoteloaderMethod$attach){
             //llOwnerSay("Rezzing: "+method_arg(0));
             llRezAtRoot(method_arg(0), llGetPos(), ZERO_VECTOR, ZERO_ROTATION, 1);
-                
             if(CB != ""){
                 delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
 				return;

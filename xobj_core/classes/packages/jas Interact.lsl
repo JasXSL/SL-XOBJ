@@ -6,7 +6,8 @@
 // List of additional (string)keys to allow
 list additionalAllow;
 integer BFL;
-#define BFL_RECENT_CLICK 1      // Recently interacted
+#define BFL_RECENT_CLICK 1      		// Recently interacted
+#define BFL_OVERRIDE_DISPLAYED 0x2		// Override has been shown
 
 #define TIMER_SEEK "a"
 #define TIMER_RECENT_CLICK "c"
@@ -17,17 +18,15 @@ string targDesc;
 key targ;
 integer held;
 
+list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB]
+
 
 
 onEvt(string script, integer evt, string data){ 
 	#ifdef USE_EVENT_OVERRIDE
 	evt(script, evt, data);
 	#endif
-    if(script == "jas RLV" && evt == evt$SCRIPT_INIT){
-        init();
-    }
-
-    else if(script == "#ROOT"){
+    if(script == "#ROOT"){
 		if(evt == evt$BUTTON_RELEASE && (integer)data&(CONTROL_UP
 		#ifdef InteractConf$ALLOW_ML_LCLICK
 		| CONTROL_ML_LBUTTON
@@ -49,6 +48,13 @@ onEvt(string script, integer evt, string data){
 			
 			BFL = BFL|BFL_RECENT_CLICK;
 			multiTimer([TIMER_RECENT_CLICK, "", 1, FALSE]);
+			
+			
+			if(OVERRIDE){
+				onInteract("", llList2String(OVERRIDE, 0), []);						// Always run this before
+				sendCallback(llList2Key(OVERRIDE, 1), llList2String(OVERRIDE, 2), InteractMethod$override, mkarr([llList2String(OVERRIDE, 0)]), llList2String(OVERRIDE, 3));
+				return;
+			}
 			
 			
 			
@@ -97,15 +103,17 @@ onEvt(string script, integer evt, string data){
     }
 }
 
-init(){
-    multiTimer([TIMER_SEEK, "", 0.25, TRUE]);
-    if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
-}
-
 timerEvent(string id, string data){
     if(id == TIMER_SEEK){
-
-        if( llGetPermissions()&PERMISSION_TRACK_CAMERA){
+		
+		// override is set, use the override text instead
+		if(OVERRIDE){
+			if(~BFL&BFL_OVERRIDE_DISPLAYED){
+				BFL = BFL|BFL_OVERRIDE_DISPLAYED;
+				onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
+			}
+		}
+		else if( llGetPermissions()&PERMISSION_TRACK_CAMERA){
             integer ainfo = llGetAgentInfo(llGetOwner());
             if(~ainfo&AGENT_SITTING){
                 vector start;
@@ -175,7 +183,8 @@ default
     {
         onInit();
 		llSetMemoryLimit(llGetUsedMemory()*2);
-		init();
+		multiTimer([TIMER_SEEK, "", 0.25, TRUE]);
+		if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
     }
     
     timer(){multiTimer([]);}
@@ -184,22 +193,29 @@ default
     /* 
         Included in all these calls:
         METHOD - (int)method
-        INDEX - (int)obj_index
         PARAMS - (var)parameters
         SENDER_SCRIPT - (var)parameters
         CB - The callback you specified when you sent a task
         CB_DATA - Array of params to return in a callback
     */
     
-    if(method$byOwner){ 
-        if(method$isCallback){
-            
-            return;
-        }
-        
-        
-        
+    if(!method$byOwner)return;
+	
+    if(method$isCallback){
+        return;
     }
+        
+	if(METHOD == InteractMethod$override){
+	// Clear override displayed
+		BFL = BFL&~BFL_OVERRIDE_DISPLAYED;
+			
+		if(method_arg(0) == "")
+			OVERRIDE = [];
+		else
+			OVERRIDE = [method_arg(0), id, SENDER_SCRIPT, CB];
+		
+		return;
+	}
     
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 

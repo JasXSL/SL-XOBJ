@@ -33,6 +33,8 @@
 // #define Attached$useExtUpdate - Use a different script to update. Useful for the portal method of spawned assets
 // #define Attached$onSpawn - Put any code you want to run on rez
 // #define Attached$remoteloadCommand; - Put code in this if you want to override the standard remoteload call
+// #define Attached$useOverride; - Uses listen override
+
 
 #define AttachedMethod$remove 0			// NULL
 

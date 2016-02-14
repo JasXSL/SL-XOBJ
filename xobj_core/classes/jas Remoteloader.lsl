@@ -40,7 +40,7 @@ default
 // These are identifier ints used to call methods on this class from other scripts
 // Each function you make in public methods should be listed here with it's own integer ID
 // Methods should not be negative
-#define RemoteloaderMethod$load 0		// (str)script, (int)pin, (int)startparam - Remoteloads a script onto sender
+#define RemoteloaderMethod$load 0		// (str)script, (int)pin, (int)startparam - Remoteloads a script onto sender. Script can also be a JSON array
 #define RemoteloaderMethod$asset 1		// (str)asset - Gives an inventory item to sender
 #define RemoteloaderMethod$attach 2		// (str)asset
 #define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam

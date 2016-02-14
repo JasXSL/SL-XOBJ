@@ -92,6 +92,7 @@ timerEvent(string id, string data){
     }
 }
 
+#ifdef Attached$useOverride
 onListenOverride(integer chan, key id, string message){
 	#ifdef Attached$detachHash
 	if(message == Attached$detachHash){
@@ -99,6 +100,7 @@ onListenOverride(integer chan, key id, string message){
 	}
 	#endif
 } 
+#endif
 
 integer DIE;
 
@@ -145,11 +147,13 @@ default
             runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], "");
             raiseEvent(evt$SCRIPT_INIT, "");
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
+			#ifdef Attached$onSpawn
+			Attached$onSpawn;
+			#endif
+		
         }
 		
-		#ifdef Attached$onSpawn
-		Attached$onSpawn;
-		#endif
+		
 		
 		#ifdef Attached$automateMeshAnim
 		localConfCacheAnims()
@@ -198,8 +202,9 @@ default
         */
 		if(method$byOwner){
 			if(METHOD == AttachedMethod$remove){
-				if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*")
+				if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*"){
 					kill();
+				}
             }
 		}
         

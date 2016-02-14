@@ -54,10 +54,11 @@
 
 // * Implemented by default. Though you might need to install a module for it.
 
-#define InteractMethod$addKeys 1			// (arr)keys - Adds keys that will always cause onDesc to show
+#define InteractMethod$override 1			// (str)text - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
 
 
-#define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
+//#define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
+#define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)
 
 
 /*
