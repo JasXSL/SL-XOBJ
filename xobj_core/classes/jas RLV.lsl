@@ -186,4 +186,7 @@
 #define RLV$preventFly(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventFly, [prevent], TNN)
 #define RLV$addSprint(perc) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$addSprint, [perc], TNN)
 
+#define RLV$sitTargOn(targ, uuid, prevent_unsit) runMethod((string)targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
+#define RLV$unsitTarg(targ, override) runMethod((string)targ, "jas RLV", RLVMethod$unsit, [override], TNN)
+
 
