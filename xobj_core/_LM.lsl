@@ -40,6 +40,7 @@ link_message(integer link, integer nr, string s, key id){
 	LM_PRE
 	#endif
 
+	// HOTTASKS
 	#ifdef USE_HOTTASKS
 	if(nr == 0 && (string)id == llGetScriptName()){
 		list dta = llJson2List(s);
@@ -49,6 +50,7 @@ link_message(integer link, integer nr, string s, key id){
 	if(nr >= 0){return;}
 	#endif
 
+	// DB2 - ROOT only
 	#ifdef SCRIPT_IS_ROOT
 	else if(nr == DB2_ADD){
 		string sender = jVal(s, [0]);
@@ -111,6 +113,7 @@ link_message(integer link, integer nr, string s, key id){
 		db2$rootSend();
 		sendCallback(id, s, stdMethod$setShared, "[]", "");
 	}
+	// DB2 non-root
 	#else 
 		#ifdef USE_SHARED
 	else if(nr == DB2_UPDATE){
@@ -131,22 +134,32 @@ link_message(integer link, integer nr, string s, key id){
 		}
 		#endif
 	#endif
+	
+	// Run method
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
 		string CB = JSON_NULL;
-		integer pos = llSubStringIndex(s, "[");
+		
+		integer _pos = llSubStringIndex(s, "[");
+		string _name = llGetSubString(s, 0, _pos-1);
 		// Make sure this script is the receiver
-		if(llGetSubString(s,0,pos-1) != llGetScriptName())return;
+		if(
+			_name != llGetScriptName()
+			#ifdef SCRIPT_ALIASES
+			&& llListFindList(SCRIPT_ALIASES, [_name]) == -1
+			#endif
+		){
+			//qd(llGetScriptName()+" Failed because '"+_name+"' not for this and not in "+mkarr(SCRIPT_ALIASES));
+			return;
+		}
 		
-		
-		list s_DATA = llJson2List(llGetSubString(s, pos, -1));
-		integer METHOD = llList2Integer(s_DATA, 0);
-		string PARAMS = llList2String(s_DATA, 1);
-		string SENDER_SCRIPT = llList2String(s_DATA, 2);
-		CB = llList2String(s_DATA, 3);
-				
-		s_DATA = [];
-		
+		// 
+		list _s_DATA = llJson2List(llGetSubString(s, _pos, -1));
+		integer METHOD = llList2Integer(_s_DATA, 0);
+		string PARAMS = llList2String(_s_DATA, 1);
+		string SENDER_SCRIPT = llList2String(_s_DATA, 2);
+		CB = llList2String(_s_DATA, 3);
+		_s_DATA = [];
 		
 #else
 		// Bottom goes here

@@ -132,7 +132,7 @@ list bitArrToList(integer int, integer bytesize){
 #define parseInt(input) (integer)(input)
 #define str string
 #define int integer
-#define count(input) llGetListLength(output)
+#define count(input) llGetListLength(input)
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 

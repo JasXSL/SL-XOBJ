@@ -18,7 +18,8 @@
 	#define USE_EVENTS <- Add to top of a script that should be listening to events
 	#define USE_SHARED (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
 	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
-
+	#define SCRIPT_ALIASES [] <- Alias names the script can be run as. Array of names. Like if you have a script named "got LevelLite" and you want it to also be callable with "got Level", then define this as ["got Level"]
+	
 */
 
 #define DEBUG_ALL 100
