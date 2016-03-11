@@ -57,7 +57,9 @@
 #define InteractMethod$override 1			// (str)text - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
 
 
-//#define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
+// #define InteractConf$usePrimSwim			// Define to use the primswim "exit water" label. onInteract receives "_PRIMSWIM_CLIMB_" from this
+// #define InteractConf$maxRate 0.5			// Seconds between allowed interact attempts
+// #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
 #define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)
 
 

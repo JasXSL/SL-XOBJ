@@ -8,6 +8,7 @@ list additionalAllow;
 integer BFL;
 #define BFL_RECENT_CLICK 1      		// Recently interacted
 #define BFL_OVERRIDE_DISPLAYED 0x2		// Override has been shown
+#define BFL_PRIMSWIM_LEDGE 0x4			// Requires InteractConf$usePrimSwim set. Shows a message if you're at a ledge you can climb out from
 
 #define TIMER_SEEK "a"
 #define TIMER_RECENT_CLICK "c"
@@ -33,7 +34,9 @@ onEvt(string script, integer evt, string data){
 		#endif
 		)
 		){
-			if(BFL&BFL_RECENT_CLICK)return;
+			if(BFL&BFL_RECENT_CLICK){
+				return;
+			}
 			if(!preInteract(targ))return;
 			
 			
@@ -46,8 +49,15 @@ onEvt(string script, integer evt, string data){
 			}
 			
 			
+			
 			BFL = BFL|BFL_RECENT_CLICK;
-			multiTimer([TIMER_RECENT_CLICK, "", 1, FALSE]);
+			multiTimer([TIMER_RECENT_CLICK, "", 
+			#ifdef InteractConf$maxRate
+			InteractConf$maxRate
+			#else
+			1
+			#endif
+			, FALSE]);
 			
 			
 			if(OVERRIDE){
@@ -59,6 +69,19 @@ onEvt(string script, integer evt, string data){
 			
 			
 			list actions = llParseString2List(targDesc, ["$$"], []);
+			
+			if(
+				!llGetListLength(actions)
+				#ifdef InteractConf$usePrimSwim
+				&& ~BFL&BFL_PRIMSWIM_LEDGE
+				#endif
+			){
+				return 
+				#ifdef InteractConf$soundOnFail
+					llPlaySound(InteractConf$soundOnFail, .25);
+				#endif
+				;
+			}
 			
 			while(llGetListLength(actions)){
 				string val = llList2String(actions,0);
@@ -101,6 +124,13 @@ onEvt(string script, integer evt, string data){
 			if(btn == CONTROL_UP)held = (integer)jVal(data, [1]);
 		}else if(evt == evt$BUTTON_PRESS && (integer)data&CONTROL_UP)held = 0;
     }
+	#ifdef InteractConf$usePrimSwim
+	else if(script == "jas Primswim" && evt == PrimswimEvt$atLedge){
+		if((int)j(data,0))BFL = BFL|BFL_PRIMSWIM_LEDGE;
+		else BFL = BFL&~BFL_PRIMSWIM_LEDGE;
+	}
+	#endif
+	
 }
 
 timerEvent(string id, string data){
@@ -166,7 +196,10 @@ timerEvent(string id, string data){
             }
             targ = "";
             targDesc = "";
-            onDesc(targ, "");
+			#ifdef PrimswimEvt$atLedge
+			if(BFL&BFL_PRIMSWIM_LEDGE)targ = "_PRIMSWIM_CLIMB_";
+			#endif
+            onDesc(targ, targDesc);
         }
     }
 

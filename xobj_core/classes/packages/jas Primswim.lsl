@@ -20,8 +20,10 @@
 string wl_preset;
 string wl_set;
 
-// Timers
+vector climb_out_to;			// Position to climb out to
+rotation climb_out_rot;			// Rotation to climb out at
 
+// Timers
 float timerSpeed;
 float ssm = 1;
 
@@ -53,6 +55,7 @@ integer BFA;                        // Anims bitfield
 #define TIMER_SWIMSTROKE "d"
 #define TIMER_FOOTSPLASH "e"
 #define TIMER_CLIMB_CD "f"
+#define TIMER_COUT_CHECK "g"
 
 integer BF_COMBAT;
 #define BFC_RECENT_ATTACK 1
@@ -148,14 +151,14 @@ updateAnimstate(){
 	
 	
     if(bf_start != 0){
-        if(bf_start&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle,TRUE,0);
+        if(bf_start&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle,TRUE,0,0);
         if(bf_start&BFA_ACTIVE){
-            AnimHandler$anim(PrimswimCfg$animActive, TRUE, 0);
+            AnimHandler$anim(PrimswimCfg$animActive, TRUE, 0,0);
         }
     }
     if(bf_stop != 0){
-        if(bf_stop&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle, FALSE, 0);
-        if(bf_stop&BFA_ACTIVE)AnimHandler$anim(PrimswimCfg$animActive, FALSE, 0);
+        if(bf_stop&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle, FALSE, 0,0);
+        if(bf_stop&BFA_ACTIVE)AnimHandler$anim(PrimswimCfg$animActive, FALSE, 0,0);
     }
 }
 
@@ -179,6 +182,8 @@ enterWater(){
     //dif=llGetVel()*.25;
     prePush=llGetVel()*.1;
     pp=.75;
+	
+	multiTimer([TIMER_COUT_CHECK, "", 1, TRUE]);
 }
 
 exitWater(){
@@ -209,7 +214,8 @@ exitWater(){
     wl_set = "";
 	
 	debugUncommon("Exited water");
-    
+	raiseEvent(PrimswimEvt$atLedge, mkarr([FALSE]));
+	multiTimer([TIMER_COUT_CHECK]);
 }
 #if PrimswimCfg$USE_WINDLIGHT==1
 toggleCam(integer submerged){
@@ -472,6 +478,42 @@ timerEvent(string id, string data){
         PrimswimAux$killById("SPT");
 		#endif
     }
+	
+	// See if you can climb out
+	else if(id == TIMER_COUT_CHECK){
+		// Checks if you're at an edge and can climb out
+		if(BFL&BFL_IN_WATER && ~llGetAgentInfo(llGetOwner())&AGENT_SITTING && BFL&BFL_AT_SURFACE && ~BFL&BFL_CLIMBING){
+			// Check ray
+			vector vrot = llRot2Euler(llGetRootRotation());
+			vector fwd = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
+			
+			vector gpos = llGetPos();
+			vector uppos = gpos+fwd*.5+<0,0,ascale.z/2>;
+
+			integer rejecttypes = RC_REJECT_AGENTS|RC_REJECT_LAND|RC_REJECT_PHYSICAL;
+			list up = llCastRay(uppos+<0,0,1>, uppos-<0,0,.5>, [RC_REJECT_TYPES, rejecttypes]);
+			if(llVecDist(llList2Vector(up, 1), uppos+<0,0,1>)>.5 && llList2Integer(up, -1)!=0){
+				list fwd = llCastRay(gpos, gpos+llRot2Fwd(llEuler2Rot(<0,0,vrot.z>)), [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
+				vector n = llList2Vector(fwd,2);
+				n = llVecNorm(<n.x,n.y,0>);
+				if(llList2Integer(fwd, -1)>0 && llFabs(n.z)<.2){
+					float edge_offset = .1;
+					
+					
+					vector pos = llList2Vector(fwd,1)-n*edge_offset;
+					vector u = llList2Vector(up,1);
+					pos.z = u.z+ascale.z/2;
+					
+					if(climb_out_to == ZERO_VECTOR)raiseEvent(PrimswimEvt$atLedge, mkarr([TRUE]));
+					climb_out_to = pos;
+					climb_out_rot = llRotBetween(<-1,0,0>, n);
+					return;
+				}
+			}
+		}
+		if(climb_out_to != ZERO_VECTOR)raiseEvent(PrimswimEvt$atLedge, mkarr([FALSE]));
+		climb_out_to = ZERO_VECTOR;
+	}
     
     else if(id == TIMER_SPEEDCHECK){ // Dynamic timer speed
         multiTimer([TIMER_SPEEDCHECK, "", 4, TRUE]);
@@ -543,55 +585,21 @@ triggerRandomSound(list sounds, float minVol, float maxVol){
     llTriggerSound(llList2Key(sounds, llFloor(llFrand(llGetListLength(sounds)))), minVol+llFrand(maxVol-minVol));
 }
 
-integer checkClimbout(){
-    // Checks if you're at an edge and can climb out
-    if(BFL&BFL_IN_WATER && ~llGetAgentInfo(llGetOwner())&AGENT_SITTING && BFL&BFL_AT_SURFACE && ~BFL&BFL_CLIMBING){
-        // Check ray
-        vector vrot = llRot2Euler(llGetRootRotation());
-        vector fwd = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
-        
-        vector gpos = llGetPos();
-        vector uppos = gpos+fwd*.5+<0,0,ascale.z/2>;
-
-        integer rejecttypes = RC_REJECT_AGENTS|RC_REJECT_LAND|RC_REJECT_PHYSICAL;
-        list up = llCastRay(uppos+<0,0,1>, uppos-<0,0,.5>, [RC_REJECT_TYPES, rejecttypes]);
-        if(llVecDist(llList2Vector(up, 1), uppos+<0,0,1>)>.5 && llList2Integer(up, -1)!=0){
-            list fwd = llCastRay(gpos, gpos+llRot2Fwd(llEuler2Rot(<0,0,vrot.z>)), [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
-            vector n = llList2Vector(fwd,2);
-			n = llVecNorm(<n.x,n.y,0>);
-            if(llList2Integer(fwd, -1)>0 && llFabs(n.z)<.2){
-                float edge_offset = .1;
+integer climbOut(){
+	if(climb_out_to == ZERO_VECTOR || BFL&BFL_CLIMBING)return FALSE;
+	list tasks = [
+		SupportcubeBuildTask(Supportcube$tSetPos, [climb_out_to]),
+        SupportcubeBuildTask(Supportcube$tSetRot, [climb_out_rot]),
+        SupportcubeBuildTask(Supportcube$tForceSit, ([FALSE, TRUE])),
+        SupportcubeBuildTask(Supportcube$tRunMethod, ([llGetLinkKey(LINK_ROOT), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])])),
+        SupportcubeBuildTask(Supportcube$tDelay, [2]),
+        SupportcubeBuildTask(Supportcube$tForceUnsit, [])
+    ];
                 
-                
-                vector pos = llList2Vector(fwd,1)-n*edge_offset;
-                vector u = llList2Vector(up,1);
-                pos.z = u.z+ascale.z/2;
-				
-				list tasks = [
-                    SupportcubeBuildTask(Supportcube$tSetPos, [pos]),
-                    SupportcubeBuildTask(Supportcube$tSetRot, ([llRotBetween(<-1,0,0>, n)])),
-                    SupportcubeBuildTask(Supportcube$tForceSit, ([FALSE, TRUE])),
-                    SupportcubeBuildTask(Supportcube$tRunMethod, ([llGetLinkKey(LINK_ROOT), "jas AnimHandler", AnimHandlerMethod$anim, llList2Json(JSON_ARRAY, ["water_out", TRUE, 0])])),
-                    
-                    SupportcubeBuildTask(Supportcube$tDelay, [1.5]),
-                    SupportcubeBuildTask(Supportcube$tForceUnsit, [])
-                ];
-                
-                RLV$cubeTask(tasks);
-
-                BFL = BFL|BFL_CLIMBING;
-                multiTimer([TIMER_CLIMB_CD, "", 1, FALSE]);
-                return TRUE;
-            }
-        }
-        
-        
-        
-        
-        
-        return TRUE;
-    }
-    return FALSE;
+    RLV$cubeTask(tasks);
+    BFL = BFL|BFL_CLIMBING;
+    multiTimer([TIMER_CLIMB_CD, "", 1, FALSE]);
+	return TRUE;
 }
 
 onEvt(string script, integer evt, string data){
@@ -602,7 +610,7 @@ onEvt(string script, integer evt, string data){
     if(script == "#ROOT"){
         if(evt == evt$BUTTON_PRESS){
             CONTROL = CONTROL|(integer)data;
-            if((integer)data&CONTROL_UP)checkClimbout();
+            if((integer)data&CONTROL_UP)climbOut();
         }
         else if(evt == evt$BUTTON_RELEASE)CONTROL = CONTROL&~(integer)data;
     }

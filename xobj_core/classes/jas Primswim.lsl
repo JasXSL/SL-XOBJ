@@ -116,5 +116,6 @@
 // events raised
 #define PrimswimEvt$onWaterEnter 1
 #define PrimswimEvt$onWaterExit 2
+#define PrimswimEvt$atLedge 3			// [(bool)at_ledge] - Player is at a ledge and can climb out
 
 

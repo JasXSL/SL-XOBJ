@@ -158,6 +158,10 @@ list bitArrToList(integer int, integer bytesize){
 #define prLinkedToMe(prim) (llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0) == llGetKey())
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
 #define prAttachPoint(prim) llList2Integer(llGetObjectDetails(prim, [OBJECT_ATTACHED_POINT]), 0)
+#define prSpawner(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_REZZER_KEY]), 0)
+
+// Returns prim that spawned this
+#define mySpawner() llList2Key(llGetObjectDetails(llGetKey(), [OBJECT_REZZER_KEY]), 0)
 
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(llVecNorm(fwd * llGetRot()), llVecNorm(llList2Vector(odata, 0)-llGetPos())));} 
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(fwd * llGetRot(), llList2Vector(odata, 0)-llGetPos()));} 
@@ -169,6 +173,8 @@ list bitArrToList(integer int, integer bytesize){
 #define myAng(object, var, rotOffset) float var; {vector temp = (llGetPos()-prPos(object))/prRot(object)*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define myAngX(object, var) myAng(object, var, ZERO_ROTATION)
 #define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
+
+
 
 // Check if I am in front of prim if VAR > PI_BY_TWO
 #define myAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llList2Rot(odata, 1)); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llGetPos()-llList2Vector(odata, 0))); var = llRot2Angle(bet);} 
