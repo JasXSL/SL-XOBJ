@@ -106,6 +106,11 @@ list bitArrToList(integer int, integer bytesize){
 	
 	
 	
+// NUMBER //
+// Round a float to a decimal and return a string
+	#define roundTo(number, decimals) llGetSubString((string)(llRound(number*llPow(10, decimals))/llPow(10, decimals)), 0, -7+decimals)
+	
+	
 // JSON //
 // Add an item to the end of a JSON ARRAY . Cannot be run as a parameter or in a statement
 	#define json_push(input, val) input = llJsonSetValue(input, [-1], val);
