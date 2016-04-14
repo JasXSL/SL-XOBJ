@@ -17,6 +17,7 @@ integer pInteract;
 
 string targDesc;
 key targ;
+key real_key;						// If ROOT is used, then this is the sublink. You can use this global in onInteract
 integer held;
 
 list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB]
@@ -61,6 +62,7 @@ onEvt(string script, integer evt, string data){
 			
 			
 			if(OVERRIDE){
+				
 				onInteract("", llList2String(OVERRIDE, 0), []);						// Always run this before
 				sendCallback(llList2Key(OVERRIDE, 1), llList2String(OVERRIDE, 2), InteractMethod$override, mkarr([llList2String(OVERRIDE, 0)]), llList2String(OVERRIDE, 3));
 				return;
@@ -168,6 +170,7 @@ timerEvent(string id, string data){
 					}
 						
 					string td = prDesc(k);
+					key real = k;
 					#ifdef InteractConf$USE_ROOT
 					k = prRoot(k);
 					#else
@@ -187,6 +190,7 @@ timerEvent(string id, string data){
                             if(llList2String(parse,0) == Interact$TASK_DESC){
                                 targDesc = td;
                                 targ = k;
+								real_key = real;
                                 onDesc(targ, llList2String(parse, 1));
                                 return;
                             }

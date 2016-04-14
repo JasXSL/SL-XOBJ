@@ -155,7 +155,7 @@
 #define RLVMethod$addSprint 16			// (float)perc
 #define RLVMethod$turnTowards 17		// (vec)region_pos - Faces the avatar towards a location
 #define RLVMethod$staticCamera 18		// (vec)region_pos, (rot)rotation - Forces camera to position and rot. If region_pos is 0 it clears
-
+#define RLVMethod$reset 19				// void - Resets the script, internal only
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
@@ -188,5 +188,7 @@
 
 #define RLV$sitTargOn(targ, uuid, prevent_unsit) runMethod((string)targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$unsitTarg(targ, override) runMethod((string)targ, "jas RLV", RLVMethod$unsit, [override], TNN)
+
+#define RLV$reset() runMethod((str)LINK_ROOT, "jas RLV", RLVMethod$reset, [], TNN)
 
 

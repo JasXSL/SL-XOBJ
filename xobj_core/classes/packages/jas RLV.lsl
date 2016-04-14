@@ -288,6 +288,10 @@ default
         }
         return;
     }
+	
+	if(method$internal && METHOD == RLVMethod$reset){
+		llResetScript();
+	}
     
 	#ifndef RLVcfg$NO_RESTRICT
     if(method$byOwner){

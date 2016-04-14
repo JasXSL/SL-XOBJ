@@ -141,6 +141,10 @@ list bitArrToList(integer int, integer bytesize){
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 
+// Put on top of detected key and listen respectively to limit to owner
+#define detOwnerCheck if(llDetectedKey(0) != llGetOwner())return;
+#define idOwnerCheck if(llGetOwnerKey(id) != llGetOwner())return;
+
 // Shortcut function that creates a 9 figure unix timestamp integer with 1/10th of a second precision
 #define timeSnap() ((integer)(llGetSubString((string)llGetUnixTime(), -8, -1)+llGetSubString(llGetTimestamp(),-7,-7)))
 
