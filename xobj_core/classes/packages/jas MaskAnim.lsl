@@ -102,9 +102,9 @@ stopAnim(string name){
 }
 
 // Switches an animation's blocks between mask and alpha
-toggleMask(string anim, integer useMask){
+list toggleMask(string anim, integer useMask, integer ret){
 	integer pos = llListFindList(MAIN_CACHE, [anim]);
-	if(pos == -1)return;
+	if(pos == -1)return [];
 	
 	list CL = llList2List(MAIN_CACHE, pos+MAIN_PRE, pos+llList2Integer(MAIN_CACHE, pos+1)-1); 
 	list out;
@@ -123,8 +123,9 @@ toggleMask(string anim, integer useMask){
 		}
 
 	}
+	if(ret)return out;
 	llSetLinkPrimitiveParamsFast(0,out);
-	
+	return [];
 }
 
 #define stopAll() llSetTimerEvent(0)
@@ -180,15 +181,11 @@ refreshAnims(integer restart){
 	}
 	else{
 		need_hide = CURRENT_ANIM;
-		if(flags&MaskAnimFlag$HIDE_PREVIOUS_PRE){
-			toggleMask(need_hide, TRUE);
-			need_hide = "";
-		}
 		debugUncommon("Setting hide to "+need_hide);
 	
 		
 		CURRENT_ANIM = top;
-		toggleMask(CURRENT_ANIM, FALSE);
+		toggleMask(CURRENT_ANIM, FALSE, FALSE);
 		OBJ_CACHE = llList2List(MAIN_CACHE, topnr+MAIN_PRE, topnr+toplen-1);
 		
 		
@@ -328,7 +325,13 @@ default
 		
 		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
-
+		
+		// Just alpha out the previous
+		if(FLAG_CACHE&MaskAnimFlag$HIDE_PREVIOUS_PRE && need_hide != ""){
+			set+=toggleMask(need_hide, FALSE, TRUE);
+			need_hide = "";
+		}
+		
 		while(cl){
 			blockSplice(cl, block);
 			integer prePrim = blockGetPrePrim(block);
@@ -347,6 +350,7 @@ default
             integer maxPrims = blockGetNrPrims(block);
 			
 			//qd("Block "+llGetLinkName(llList2Integer(prims, 0))+" max steps "+(string)maxSteps+" max prims : "+(string)maxPrims);
+			
 			
             while(llGetListEntryType(frames, step) == TYPE_STRING && step<llGetListLength(frames)){
                 raiseEvent(MaskAnimEvt$frame, llList2String(frames,step));
@@ -369,6 +373,8 @@ default
                 side-=pr*8;
                 prim = llList2Integer(prims, pr);
 				
+				
+				
 				//set+= [linkAlpha(prim, 1, side)];
 				set+= [PRIM_LINK_TARGET, prim, PRIM_COLOR, side, <1,1,1>, 1]; //, PRIM_ALPHA_MODE, side, PRIM_ALPHA_MODE_MASK, 100
 				//llSetLinkAlpha(prim, 1, side);
@@ -377,11 +383,7 @@ default
 					//llSetLinkAlpha(prePrim, 0, preFace);
                 //llSetText((string)step+" :: "+(string)prim+" :: "+(string)side,<1,1,1>,1);
 				
-				// Only hide previous if it actually animated
-				if(~FLAG_CACHE&MaskAnimFlag$DONT_HIDE_PREVIOUS && need_hide != ""){
-					toggleMask(need_hide, TRUE);
-					need_hide = "";
-				}
+				
 				
 				
             }
@@ -397,6 +399,13 @@ default
 			}
 			slot+=blockGetSize(block);
         }
+
+		// Only hide previous if it actually animated
+		if(~FLAG_CACHE&MaskAnimFlag$DONT_HIDE_PREVIOUS && need_hide != ""){
+			toggleMask(need_hide, TRUE, FALSE);
+			need_hide = "";
+		}
+		
 		
 		//llSetText(llList2Json(JSON_ARRAY, [looping]+set), <1,1,1>, 1);
 		if(llGetListLength(set)>1){
@@ -513,7 +522,7 @@ default
 			}
 			package = llListReplaceList(package, [llGetListLength(package)], 1, 1);
 			MAIN_CACHE+=package;
-			toggleMask(method_arg(0), TRUE); // Hide it
+			toggleMask(method_arg(0), TRUE, FALSE); // Hide it
 			refreshAnims(FALSE);
 		}
     #define LM_BOTTOM  
