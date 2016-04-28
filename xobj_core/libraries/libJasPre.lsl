@@ -178,7 +178,7 @@ list bitArrToList(integer int, integer bytesize){
 #define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetRootPosition())/llGetRootRotation()*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define prAngX(object, var) prAngle(object, var, ZERO_ROTATION)
 #define prAngZ(object, var) prAngle(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
-
+// Checks if I am in front of prim
 #define myAng(object, var, rotOffset) float var; {vector temp = (llGetPos()-prPos(object))/prRot(object)*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define myAngX(object, var) myAng(object, var, ZERO_ROTATION)
 #define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
