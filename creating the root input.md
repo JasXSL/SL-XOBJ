@@ -8,15 +8,23 @@ You can create it any way you want, but here's my recommended one:
 default 
 {
     on_rez(integer mew){
-        resetAll();  
+        llResetScript();
     }
     
     state_entry()
     {
-        resetAllOthers();
         initiateListen();
         if(llGetAttached())
             llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS);
+        
+        // Optional DB3 table creation  
+        /*
+            list tables = ["#ROOT", "got Bridge"];
+            db3$addTables(tables);
+        */
+        // If you don't use DB3 you can reset the other scripts or initialize them here.
+        // Otherwise you'll want to wait for a callback further down before initializing, as the schema has to be built before they can utilize DB3
+        resetAllOthers();
     }
 
     
@@ -47,6 +55,42 @@ default
     }
 
     #include "xobj_core/_LISTEN.lsl"
+    
+    // This is the standard input, it captures link_message
+    #include "xobj_core/_LM.lsl" 
+    /*
+        Included in all these calls:
+        METHOD - (int)method - The method ran
+        PARAMS - (var)parameters - A JSON array of arguments, you can use method_arg(0), method_arg(1) etc to get these as strings
+        SENDER_SCRIPT - (str)script - Script that ran the method
+        CB - (Callback only) The callback you specified when you sent a task
+    */ 
+    // Here's where you receive callbacks from running methods
+    if(method$isCallback){
+        // If using DB3, you'll want to initialize the linkset from here
+        /*
+		if(SENDER_SCRIPT == "#ROOT" && METHOD == stdMethod$setShared){
+			//qd("Tables created: "+PARAMS);
+			resetAllOthers();
+		}
+		*/
+        return;
+    }
+    
+    // Internal means the method was sent from within the linkset
+    if(method$internal){
+	}
+	
+	// Either internal or the method was sent by the owner
+	if(method$byOwner){
+	}
+    
+    // Code available to any sender
+	
+	
+    // End link message code
+    #define LM_BOTTOM  
+    #include "xobj_core/_LM.lsl"  
 }
 ```
 
