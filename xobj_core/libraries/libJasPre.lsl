@@ -151,6 +151,7 @@ list bitArrToList(integer int, integer bytesize){
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)
 #define j(obj, var) llJsonGetValue(obj, [var])
+#define js(obj, index, val) llJsonSetValue(obj, [index], (str)val)
 
 // Quickly set memory limit to a multiplier of current memory used
 #define memLim(multi) llSetMemoryLimit(llCeil((float)llGetUsedMemory()*multi))

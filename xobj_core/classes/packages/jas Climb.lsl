@@ -1,6 +1,3 @@
-#ifndef USE_SHARED
-#define USE_SHARED ["jas RLV"]
-#endif 
 #ifndef USE_EVENTS
 #define USE_EVENTS
 #endif
@@ -50,13 +47,7 @@ float perc;
 
 
 
-setCubePos(vector pos){
-    if(CUBE == "" || llKey2Name(CUBE) == ""){
-        CUBE = db2$get("jas RLV", [RLVShared$supportcube]);
-    }
-    //rot*ladder_root_rot'
-    llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]));
-}
+#define setCubePos(pos) llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]))
 
 dismount(integer atoffset){
     if(BFL&BFL_DISMOUNTING)return;
@@ -70,10 +61,10 @@ dismount(integer atoffset){
 
     
     if(anim_active != ""){
-        AnimHandler$anim(anim_active,FALSE,0);
+        AnimHandler$anim(anim_active,FALSE,0,0);
     }
     if(anim_active_down != ""){
-        AnimHandler$anim(anim_active_down,FALSE,0);
+        AnimHandler$anim(anim_active_down,FALSE,0,0);
     }
     
     string anm = anim_dismount_bottom;
@@ -86,7 +77,7 @@ dismount(integer atoffset){
             anm = anim_dismount_top;
         }
         if(isset(anm)){
-            AnimHandler$anim(anm,TRUE,0);
+            AnimHandler$anim(anm,TRUE,0,0);
         }
         setCubePos(offset);
     }
@@ -94,7 +85,7 @@ dismount(integer atoffset){
     float to = .1;
     if(isset(anm))to = 1;
     if(anim_passive != ""){
-        AnimHandler$anim(anim_passive, FALSE, 0);
+        AnimHandler$anim(anim_passive, FALSE, 0,0);
     }
     
     multiTimer([TIMER_DISMOUNTING, "", to, FALSE]);
@@ -121,16 +112,9 @@ mount(){
         SupportcubeBuildTask(Supportcube$tForceSit, [])
     ]));
 
-// CHECK THIS
-    /*
-    sendLocalCom(LINK_ROOT, SCRIPT_RLV, SCRIPT_NO_RET, "", RLV_SIT, llList2Json(JSON_OBJECT, [
-        "u", "c"
-    ]));
-    */
-    //sendLocalCom(LINK_THIS, SCRIPT_PRIMSWIM, SCRIPT_NO_RET, "", PRIMSWIM_CLIMB, "1");
     multiTimer([TIMER_MOVE, "", 1.5, FALSE]);
     
-    if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0);
+    if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0,0);
     multiTimer([TIMER_INI, 0, 3, FALSE]);
     BFL = BFL|BF_CLIMB_INI;
     BFL = BFL|BFL_CLIMBING;
@@ -163,7 +147,7 @@ timerEvent(string id, string data){
                     string a = anim_active;
                     
                     if(~BFL&BFL_DIR_UP)a = anim_active_down;
-                    if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0);
+                    if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0);
                     anim_active_cur = a;
                 }
                 
@@ -180,7 +164,7 @@ timerEvent(string id, string data){
             }else{
                 BFL = BFL&~BFL_CLIMBING_ANIM;
                 if(anim_active_cur != ""){
-                    AnimHandler$anim(anim_active_cur,FALSE,0);
+                    AnimHandler$anim(anim_active_cur,FALSE,0,0);
                     anim_active_cur = "";
                 }
             }
@@ -253,7 +237,6 @@ default
     {
         dismount(FALSE);
         init();
-		db2$ini();
     }
     
     timer(){

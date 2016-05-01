@@ -46,7 +46,7 @@ listen(integer chan, string name, key id, string message){
 		#ifdef ALLOW_USER_DEBUG_KEY
 		if(llGetOwnerKey(id) != ALLOW_USER_DEBUG_KEY)return;
 		#endif
-		#if ALLOW_USER_DEBUG!=2
+		#if ALLOW_USER_DEBUG != 2
 		if(llGetOwnerKey(id) != llGetOwner())return;
 		#endif
         if(llGetSubString(message, 0, 5) == "debug "){ // script, method, param1, param2...

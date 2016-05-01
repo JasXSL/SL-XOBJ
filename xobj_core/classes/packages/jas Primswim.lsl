@@ -174,10 +174,7 @@ enterWater(){
     
     raiseEvent(PrimswimEvt$onWaterEnter, "");
 	debugUncommon("Entered water");
-	
-	#if PrimswimCfg$USE_WINDLIGHT==1
-    wl_preset = db2$get("jas RLV", [RLVShared$windlight]);
-    #endif
+
 
     //dif=llGetVel()*.25;
     prePush=llGetVel()*.1;
@@ -210,7 +207,6 @@ exitWater(){
     Soundspace$dive(FALSE);
     //sendLocalCom(LINK_ROOT, SCRIPT_SOUNDSPACE, SCRIPT_NO_RET, "", SOUNDSPACE_DIVE, "0");
     toggleCam(FALSE);
-    wl_preset = "";
     wl_set = "";
 	
 	debugUncommon("Exited water");
@@ -219,18 +215,14 @@ exitWater(){
 }
 #if PrimswimCfg$USE_WINDLIGHT==1
 toggleCam(integer submerged){
-	
+	if(!isset(wl_set))return;
     if(submerged){
         BFL = BFL|BFL_CAM_UNDER_WATER;
-        if(isset(wl_set)){
-            RLV$windlightPreset(wl_set);
-        }
+        RLV$windlightPreset(wl_set, TRUE);
     }else{
         BFL = BFL&~BFL_CAM_UNDER_WATER;
-        if(isset(wl_set) && isset(wl_preset)){
-            RLV$windlightPreset(wl_preset);
-        }
-    }
+        RLV$resetWindlight();
+	}
 }
 #else
 	#define toggleCam(input)

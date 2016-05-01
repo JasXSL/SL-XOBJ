@@ -125,11 +125,6 @@
 #endif
 
 
-// Shared vars
-#define RLVShared$supportcube "sc"   	// Supportcube key 
-#define RLVShared$windlight "wl"		// [TOR] NIGHT - Nocturne - Stores the current windlight setting
-
-
 
 
 #include "xobj_core/classes/jas Supportcube.lsl" // Required
@@ -146,8 +141,8 @@
 #define RLVMethod$sprintRegenModifier 8	// (float)multiplier - Sets the multiplier of sprint regen 0.5 = 50% slower, 1.5 = 50% faster
 #define RLVMethod$sitOn 9				// (key)uuid, (bool)prevent_unsit - Calls @sit on uuid
 #define RLVMethod$unsit 10				// (bool)override_unsitblock - Unsits a user
-#define RLVMethod$windlightPreset 11	// (str)preset
-#define RLVMethod$resetWindlight 12		// Resets to config default
+#define RLVMethod$windlightPreset 11	// (str)preset, (int)override
+#define RLVMethod$resetWindlight 12		// Removes override windlight
 
 #define RLVMethod$limitCamDist 13		// (float)dist <0 = clear, 0 = force mouselook
 #define RLVMethod$preventTP 14			// (bool)prevent
@@ -173,7 +168,7 @@
 #define RLV$sprintRegenModifier(multiplier) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sprintRegenModifier, [multiplier], TNN)
 #define RLV$sitOn(uuid, prevent_unsit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$unsit(override) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$unsit, [override], TNN)
-#define RLV$windlightPreset(preset) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset], TNN)
+#define RLV$windlightPreset(preset, override) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$windlightPreset, [preset, override], TNN)
 #define RLV$resetWindlight() runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$resetWindlight, [], TNN)
 #define RLV$turnTowards(pos) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$turnTowards, [pos], TNN)
 #define RLV$targSitOn(targ, uuid, prevent_unsit) runMethod(targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)

@@ -1,6 +1,3 @@
-#ifndef USE_SHARED
-#define USE_SHARED [cls$name]
-#endif
 #include "xobj_core/classes/jas Supportcube.lsl"
 #include "xobj_core/classes/jas Remoteloader.lsl"
 #include "xobj_core/classes/jas Attached.lsl"
@@ -29,7 +26,8 @@ float sprintRegenModifier = 1;
 // Include the general class functionality - Make a full include to grab any private stuff
 #include "xobj_core/classes/jas RLV.lsl"
 
-
+string WINDLIGHT;
+string WINDLIGHT_OVERRIDE;
 
 integer BFL;
 #define BFL_SPRINTING 1
@@ -220,7 +218,6 @@ default
             supportcube = id;
 
             raiseEvent(RLVevt$supportcubeSpawn, (string)id);
-            db2$set([RLVShared$supportcube], (string)id);
             //llSleep(.2);
             //cubeTask([]);
         }
@@ -243,9 +240,6 @@ default
 			llSetLinkAlpha(sprintPrim, 0, ALL_SIDES);
 			#endif
 		#endif 
-		#if RLVcfg$USE_WINDLIGHT==1
-		db2$set([RLVShared$windlight], "[TOR] NIGHT - Nocturne");
-		#endif
 		#if RLVcfg$USE_CAM==1
 		llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
 		#endif
@@ -364,13 +358,16 @@ default
 
 		#if RLVcfg$USE_WINDLIGHT==1
 		if(METHOD == RLVMethod$windlightPreset){
-            db2$set([RLVShared$windlight], method_arg(0));
-            llOwnerSay("@setenv_preset:"+method_arg(0)+"=force");
+			integer override = (int)method_arg(1);
+			string wl = method_arg(0);
+			if(override)WINDLIGHT_OVERRIDE = wl;
+			else WINDLIGHT = wl;
+            llOwnerSay("@setenv_preset:"+wl+"=force");
         }
         else if(METHOD == RLVMethod$resetWindlight){
-            db2$set([RLVShared$windlight], RLVcfg$defaultWindlight);
-            llOwnerSay("@setenv_preset:"+RLVcfg$defaultWindlight+"=force"); 
-        }
+			WINDLIGHT_OVERRIDE = "";
+            llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
+		}
 		#endif
             
         #if RLVcfg$USE_SPRINT==1

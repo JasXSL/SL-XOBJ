@@ -99,6 +99,9 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define DB2_DELETE -7			// str = (str)script
 #define DB2_REFRESHME -8		// refreshes db2 on the script and sends a callback
 
+#define DB3_ADD -5				// (str)sender_script, (arr)tableNames - Adds a table to DB3 - Sends stdMethod$setShared as a callback to the script on completion, params containing an array of tables added
+
+
 // Standard methods
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers.
 #define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root. Note that this is only sent when db2 return "0" for asynchronous
@@ -107,9 +110,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 // General methods.
 // Putting CALLBACK_NONE in the callback field will prevent callbacks from being sent when raising a method
 #define CALLBACK_NONE JSON_INVALID
-// Synonym
+// Synonyms
 #define NORET CALLBACK_NONE
-// Use this if you are making a call to a module that's not a package module, does not need to send a callback, and does not need to be called by name
 #define TNN CALLBACK_NONE
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
@@ -192,11 +194,15 @@ onEvt(string script, integer evt, string data){
 // Database management
 // DB2 is faster but consumes slightly more memory in every script.
 #ifdef USE_LEGACY_DB
-#include "xobj_core/classes/cl SharedVars.lsl" // SV headers
+	#include "xobj_core/classes/cl SharedVars.lsl" // SV headers
 #else
-	// DB2 needs you to define the scripts you want to use
-	// #define USE_SHARED [Script1, Script2...]
-	#include "xobj_core/_DB2.lsl"
+	#ifdef USE_DB2
+		#include "xobj_core/_DB2.lsl"
+	#else
+		// DB2 & 3 needs you to define the scripts you want to use
+		// #define USE_SHARED [Script1, Script2...]
+		#include "xobj_core/_DB3.lsl"
+	#endif
 #endif
 
 

@@ -1,3 +1,12 @@
+/*
+	
+	!! WARNING !!
+	DB2 has been deprecated and will be removed in XOBJ 0.4
+	DB3 is used instead but has a different method of setting up
+	For now you can set #define USE_DB2 in your core file if you want to use DB2 over DB3
+	
+*/
+
 #ifdef SCRIPT_IS_ROOT
 #ifndef USE_SHARED
 	#define USE_SHARED ["*"]
@@ -20,7 +29,7 @@ list DB2_CACHE; // [(str)script, (int)prim, (int)face]
 #define db2$setOther(script, sub, val) db2(DB2$SET, script, sub, val)
 
 
-#define DB2$get(script, sub) db2$get(script, sub)
+#define DB2$get(script, sub) db2$get(script, sub) 
 #define DB2$set(sub, val) db2$set(sub, val)
 
 #define DB2$setOther(script, sub, val) db2$setOther(script, sub, val)

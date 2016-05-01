@@ -60,6 +60,7 @@
 #define MaskAnimFlag$STOP_ON_END MeshAnimFlag$STOP_ON_END				// Stops all animations and prevents any new animations from playing until MaskAnim resume is called
 #define MaskAnimFlag$HIDE_PREVIOUS_PRE 0x1000							// Hides previous before it starts a new one. Will cause an invisible frame but fixes subsequent animations using the same prims
 
+
 #ifndef MaskAnimConf$LIMIT_AGENT_RANGE
 	#define MaskAnimConf$LIMIT_AGENT_RANGE 0
 #endif
