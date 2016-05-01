@@ -10,6 +10,19 @@ xobj supports the following features:
 * Methods with optional callbacks
 * Prim DB
 * Macros
+ 
+
+###Glossary
+* Module - A script. Scripts in XOBJ are called by name.
+* Header file - A file containing methods, events, config values, documentation etc for a module.
+* Package file - A file that contains the actual code of the module.
+* Method - A standard input for a particular module that causes it to execute code, potentially receive a callback, and can be sent and received from outside the linkset.
+* Method macro - A shortcut of running a method such as Dialog$spawn() 
+* Event - A linkset-internal way of sending data from a script to be parsed by other scripts.
+* Prim DB/DB3/Shared Vars - A way of storing data on a prim that any script in the linkset can read synchronously.
+
+
+
 
 ##Update 0.3.0##
 DB2 has been replaced with DB3 and I have adopted a new philosophy on shared vars. DB3 will consume less memory and automatically preserve tables between script resets. But it runs a little slower and requires you to set up the tables in #ROOT.
