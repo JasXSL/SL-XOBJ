@@ -1,3 +1,4 @@
+##Run methods on another module 
 Let's create our first module! A module is basically just a script, but follows a few rules:
 1. A module needs a header file that can be included by other scripts to access your module's methods.
 2. A module can be used as an object package for pseudo object oriented coding.
@@ -20,6 +21,7 @@ You should have a "#ROOT" script and the "jas Dialog" module installed (see the 
 Next we'll need to start listening to events. 
 1. At the very top of the script add #define USE_EVENTS
 2. After the #includes add the following code:
+
 	onEvt(string module, integer evt, string data){
 		if(module == "#ROOT" && evt == evt$TOUCH_START){
 			integer prim = (integer)jVal(data, [0]);
@@ -29,6 +31,7 @@ Next we'll need to start listening to events.
 			}
 		}
 	}
+
 Now you're listening to project events. In particular you are checking if the sender module was named "#ROOT" and the event was the standard event evt$TOUCH_START.
 
 If it was, it reads the data of that event, [clicked_prim, clicker_key] and tells the dialog manager to create a new dialog for the user, using menu ID 0. If you need more menu IDs, you likely want to cast them into constants, but since there are no submenus in this script we can disregard it.
@@ -71,10 +74,10 @@ Add the following code before the return in if(method$isCallback):
 		}
 	}
 
-- First off, this checks if the method was raised by owner. You can also check if(method$internal) to limit a method to being run only from the linkset the script is in.
-- It then checks if the callback was sent from the "cl Dialog" script, and if the method run on that script was DialogMethod$spawn
-- In that case it fetches the ID of the menu you opened, and the message received.
-- If the message was yes and the menu was 0 (as we specified when we sent the call) we output the hello world message.
+* First off, this checks if the method was raised by owner. You can also check if(method$internal) to limit a method to being run only from the linkset the script is in.
+* It then checks if the callback was sent from the "cl Dialog" script, and if the method run on that script was DialogMethod$spawn
+* In that case it fetches the ID of the menu you opened, and the message received.
+* If the message was yes and the menu was 0 (as we specified when we sent the call) we output the hello world message.
 
 That's how to utilize another module from your own module.
 
@@ -82,7 +85,7 @@ That's how to utilize another module from your own module.
 
 
 
-
+## Let other modules communicate with your custom one
 Let's take a look at how you can let other modules access yours. Start off by opening your mfp Main.lsl file.
 1. On the first line add: #define MainMethod$helloWorld 1	// (key)sender - Sends a hello world message with sender's display name
 2. You have defined your first method identifier (1)! And it accepts 1 argument (key)sender
@@ -94,9 +97,9 @@ Let's take a look at how you can let other modules access yours. Start off by op
 		CB_DATA = [method_arg(0)];
 	}
 
-- The if statement checks if the method to run was your defined MainMethod$helloWorld
-- method_arg(0) gets the first method argument as a string, in this case it's supposed to be the key of the sender.
-- CB_DATA = [method_arg(0)]; lets you return the key of the sender in a callback.
+* The if statement checks if the method to run was your defined MainMethod$helloWorld
+* method_arg(0) gets the first method argument as a string, in this case it's supposed to be the key of the sender.
+* CB_DATA = [method_arg(0)]; lets you return the key of the sender in a callback.
 
 Let's create an in-world box to run your method.
 
@@ -134,6 +137,7 @@ Let's create an in-world box to run your method.
 This receives a callback from st Main and outputs that it was a success.
 
 6. Replace the new #ROOT script's touch_start event with the following:
+
 	touch_start(integer total){
 		runOmniMethod("mfp Main", MainMethod$hellOWorld, [llDetectedKey(0)], "This is a callback message");
 	}
