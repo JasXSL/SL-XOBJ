@@ -202,14 +202,17 @@ link_message(integer link, integer nr, string s, key id){
 		string _mname = llGetScriptName();
 		int _mnl = llStringLength(_mname);
 		// Make sure this script is the receiver
-		if(
-			llGetSubString(s,0,_mnl-1) != _mname
-			#ifdef SCRIPT_ALIASES
-			&& llListFindList(SCRIPT_ALIASES, [_mname]) == -1
-			#endif
-		){
+		#ifndef SCRIPT_ALIASES
+		if(llGetSubString(s,0,_mnl) != _mname+"["){
 			return;
 		}
+		#else
+		list l = SCRIPT_ALIASES+_mname;
+		string _n = llGetSubString(s, 0, llSubStringIndex(s, "[")-1);
+		if(llListFindList(l, [_n]) == -1)return;
+		_mnl = llStringLength(_n);
+		#endif
+		
 		
 		// 
 		list _s_DATA = llJson2List(llGetSubString(s, _mnl, -1));
