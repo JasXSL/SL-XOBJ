@@ -10,7 +10,7 @@
 	#define cls$name llGetScriptName()
 
 // Shortcut to get a method argument
-	#define method_arg(index) llJsonGetValue(PARAMS, [index])
+	#define method_arg(index) llList2String(PARAMS, index)
 
 // Check if a method is called by a script within the same linkset, OR by the object's owner
 	#define method$byOwner (id == "" || llGetOwnerKey(id) == llGetOwner())

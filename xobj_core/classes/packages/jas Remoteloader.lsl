@@ -99,7 +99,7 @@ default
         if(METHOD == RemoteloaderMethod$load){
             //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
 			queued++;
-			list dta = llJson2List(PARAMS);
+			list dta = PARAMS;
 			if(id == "")id = llList2String(dta, -1);		// Lets you override the ID to send to
 			
 			string s = llList2String(dta, 0);

@@ -16,7 +16,7 @@
 	Header vars that you can use in each script:
 	#define SCRIPT_IS_ROOT <- Always define this on top of #ROOT
 	#define USE_EVENTS <- Add to top of a script that should be listening to events
-	#define USE_SHARED (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
+	#define USE_SHARED (DEPRECATED) (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
 	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
 	#define SCRIPT_ALIASES [] <- Alias names the script can be run as. Array of names. Like if you have a script named "got LevelLite" and you want it to also be callable with "got Level", then define this as ["got Level"]
 	
@@ -47,7 +47,6 @@
 	#define debugCommon(text) _dbg(text, DEBUG_COMMON)
 	#define debug(text) _dbg(text, DEBUG_USER)
 #endif
-
 
 
 // These constants should be overwritten and defined in your _core.lsl file for each project
@@ -115,29 +114,11 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define TNN CALLBACK_NONE
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
-// If you a script to listen to override, you have to define that BEFORE you include root
-// Ex:
-/*
-	
-	#include "xobj_core/classes/jxSupportcube.lsl"
-	#define LISTEN_OVERRIDE SupportcubeCfg$listenOverride
-	#include "toonie_rezzed/_core.lsl"
-	#include "xobj_core/classes/packages/jxSupportcube.lsl"
-
-*/ 
-
-
-
-initiateListen(){
-	debugUncommon("Listening on "+(string)playerChan(llGetOwner()));
-	llListen(playerChan(llGetOwner()), "", "", "") ;
-	#ifdef LISTEN_OVERRIDE 
-	llListen(LISTEN_OVERRIDE,"","","");
-	#endif
-	#ifdef ALLOW_USER_DEBUG
-	llListen(0, "", "", "");
-	#endif
-}
+#ifndef ALLOW_USER_DEBUG
+	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", "");
+#else
+	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", ""); llListen(0, "", "", "");
+#endif
 
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
@@ -177,9 +158,7 @@ runLimitMethod(key tokenSender, string className, integer method, list data, str
 }
 
 // Placeholder function for events. Copy paste this and fill it with code in each module that needs to listen to events.
-onEvt(string script, integer evt, string data){
-	
-}
+onEvt(string script, integer evt, list data){}
 
 // Standard function to raise an event.
 #define raiseEvent(evt, data) llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, ([llGetScriptName(), data])), (string)evt)
@@ -192,18 +171,14 @@ onEvt(string script, integer evt, string data){
 
 
 // Database management
-// DB2 is faster but consumes slightly more memory in every script.
-#ifdef USE_LEGACY_DB
-	#include "xobj_core/classes/cl SharedVars.lsl" // SV headers
+#ifdef USE_DB2
+	#include "xobj_core/_DB2.lsl"
 #else
-	#ifdef USE_DB2
-		#include "xobj_core/_DB2.lsl"
-	#else
-		// DB2 & 3 needs you to define the scripts you want to use
-		// #define USE_SHARED [Script1, Script2...]
-		#include "xobj_core/_DB3.lsl"
-	#endif
+	// DB2 & 3 needs you to define the scripts you want to use
+	// #define USE_SHARED [Script1, Script2...]
+	#include "xobj_core/_DB3.lsl"
 #endif
+
 
 
  

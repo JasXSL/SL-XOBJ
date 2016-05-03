@@ -168,7 +168,7 @@ refreshAnims(){
 
 
 #ifdef MeshAnimConf$remoteloadOnAttachedIni
-onEvt(string script, integer evt, string data){
+onEvt(string script, integer evt, list data){
 	if(script == "jas Attached" && evt == evt$SCRIPT_INIT){
 		integer pin = llFloor(llFrand(0xFFFFFF));
 		llSetRemoteScriptAccessPin(pin);

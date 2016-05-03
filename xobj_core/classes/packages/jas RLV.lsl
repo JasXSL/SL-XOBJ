@@ -275,7 +275,7 @@ default
             if(METHOD == RemoteloaderMethod$attach){
                 integer pos = findAttached(CB);
                 if(~pos){
-                    KEEP_ATTACHED = llListReplaceList(KEEP_ATTACHED, [PARAMS], pos+1, pos+1);
+                    KEEP_ATTACHED = llListReplaceList(KEEP_ATTACHED, [mkarr(PARAMS)], pos+1, pos+1);
                 }
             }
 			#endif
@@ -321,7 +321,7 @@ default
 			
 		if(METHOD == RLVMethod$cubeTask){
 			debugCommon("Received cubetasks: "+PARAMS);
-            cubeTask(llJson2List(PARAMS));
+            cubeTask(PARAMS);
         }
 			
 		#if RLVcfg$USE_KEEPATTACH==1

@@ -28,7 +28,7 @@ key targ;
 
 
 
-onEvt(string script, integer evt, string data){ 
+onEvt(string script, integer evt, list data){ 
     if(script == "jas Primswim"){
         
         if(evt == PrimswimEvt$onWaterEnter)BFL = BFL|BFL_SWIMMING;

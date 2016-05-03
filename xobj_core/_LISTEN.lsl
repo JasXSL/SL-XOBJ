@@ -9,7 +9,6 @@
 	#define LISTEN_LIMIT_BY_NAME - Requires the customtarg to be this name
 	#define LISTEN_LIMIT_ALLOW_WILDCARD - If used in combination with above, * will be allowed too
 	#define REQUIRE_INIT - Will not raise events until BFL_INIT is set
-	#define LISTEN_OVERRIDE (int)chan - Allows the owner to run override messages through the function onListenOverride(integer chan, key id, string message){} Use this only when you need to send lots of commands in rapid succession.
 	#define DEBUG - Outputs all messages to owner
 	#define ALLOW_USER_DEBUG 2=anyone - Lets anyone/owner raise events by saying debug script, method, arg1, arg2...
 	#define ALLOW_USER_DEBUG_KEY (key)id - Limit to a specific key
@@ -28,17 +27,6 @@ listen(integer chan, string name, key id, string message){
 	
 	#ifdef REQUIRE_INIT
 	if(~BFL&BFL_INIT)return;
-	#endif
-	
-	#ifdef LISTEN_OVERRIDE
-	if(chan == LISTEN_OVERRIDE
-		#ifndef LISTEN_OVERRIDE_ALLOW_ALL
-		&& llGetOwnerKey(id) == llGetOwner()
-		#endif
-	){
-		onListenOverride(chan, id, message);
-		return;
-	}
 	#endif
 	
 	#ifdef ALLOW_USER_DEBUG

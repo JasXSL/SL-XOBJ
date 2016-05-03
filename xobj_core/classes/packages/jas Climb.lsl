@@ -198,12 +198,12 @@ findNearestNode(){
     onNode = nn+1;
 }
 
-onEvt(string script, integer evt, string data){
+onEvt(string script, integer evt, list data){
     if(script == "jas RLV" && evt == RLVevt$supportcubeSpawn){
-        CUBE = data;
+        CUBE = llList2String(data,0);
     }
     else if(script == "#ROOT"){
-        integer n = (integer)data;
+        integer n = llList2Integer(data,0);
         integer up = CONTROL_FWD|CONTROL_RIGHT|CONTROL_UP;
         integer dn = CONTROL_BACK|CONTROL_LEFT|CONTROL_DOWN;
             

@@ -139,6 +139,14 @@ list bitArrToList(integer int, integer bytesize){
 #define int integer
 #define count(input) llGetListLength(input)
 
+#define l2i(input, index) llList2Integer(input, index)
+#define l2v(input, index) llList2Vector(input, index)
+#define l2f(input, index) llList2Float(input, index)
+#define l2s(input, index) llList2String(input, index)
+#define l2k(input, index) llList2Key(input, index)
+#define l2r(input, index) llList2Rot(input, index)
+
+
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 
 // Put on top of detected key and listen respectively to limit to owner

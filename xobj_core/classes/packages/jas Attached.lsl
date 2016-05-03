@@ -12,10 +12,10 @@
 #define USE_EVENTS
 integer anim_step;
 integer P_SPLAT;
-onEvt(string script, integer evt, string data){
+onEvt(string script, integer evt, list data){
 	if(script == "ton MeshAnim" && evt == MeshAnimEvt$frame){
 	
-		list split = llParseString2List(data, [";"], []);
+		list split = llParseString2List(llList2String(data,0), [";"], []);
 		string type = llList2String(split, 0);
 		if(type == FRAME_AUDIO){
 			list sounds = ["e47ba69b-2b81-1ead-a354-fe8bb1b7f554", "9f81c0cb-43fc-6a56-e41e-7f932ceff1dc"];
@@ -145,7 +145,7 @@ default
 		if(llGetStartParameter() == 2){
             llOwnerSay("@acceptpermission=add");
             runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], "");
-            raiseEvent(evt$SCRIPT_INIT, "");
+            raiseEvent(evt$SCRIPT_INIT, []);
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
 			#ifdef Attached$onSpawn
 			Attached$onSpawn;

@@ -1,0 +1,7 @@
+xobj_toonie/classes/packages/cl NPC.lsl
+xobj_toonie/classes/cl NPC.lsl
+xobj_toonie/classes/legacy/packages/cl MeshAnim_bup.lsl
+xobj_toonie/classes/legacy/cl MeshAnim.lsl
+xobj_toonie/classes/legacy/packages/cl MeshAnim.lsl
+*.bak
+*.bup

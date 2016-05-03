@@ -594,17 +594,17 @@ integer climbOut(){
 	return TRUE;
 }
 
-onEvt(string script, integer evt, string data){
+onEvt(string script, integer evt, list data){
 	#ifdef USE_CUSTOM_EVENTS
 	onCustomEvt(script, evt, data);
 	#endif
-
+	integer d = llList2Integer(data,0);
     if(script == "#ROOT"){
         if(evt == evt$BUTTON_PRESS){
-            CONTROL = CONTROL|(integer)data;
-            if((integer)data&CONTROL_UP)climbOut();
+            CONTROL = CONTROL|d;
+            if(d&CONTROL_UP)climbOut();
         }
-        else if(evt == evt$BUTTON_RELEASE)CONTROL = CONTROL&~(integer)data;
+        else if(evt == evt$BUTTON_RELEASE)CONTROL = CONTROL&~d;
     }
 }
 
@@ -648,7 +648,7 @@ default
     */
     if(method$isCallback){return;}
     if(id == ""){
-        if(METHOD == PrimswimMethod$airpockets)airpockets = llJson2List(PARAMS);
+        if(METHOD == PrimswimMethod$airpockets)airpockets = PARAMS;
     }
     // Make sure to check the climbing event to prevent swimming while climbing
         

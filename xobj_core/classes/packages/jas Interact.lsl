@@ -24,12 +24,12 @@ list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str
 
 
 
-onEvt(string script, integer evt, string data){ 
+onEvt(string script, integer evt, list data){ 
 	#ifdef USE_EVENT_OVERRIDE
 	evt(script, evt, data);
 	#endif
     if(script == "#ROOT"){
-		if(evt == evt$BUTTON_RELEASE && (integer)data&(CONTROL_UP
+		if(evt == evt$BUTTON_RELEASE && llList2Integer(data,0)&(CONTROL_UP
 		#ifdef InteractConf$ALLOW_ML_LCLICK
 		| CONTROL_ML_LBUTTON
 		#endif
@@ -122,13 +122,13 @@ onEvt(string script, integer evt, string data){
 				}else onInteract(targ, task, llList2List(split,1,-1));
 			}
 		}else if(evt == evt$BUTTON_HELD_SEC){
-			integer btn = (integer)jVal(data, [0]);
-			if(btn == CONTROL_UP)held = (integer)jVal(data, [1]);
-		}else if(evt == evt$BUTTON_PRESS && (integer)data&CONTROL_UP)held = 0;
+			integer btn = llList2Integer(data, 0);
+			if(btn == CONTROL_UP)held = llList2Integer(data, 1);
+		}else if(evt == evt$BUTTON_PRESS && llList2Integer(data,0)&CONTROL_UP)held = 0;
     }
 	#ifdef InteractConf$usePrimSwim
 	else if(script == "jas Primswim" && evt == PrimswimEvt$atLedge){
-		if((int)j(data,0))BFL = BFL|BFL_PRIMSWIM_LEDGE;
+		if(llList2Integer(data,0))BFL = BFL|BFL_PRIMSWIM_LEDGE;
 		else BFL = BFL&~BFL_PRIMSWIM_LEDGE;
 	}
 	#endif

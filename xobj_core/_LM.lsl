@@ -57,7 +57,6 @@ link_message(integer link, integer nr, string s, key id){
 	else if(nr == DB2_ADD){
 		string sender = jVal(s, [0]);
 		string script = jVal(s, [1]);
-		debugCommon("Shared Save request received @ root from script "+script);
 		if(llListFindList(DB2_CACHE, [script]) == -1){
 			list prims; // Prim IDS
 			list idx;	// Prim NR
@@ -200,23 +199,22 @@ link_message(integer link, integer nr, string s, key id){
 		list CB_DATA;
 		string CB = JSON_NULL;
 		
-		integer _pos = llSubStringIndex(s, "[");
-		string _name = llGetSubString(s, 0, _pos-1);
+		string _mname = llGetScriptName();
+		int _mnl = llStringLength(_mname);
 		// Make sure this script is the receiver
 		if(
-			_name != llGetScriptName()
+			llGetSubString(s,0,_mnl-1) != _mname
 			#ifdef SCRIPT_ALIASES
-			&& llListFindList(SCRIPT_ALIASES, [_name]) == -1
+			&& llListFindList(SCRIPT_ALIASES, [_mname]) == -1
 			#endif
 		){
-			//qd(llGetScriptName()+" Failed because '"+_name+"' not for this and not in "+mkarr(SCRIPT_ALIASES));
 			return;
 		}
 		
 		// 
-		list _s_DATA = llJson2List(llGetSubString(s, _pos, -1));
+		list _s_DATA = llJson2List(llGetSubString(s, _mnl, -1));
 		integer METHOD = llList2Integer(_s_DATA, 0);
-		string PARAMS = llList2String(_s_DATA, 1);
+		list PARAMS = llJson2List(llList2String(_s_DATA, 1));
 		string SENDER_SCRIPT = llList2String(_s_DATA, 2);
 		CB = llList2String(_s_DATA, 3);
 		_s_DATA = [];
@@ -224,29 +222,15 @@ link_message(integer link, integer nr, string s, key id){
 #else
 		// Bottom goes here
 		if(CB != JSON_INVALID && (CB != "" || CB_DATA != []) && !(method$isCallback)){
-			debugCommon("Sending callback. CB is: "+CB+" DATA: "+llList2Json(JSON_ARRAY, CB_DATA)+" and targ is: "+(string)llKey2Name(id));
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB);
 		}
-		
 	}else if(nr == RESET_ALL && s != llGetScriptName()){
 		llResetScript();
 	}
 	#ifdef USE_EVENTS
 	else if(nr == EVT_RAISED){
-		#ifdef EVENTS_NOT_SELF
-		if(llGetSubString(s, 2, llStringLength(llGetScriptName())+1) == llGetScriptName())return;
-		#endif
-		string scr = llJsonGetValue(s, [0]);
-		integer evt = (integer)((string)id);
-		#ifdef USE_LEGACY_DB
-			#ifndef DISREGARD_SHARED
-			if(SHARED_CACHE_ROOT == 0){
-				initShared();
-			}
-			#endif
-		#endif
-		onEvt(scr, evt, llJsonGetValue(s, [1]));
-		
+		list dta = llJson2List(s);
+		onEvt(llList2String(dta,0), (int)((str)id), llJson2List(llList2String(dta,1)));
 	}
 	#endif
 	
