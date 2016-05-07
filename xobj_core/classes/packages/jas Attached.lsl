@@ -14,7 +14,7 @@ integer anim_step;
 integer P_SPLAT;
 onEvt(string script, integer evt, list data){
 	if(script == "ton MeshAnim" && evt == MeshAnimEvt$frame){
-	
+		
 		list split = llParseString2List(llList2String(data,0), [";"], []);
 		string type = llList2String(split, 0);
 		if(type == FRAME_AUDIO){
@@ -108,7 +108,7 @@ kill(){
 #ifdef Attached$automateMeshAnim
 	if(localConfIdle != "" && llGetPermissions() & PERMISSION_TRIGGER_ANIMATION){
 		llStopAnimation(localConfIdle);
-		llSleep(1);
+		llSleep(.1);
 	}
 #endif
 	llDie();
@@ -145,14 +145,13 @@ default
 		if(llGetStartParameter() == 2){
             llOwnerSay("@acceptpermission=add");
             runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], "");
-            raiseEvent(evt$SCRIPT_INIT, []);
+            raiseEvent(evt$SCRIPT_INIT, "");
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
 			#ifdef Attached$onSpawn
 			Attached$onSpawn;
 			#endif
 		
         }
-		
 		
 		
 		#ifdef Attached$automateMeshAnim
