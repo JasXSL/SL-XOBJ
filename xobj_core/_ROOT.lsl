@@ -147,14 +147,16 @@ runOmniMethod(string className, integer method, list data, string callback){
 }
 
 // Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little, tokenSender should by default be llGetOwner but can be changed if you need to AOE on another person's channel
-runLimitMethod(key tokenSender, string className, integer method, list data, string callback, float range){
+runLimitMethod(string tokenSender, string className, integer method, list data, string callback, float range){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
-	
-	if(range>96)stdOmniCom(tokenSender, RUN_METHOD, className, op);
-	else if(range>20)llShout(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else if(range>10)llSay(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
-	else llWhisper(playerChan(tokenSender), getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	integer chan = (int)tokenSender;
+	if((key)tokenSender)chan = playerChan(tokenSender);
+
+	if(range>96)llRegionSay(chan, getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else if(range>20)llShout(chan, getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else if(range>10)llSay(chan, getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
+	else llWhisper(chan, getToken(llGetKey(), tokenSender, "")+(string)RUN_METHOD+":"+className+llList2Json(JSON_ARRAY, op));
 }
 
 // Placeholder function for events. Copy paste this and fill it with code in each module that needs to listen to events.
