@@ -123,8 +123,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdOmniCom(sender, methodType, className, data) llRegionSay(playerChan(sender), getToken(llGetKey(), sender, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
-#define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "");
-#define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender);
+#define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "")
+#define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender)
 #define sendCallback(sender, senderScript, method, cbdata, cb) list CB_OP = [method, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, senderScript, CB_OP);}
 //#define sendCallback(sender, senderScript, method, cbdata, cb) llOwnerSay("Deleteme");
 

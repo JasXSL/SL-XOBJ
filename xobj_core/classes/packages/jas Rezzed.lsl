@@ -10,7 +10,7 @@ default
     on_rez(integer start){
         if(start == playerChan(llGetOwner())){
 			llSleep(.25);
-            integer pin = llFloor(llFrand(0xFFFFFFF));
+            integer pin = floor(llFrand(0xFFFFFFF));
 			llSetRemoteScriptAccessPin(pin);
             runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
         } 

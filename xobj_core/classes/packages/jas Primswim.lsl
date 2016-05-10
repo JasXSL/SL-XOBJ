@@ -574,7 +574,7 @@ timerEvent(string id, string data){
 }
 
 triggerRandomSound(list sounds, float minVol, float maxVol){
-    llTriggerSound(llList2Key(sounds, llFloor(llFrand(llGetListLength(sounds)))), minVol+llFrand(maxVol-minVol));
+    llTriggerSound(llList2Key(sounds, floor(llFrand(llGetListLength(sounds)))), minVol+llFrand(maxVol-minVol));
 }
 
 integer climbOut(){

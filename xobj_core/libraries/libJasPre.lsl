@@ -35,7 +35,7 @@
 	// Ex: list l = ["jas","cat", "toonie","panda"]; objarr_set(l, "toonie", "red_panda"); -> ["jas","cat", "toonie","red_panda"]
 
 // Get a single random element from a list
-	#define randElem(l) llList2String(l, llFloor(llFrand(llGetListLength(l))))
+	#define randElem(l) llList2String(l, floor(llFrand(llGetListLength(l))))
 
 // Remove all items form a list by name - Cannot be run as a parameter or in an if statement.
 	#define remByVal(lst, val) {integer pos;while(~(pos=llListFindList(lst, [val]))){lst = llDeleteSubList(lst,pos,pos);}}
@@ -65,7 +65,7 @@
 // Moves all values left, removing any 0 values
 integer flattenBitArr(integer int, integer bytesize){
     integer i; integer right;
-    for(i=0; i<llFloor(32./bytesize); i++){
+    for(i=0; i<floor(32./bytesize); i++){
         integer b = getBitArr(int, i, bytesize);
         if(right){
             int = setBitArr(int, b, (i-right), bytesize);
@@ -77,7 +77,7 @@ integer flattenBitArr(integer int, integer bytesize){
 }
 integer indexOfBitArr(integer int, integer find, integer bytesize){
     integer i;
-    for(i=0; i<llFloor(32./bytesize);i++){
+    for(i=0; i<floor(32./bytesize);i++){
         if(getBitArr(int, i, bytesize) == find)return i;
     }
     return -1;
@@ -85,7 +85,7 @@ integer indexOfBitArr(integer int, integer find, integer bytesize){
 list bitArrToList(integer int, integer bytesize){
     list out;
     integer i; 
-    for(i=0; i<llFloor(32./bytesize); i++)out+=getBitArr(int, i, bytesize);
+    for(i=0; i<floor(32./bytesize); i++)out+=getBitArr(int, i, bytesize);
     return out;
 }
 
@@ -145,7 +145,7 @@ list bitArrToList(integer int, integer bytesize){
 #define l2s(input, index) llList2String(input, index)
 #define l2k(input, index) llList2Key(input, index)
 #define l2r(input, index) llList2Rot(input, index)
-
+#define floor(input) ((int)(input))
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 
@@ -211,6 +211,6 @@ list bitArrToList(integer int, integer bytesize){
 #define vecBetween(a, b, distance) a-(llVecNorm(a-b)*distance)
 // For on_rez position - uses 13+8+8 bits, leaving 3 for config
 #define int2vec(input) <((input>>21)&255), ((input>>13)&255), (input&8191)>
-#define vecFloor(input) <llFloor(input.x), llFloor(input.y), llFloor(input.z)>
+#define vecFloor(input) <floor(input.x), floor(input.y), floor(input.z)>
 #define vec2int(input) ((integer)input.x<<21)|((integer)input.y<<13)|(integer)input.z
 

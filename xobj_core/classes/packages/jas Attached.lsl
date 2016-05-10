@@ -124,7 +124,7 @@ default
 			llSleep(.25);
             llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEMP_ON_REZ, TRUE]);
 			#ifndef Attached$useExtUpdate
-            integer pin = llFloor(llFrand(0xFFFFFFF));
+            integer pin = floor(llFrand(0xFFFFFFF));
 			llSetRemoteScriptAccessPin(pin);
 			
 				#ifdef Attached$remoteloadCommand

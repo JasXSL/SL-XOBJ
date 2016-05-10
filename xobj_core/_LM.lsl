@@ -225,7 +225,7 @@ link_message(integer link, integer nr, string s, key id){
 #else
 		// Bottom goes here
 		if(CB != JSON_INVALID && (CB != "" || CB_DATA != []) && !(method$isCallback)){
-			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB);
+			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB)
 		}
 	}else if(nr == RESET_ALL && s != llGetScriptName()){
 		llResetScript();

@@ -97,7 +97,6 @@ default
         }
             
         if(METHOD == RemoteloaderMethod$load){
-            //llSay(0, "Script remoteloaded: "+(string)method_arg(0));
 			queued++;
 			list dta = PARAMS;
 			if(id == "")id = llList2String(dta, -1);		// Lets you override the ID to send to
@@ -107,11 +106,10 @@ default
 			if(llJsonValueType(s, []) == JSON_ARRAY){		// Load multiple
 				scripts = llJson2List(s);
 			}
+			
 			list_shift_each(scripts, val,
 				queue+= ([id, val])+llList2List(dta, 1, 2);
 			)
-			
-			
 			next();
         }
         else if(METHOD == RemoteloaderMethod$asset){

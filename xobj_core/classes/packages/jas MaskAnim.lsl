@@ -215,7 +215,7 @@ refreshAnims(integer restart){
 #ifdef MaskAnimConf$remoteloadOnAttachedIni
 onEvt(string script, integer evt, list data){
 	if(script == "jas Attached" && evt == evt$SCRIPT_INIT){
-		integer pin = llFloor(llFrand(0xFFFFFF));
+		integer pin = floor(llFrand(0xFFFFFF));
 		llSetRemoteScriptAccessPin(pin);
 		runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
 	}
@@ -267,7 +267,7 @@ default
     {
 		//qd("Running v1");
 		#ifdef MaskAnimConf$remoteloadOnRez
-		integer pin = llFloor(llFrand(0xFFFFFF));
+		integer pin = floor(llFrand(0xFFFFFF));
 		llSetRemoteScriptAccessPin(pin);
 		runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
 		#endif
@@ -369,7 +369,7 @@ default
             if(step != -1){
                 played = TRUE;
                 side = llList2Integer(frames,step);
-                integer pr = llFloor((float)side/8);
+                integer pr = floor((float)side/8);
                 side-=pr*8;
                 prim = llList2Integer(prims, pr);
 				

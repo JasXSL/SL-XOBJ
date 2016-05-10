@@ -51,8 +51,8 @@ loadPage(key id, integer offset){
     
     if(llGetListLength(buttons)<=12)page = 0;
     else{
-        if(page>llFloor((float)llGetListLength(buttons)/10))page = 0;
-        else if(page<0)page = llFloor((float)llGetListLength(buttons)/10);
+        if(page>floor((float)llGetListLength(buttons)/10))page = 0;
+        else if(page<0)page = floor((float)llGetListLength(buttons)/10);
         buttons = [DialogConf$prevButton, DialogConf$nextButton]+llList2List(buttons, page*10, page*10+9);
         objects = llListReplaceList(objects, [page], pos+8, pos+8);
     }

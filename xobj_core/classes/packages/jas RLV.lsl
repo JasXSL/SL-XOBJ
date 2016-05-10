@@ -225,6 +225,7 @@ default
     
     attach(key id){
         if(id != llGetOwner())llOwnerSay("@"+RLVcfg$onRemove);
+		else llResetScript();
     }
     
     state_entry()
@@ -241,7 +242,8 @@ default
 			#endif
 		#endif 
 		#if RLVcfg$USE_CAM==1
-		llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
+		if(llGetAttached())
+			llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
 		#endif
 		memLim(1.5);
     }
@@ -301,7 +303,7 @@ default
 		
 		#if RLVcfg$USE_CAM==1
 		if(METHOD == RLVMethod$staticCamera){
-			if(!llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
+			if(~llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
 			vector pos = (vector)method_arg(0);
 			rotation rot = (rotation)method_arg(1);
             if(pos == ZERO_VECTOR){

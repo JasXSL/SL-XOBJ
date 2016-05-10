@@ -21,7 +21,7 @@ key real_key;						// If ROOT is used, then this is the sublink. You can use thi
 integer held;
 
 list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB]
-
+list ON_INTERACT = [];				// (str)id, (str)datastring - Stuff to be run on interact
 
 
 onEvt(string script, integer evt, list data){ 
@@ -40,6 +40,14 @@ onEvt(string script, integer evt, list data){
 			}
 			if(!preInteract(targ))return;
 			
+			while(ON_INTERACT){
+				list split = llParseString2List(llList2String(ON_INTERACT, 1), ["$$"], []);
+				ON_INTERACT = llDeleteSubList(ON_INTERACT, 0, 1);
+				list_shift_each(split, val,
+					list spl = explode("$", val);
+					onInteract("", l2s(spl,0), llDeleteSubList(spl, 0, 0));
+				)
+			}
 			
 			integer ainfo = llGetAgentInfo(llGetOwner());
 			if(ainfo&AGENT_SITTING){
@@ -252,6 +260,16 @@ default
 			OVERRIDE = [method_arg(0), id, SENDER_SCRIPT, CB];
 		
 		return;
+	}
+	
+	else if(METHOD == InteractEvt$onInteract){
+		string evt = method_arg(0);
+		string data = method_arg(1);
+		integer pos = llListFindList(llList2ListStrided(ON_INTERACT, 0, -1, 2), [evt]);
+		if(~pos)ON_INTERACT = llDeleteSubList(ON_INTERACT, pos*2, pos*2);
+		if(data){
+			ON_INTERACT += [evt, data];
+		}
 	}
     
     #define LM_BOTTOM  
