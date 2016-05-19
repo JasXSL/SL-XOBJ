@@ -202,7 +202,7 @@ link_message(integer link, integer nr, string s, key id){
 		string _mname = llGetScriptName();
 		int _mnl = llStringLength(_mname);
 		// Make sure this script is the receiver
-		#ifndef SCRIPT_ALIASES
+		#ifndef SCRIPT_ALIASES 
 		if(llGetSubString(s,0,_mnl) != _mname+"["){
 			return;
 		}
@@ -224,7 +224,7 @@ link_message(integer link, integer nr, string s, key id){
 		
 #else
 		// Bottom goes here
-		if(CB != JSON_INVALID && (CB != "" || CB_DATA != []) && !(method$isCallback)){
+		if(isset(CB) && !(method$isCallback)){
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB)
 		}
 	}else if(nr == RESET_ALL && s != llGetScriptName()){
