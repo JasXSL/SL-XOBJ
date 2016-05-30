@@ -15,6 +15,9 @@
 	
 */
 //#define AnimHandlerConf$useAudio - Adds the AnimHandlerMethod$sound method
+//#define AnimHandlerConf$suppressErrors - Suppresses errors
+//#define AnimHandlerConf$allowAll - Allow from any user, not only owner
+
 
 #define AnimHandlerMethod$anim 0			// (str)anim, (int)start, (float)replicate_dly, (float)duration
 #define AnimHandlerMethod$remInventory 1	// [(arr)anims]

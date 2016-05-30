@@ -199,6 +199,8 @@ default
             SENDER_SCRIPT - (var)parameters
             CB - The callback you specified when you sent a task
         */
+		if(method$isCallback)return;
+		
 		if(method$byOwner){
 			if(METHOD == AttachedMethod$remove){
 				if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*"){
@@ -206,10 +208,6 @@ default
 				}
             }
 		}
-        
-        if(nr == METHOD_CALLBACK){ 
-            
-        }
     
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 

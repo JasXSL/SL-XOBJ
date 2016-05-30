@@ -38,6 +38,7 @@ default
 
     timer(){multiTimer([]);}
 
+	
     #include "xobj_core/_LM.lsl"
         /*
             Included in all these calls:
@@ -60,7 +61,9 @@ default
 			}
 		}
 		
+		#ifndef AnimHandlerConf$allowAll
         if(method$byOwner){
+		#endif
             if(METHOD == AnimHandlerMethod$anim){
                 list anims = [method_arg(0)];
 				if(llJsonValueType((string)anims, []) == JSON_ARRAY)anims = llJson2List((string)anims);
@@ -72,12 +75,18 @@ default
 				integer i;
 				for(i=0; i<llGetListLength(anims); i++){
 					string anim = llList2String(anims, i);
+					
+					
 					if(~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
-						debugRare("Error: Anim permissions lacking, reattach  your HUD.");
+						#ifndef AnimHandlerConf$suppressErrors
+						qd("Error: Anim permissions lacking, reattach  your HUD.");
+						#endif
 						return;
 					}
 					if(llGetInventoryType(anim) != INVENTORY_ANIMATION && method_arg(0) != "sit"){
-						debugRare("Error: Anim not found: "+method_arg(0));
+						#ifndef AnimHandlerConf$suppressErrors
+						qd("Error: Anim not found: "+method_arg(0));
+						#endif
 						return;
 					}
 
@@ -111,8 +120,9 @@ default
 				}
 			}
 			#endif
+		#ifndef AnimHandlerConf$allowAll
         }
-        
+        #endif
         
     
     #define LM_BOTTOM  
