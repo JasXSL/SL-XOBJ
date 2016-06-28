@@ -88,10 +88,10 @@ default
                     senderID, 							// UUID to send callback to (or link)
                     llList2String(objects, pos+2), 		// Script to send the callback to
                     DialogMethod$spawn, 				// Method
-                    llList2Json(JSON_OBJECT, [			// CBData
-                        "message", message,  
-                        "menu", llList2Integer(objects, pos+1),
-						"user", id
+                    llList2Json(JSON_ARRAY, [			// CBData
+                        message,  
+                        llList2Integer(objects, pos+1),
+                        id
                     ]), 
                     llList2String(objects, pos+3)			// Callback
                 )  
