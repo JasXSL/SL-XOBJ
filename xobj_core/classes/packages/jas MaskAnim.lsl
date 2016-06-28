@@ -223,7 +223,7 @@ onEvt(string script, integer evt, list data){
 #endif
 
 sens(integer inrange){
-	if(inrange || BFL&BFL_AGENTS_IN_RANGE_OVERRIDE){
+	if(inrange || BFL&BFL_AGENTS_IN_RANGE_OVERRIDE || llGetAttached()){
 		if(~BFL&BFL_AGENTS_IN_RANGE && CURRENT_ANIM != ""){
 			BFL = BFL|BFL_AGENTS_INIT;
 			#ifdef MaskAnimConf$animStartEvent
@@ -265,6 +265,7 @@ default
 	
     state_entry()
     {
+	
 		//qd("Running v1");
 		#ifdef MaskAnimConf$remoteloadOnRez
 		integer pin = floor(llFrand(0xFFFFFF));
@@ -273,9 +274,9 @@ default
 		#endif
 		
         //hideAllAnimating();
-        if(llGetStartParameter() == 2){
-			raiseEvent(evt$SCRIPT_INIT, "");
-		}
+
+		raiseEvent(evt$SCRIPT_INIT, "");
+		
 		
 		BFL = BFL|BFL_AGENTS_IN_RANGE;
 		raiseEvent(MaskAnimEvt$agentsInRange, "");
@@ -312,6 +313,7 @@ default
 		
 	}
 	no_sensor(){
+		
 		sens(FALSE);
 	}
 	#endif 
