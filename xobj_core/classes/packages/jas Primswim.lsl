@@ -30,7 +30,7 @@ float ssm = 1;
 #define SURFACE_DEPTH -.4
 #define FOOTSTEP_SPEED .4
 
-integer BFL;
+
 #define BFL_IN_WATER 1
 #define BFL_SWIMMING 2              // Actively swimming
 #define BFL_CAM_UNDER_WATER 4
@@ -42,7 +42,7 @@ integer BFL;
 #define BFL_CONTROLS_TAKEN 512
 #define BFL_AT_SURFACE 1024
 #define BFL_CLIMBING 2048
-
+integer BFL;
 
 
 integer BFA;                        // Anims bitfield
@@ -218,10 +218,10 @@ toggleCam(integer submerged){
 	if(!isset(wl_set))return;
     if(submerged){
         BFL = BFL|BFL_CAM_UNDER_WATER;
-        RLV$windlightPreset(wl_set, TRUE);
+        RLV$windlightPreset(LINK_ROOT, wl_set, TRUE);
     }else{
         BFL = BFL&~BFL_CAM_UNDER_WATER;
-        RLV$resetWindlight();
+        RLV$resetWindlight(LINK_ROOT);
 	}
 }
 #else
@@ -477,33 +477,52 @@ timerEvent(string id, string data){
 		if(BFL&BFL_IN_WATER && ~llGetAgentInfo(llGetOwner())&AGENT_SITTING && BFL&BFL_AT_SURFACE && ~BFL&BFL_CLIMBING){
 			// Check ray
 			vector vrot = llRot2Euler(llGetRootRotation());
-			vector fwd = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
+			vector f = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
 			
 			vector gpos = llGetPos();
-			vector uppos = gpos+fwd*.5+<0,0,ascale.z/2>;
+			vector uppos = gpos+f*.5+<0,0,ascale.z/2>;
 
 			integer rejecttypes = RC_REJECT_AGENTS|RC_REJECT_LAND|RC_REJECT_PHYSICAL;
-			list up = llCastRay(uppos+<0,0,1>, uppos-<0,0,.5>, [RC_REJECT_TYPES, rejecttypes]);
-			if(llVecDist(llList2Vector(up, 1), uppos+<0,0,1>)>.5 && llList2Integer(up, -1)!=0){
-				list fwd = llCastRay(gpos, gpos+llRot2Fwd(llEuler2Rot(<0,0,vrot.z>)), [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
-				vector n = llList2Vector(fwd,2);
-				n = llVecNorm(<n.x,n.y,0>);
-				if(llList2Integer(fwd, -1)>0 && llFabs(n.z)<.2){
-					float edge_offset = .1;
+			
+			// Checks if there's a standable ledge
+			list fwd = llCastRay(uppos+<0,0,.5>, uppos-<0,0,.5>, [RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
+			// Makes sure we're at an edge at least 1dm thick
+			vector v = l2v(fwd, 1);
+			list edge = llCastRay(<gpos.x, gpos.y, v.z-.1>, v-<0,0,.1>, [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
+			// Makes sure there's enough space to stand on
+			list space = llCastRay(llList2Vector(fwd, 1)+<0,0,.01>, llList2Vector(fwd, 1)+<0,0,ascale.z>, [RC_REJECT_TYPES, rejecttypes]);
+			vector norm = l2v(fwd, 2);
+			if(
+				// Check if the ledge is there and we didn't raycast inside an object
+				llVecDist(llList2Vector(fwd, 1), uppos+<0,0,1>)>.05 && 
+				llList2Integer(fwd, -1)!=0 &&
+				// Checks that we're actually at a ledge
+				llVecDist(llList2Vector(edge, 1), <gpos.x, gpos.y, v.z-.1>) > .01 &&
+				// Makes sure we have enough space on top
+				llList2Integer(space, -1) == 0 &&
+				// Makes sure the platform is less than 40 deg sharp
+				norm.z>0.9
+			){
+
+				vector pos = llList2Vector(fwd,1);
+				pos.z += ascale.z/2;
 					
-					
-					vector pos = llList2Vector(fwd,1)-n*edge_offset;
-					vector u = llList2Vector(up,1);
-					pos.z = u.z+ascale.z/2;
-					
-					if(climb_out_to == ZERO_VECTOR)raiseEvent(PrimswimEvt$atLedge, mkarr([TRUE]));
-					climb_out_to = pos;
-					climb_out_rot = llRotBetween(<-1,0,0>, n);
-					return;
+				// We just reached a ledge
+				if(climb_out_to == ZERO_VECTOR){
+					raiseEvent(PrimswimEvt$atLedge, "1");
 				}
+				climb_out_to = pos;
+				vector n = llList2Vector(edge, 2);
+				n.z = 0;
+				climb_out_rot = llRotBetween(<-1,0,0>, llVecNorm(n));
+				return;
 			}
 		}
-		if(climb_out_to != ZERO_VECTOR)raiseEvent(PrimswimEvt$atLedge, mkarr([FALSE]));
+		
+		// No longer at ledge
+		if(climb_out_to != ZERO_VECTOR){
+			raiseEvent(PrimswimEvt$atLedge, "");
+		}
 		climb_out_to = ZERO_VECTOR;
 	}
     
@@ -620,7 +639,12 @@ default
         llSensor(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI);
         llSleep(1);
         multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
-        if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
+        
+		// Slow timer at start
+		timerSpeed = PrimswimCfg$minSpeed;
+        multiTimer([TIMER_SWIM_CHECK,"", timerSpeed, FALSE]);
+			
+		if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
 		memLim(1.5);
     }
