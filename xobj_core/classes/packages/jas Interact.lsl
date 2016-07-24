@@ -49,6 +49,7 @@ onEvt(string script, integer evt, list data){
 				)
 			}
 			
+			#ifndef InteractConf$ignoreUnsit
 			integer ainfo = llGetAgentInfo(llGetOwner());
 			if(ainfo&AGENT_SITTING){
 				if(ainfo&AGENT_SITTING){
@@ -56,6 +57,7 @@ onEvt(string script, integer evt, list data){
 				}
 				return;
 			}
+			#endif
 			
 			
 			

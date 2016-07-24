@@ -42,6 +42,8 @@
 #define SP_FOREST "fo"
 #define SP_CAVE "cv"
 #define SP_TOWN "to"
+#define SP_OCEAN "oc"
+#define SP_OCEAN_INDOORS "occ"
 
 // 2-strided list of soundspaces if you want to add more
 #define SP_DATA [ \
@@ -62,7 +64,9 @@
 	SP_CINEMA, "c80c9883-9575-22d2-d0a8-1c8b413216e3", \
 	SP_FOREST, "969b502f-11d0-eea0-d7d0-e02399ddc849", \
 	SP_CAVE, "a764c97d-d359-7732-3cec-bec2c5ab655a", \
-	SP_TOWN, "1d864bd6-a128-8b97-738a-60ca23e6fdc4" \
+	SP_TOWN, "1d864bd6-a128-8b97-738a-60ca23e6fdc4", \
+	SP_OCEAN, "4a31d167-d280-88e5-1a86-f6e1e9bf8b11", \
+	SP_OCEAN_INDOORS, "dee10385-49f7-ec47-b0fd-ab6c57428d6a" \
 ]
 
 

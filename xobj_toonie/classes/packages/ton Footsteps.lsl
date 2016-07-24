@@ -78,7 +78,7 @@ timerEvent(string id, string data){
                 else if(task == Interact$TASK_WL_PRESET){
                     if(llList2String(p,1) != WL){
                         WL = llList2String(p,1);
-                        RLV$windlightPreset(WL, FALSE);
+                        RLV$windlightPreset(LINK_ROOT, WL, FALSE);
                     }
                 }
             })

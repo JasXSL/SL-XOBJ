@@ -13,7 +13,7 @@
 integer anim_step;
 integer P_SPLAT;
 onEvt(string script, integer evt, list data){
-	if(script == "ton MeshAnim" && evt == MeshAnimEvt$frame){
+	if((script == "ton MeshAnim" || script == "jas MaskAnim") && evt == MeshAnimEvt$frame){
 		
 		list split = llParseString2List(llList2String(data,0), [";"], []);
 		string type = llList2String(split, 0);

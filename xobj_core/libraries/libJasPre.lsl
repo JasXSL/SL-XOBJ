@@ -54,7 +54,11 @@
 // Removes the last element of a list and returns it - Cannot be run as a parameter or in a statement
 #define pop(lst) llList2String(lst,-1); lst=llDeleteSubList(lst,-1,-1)
 	// Ex: list l = ["a", "b"]; string last = pop(l); last => "b" - l => ["a"]
-	
+
+// input is a list, start is an index, and length is how many elements to return
+#define subarr(input, start, length) llList2List(input, start, start+length-1)
+// Same as above but uses delete
+#define subarrDel(input, start, length) llDeleteSubList(input, start, start+length-1)
 
 
 // BITWISE OPERATIONS
