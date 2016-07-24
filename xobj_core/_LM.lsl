@@ -136,9 +136,9 @@ link_message(integer link, integer nr, string s, key id){
 		#endif
 	#endif
 #else
-	#ifdef SCRIPT_IS_ROOT
-	else if(nr == DB2_ADD){
 // DB2 legacy block end, DB3 start
+	#ifdef SCRIPT_IS_ROOT
+	else if(nr == DB3_ADD){
 	// index all existing tables
 	string sender = j(s, 0);
 	list _to_create = llJson2List(j(s,1));
