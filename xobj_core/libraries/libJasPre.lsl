@@ -1,6 +1,31 @@
 // This here is the JasX preprocessor shortcut library
 // They're basically just ways of using the preprocessor to let you do more in less code
 
+// GENERAL PSEUDONYMS //
+// Lets you use elseif or elif instead of "else if"
+#define elseif else if
+#define elif else if
+
+// Lets you use lowercase true or false
+#define true TRUE
+#define false FALSE
+#define null ""
+#define NULL null
+
+#define bool integer
+#define parseInt(input) (integer)(input)
+#define str string
+#define int integer
+#define count(input) llGetListLength(input)
+
+#define l2i(input, index) llList2Integer(input, index)
+#define l2v(input, index) llList2Vector(input, index)
+#define l2f(input, index) llList2Float(input, index)
+#define l2s(input, index) llList2String(input, index)
+#define l2k(input, index) llList2Key(input, index)
+#define l2r(input, index) llList2Rot(input, index)
+#define floor(input) ((int)(input))
+
 
 
 // FOREACH LOOPS //
@@ -62,34 +87,34 @@
 
 
 // BITWISE OPERATIONS
-#define getBitArr(int, index, bytesize) ((cds>>(bytesize*index))&((integer)llPow(bytesize, 2)-1))
-#define remBitArr(int, index, bytesize) (int&~(((integer)llPow(bytesize,2)-1)<<(bytesize*index)))
-#define setBitArr(int, set, index, bytesize) (remBitArr(int, index, bytesize)|(set<<(bytesize*index)))
-#define addBitArr(int, set, bytesize) ((int<<bytesize)|set)
+#define getBitArr(n, index, bytesize) ((n>>(bytesize*index))&((integer)llPow(2, bytesize)-1))
+#define remBitArr(n, index, bytesize) (n&~(((integer)llPow(bytesize,2)-1)<<(bytesize*index)))
+#define setBitArr(n, set, index, bytesize) (remBitArr(n, index, bytesize)|(set<<(bytesize*index)))
+#define addBitArr(n, set, bytesize) ((n<<bytesize)|set)
 // Moves all values left, removing any 0 values
-integer flattenBitArr(integer int, integer bytesize){
+integer flattenBitArr(integer n, integer bytesize){
     integer i; integer right;
-    for(i=0; i<floor(32./bytesize); i++){
-        integer b = getBitArr(int, i, bytesize);
+    for(i=0; i<(int)(32./bytesize); i++){
+        integer b = getBitArr(n, i, bytesize);
         if(right){
-            int = setBitArr(int, b, (i-right), bytesize);
-            int = remBitArr(int, i, bytesize);
+            n = setBitArr(n, b, (i-right), bytesize);
+            n = remBitArr(n, i, bytesize);
         }
         if(b == 0)right++;
     } 
-    return int;
+    return n;
 }
-integer indexOfBitArr(integer int, integer find, integer bytesize){
+integer indexOfBitArr(integer n, integer find, integer bytesize){
     integer i;
-    for(i=0; i<floor(32./bytesize);i++){
-        if(getBitArr(int, i, bytesize) == find)return i;
+    for(i=0; i<(int)(32./bytesize);i++){
+        if(getBitArr(n, i, bytesize) == find)return i;
     }
     return -1;
 }
-list bitArrToList(integer int, integer bytesize){
+list bitArrToList(integer n, integer bytesize){
     list out;
     integer i; 
-    for(i=0; i<floor(32./bytesize); i++)out+=getBitArr(int, i, bytesize);
+    for(i=0; i<(int)(32./bytesize); i++)out+=getBitArr(n, i, bytesize);
     return out;
 }
 
@@ -126,30 +151,7 @@ list bitArrToList(integer int, integer bytesize){
 
 	
 	
-// GENERAL PSEUDONYMS //
-// Lets you use elseif or elif instead of "else if"
-#define elseif else if
-#define elif else if
 
-// Lets you use lowercase true or false
-#define true TRUE
-#define false FALSE
-#define null ""
-#define NULL null
-
-#define bool integer
-#define parseInt(input) (integer)(input)
-#define str string
-#define int integer
-#define count(input) llGetListLength(input)
-
-#define l2i(input, index) llList2Integer(input, index)
-#define l2v(input, index) llList2Vector(input, index)
-#define l2f(input, index) llList2Float(input, index)
-#define l2s(input, index) llList2String(input, index)
-#define l2k(input, index) llList2Key(input, index)
-#define l2r(input, index) llList2Rot(input, index)
-#define floor(input) ((int)(input))
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
 
