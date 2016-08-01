@@ -246,8 +246,6 @@ default
         CB_DATA - Array of params to return in a callback
     */
     
-    if(!method$byOwner)return;
-	
     if(method$isCallback){
         return;
     }

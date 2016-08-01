@@ -25,7 +25,9 @@ onEvt(string script, integer evt, list data){
 				else sounds = [llList2String(split, 1)];
 			}
 			if(llList2Float(split, 2)>0)vol = llList2Float(split, 2);
-			llTriggerSound(randElem(sounds), vol);
+			key sound = randElem(sounds);
+			if(sound)
+				llTriggerSound(sound, vol);
 		}
 		else if(type == FRAME_ANIM){
 			llLinkParticleSystem(P_SPLAT, [
