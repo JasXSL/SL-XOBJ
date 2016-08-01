@@ -51,7 +51,7 @@
 // Checks in LM callback section if a callback method is a dialog callback, ex if(Dialog$isCallback){}
 #define Dialog$isCallback (SENDER_SCRIPT == "jas Dialog" && METHOD == DialogMethod$spawn)
 // Creates the following vars inside the if(Dialog$isCallback) statement: integer menu; string message; key clicker;
-#define Dialog$fetchCallback() integer menu = (integer)llJsonGetValue(PARAMS, ["menu"]); string message = llJsonGetValue(PARAMS, ["message"]); key clicker = llJsonGetValue(PARAMS, ["user"]);
+#define Dialog$fetchCallback() integer menu = (integer)llList2String(PARAMS, 1); string message = llList2String(PARAMS, 0); key clicker = llList2Key(PARAMS, 2);
 
 
 
