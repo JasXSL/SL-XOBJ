@@ -22,6 +22,7 @@
 
 #define SoundspaceMethod$dive 1				// Overrides any soundspace with underwater sounds
 #define SoundspaceMethod$override 2			// (key)uuid, (float)vol OR void - Overrides all other soundspaces with this or stops the override if void
+#define SoundspaceMethod$reset 3			// Resets the sound
 
 // List of implemented soundspaces
 #define SP_RAIN "ra"
@@ -73,6 +74,7 @@
 #define Soundspace$override(targ, uuid, vol) runMethod((string)targ, "jas Soundspace", SoundspaceMethod$override, [uuid, vol], TNN)
 #define Soundspace$stopOverride(targ) runMethod((string)targ, "jas Soundspace", SoundspaceMethod$override, [], TNN)
 #define Soundspace$dive(submerged) runMethod((string)LINK_SET, "jas Soundspace", SoundspaceMethod$dive, [submerged], TNN)
+#define Soundspace$reset() runMethod((string)LINK_SET, "jas Soundspace", SoundspaceMethod$reset, [], TNN)
 
 
 

@@ -76,6 +76,8 @@ setSoundspace(){
 	recent++;
     if(recent>2)recent = 1;
     runMethod((string)LINK_SET, "jas SoundspaceAux", SoundspaceAuxMethod$start, [recent, sound, csv], TNN);
+	
+	//qd("Soundspace is now "+(str)cs);
 }
 clearSoundspace(){
     currentsound = "";
@@ -147,6 +149,7 @@ default
 		}
 		setSoundspace();
 	}
+	
 		
     if(id != "")return;
     if(METHOD == SoundspaceMethod$dive){
@@ -159,6 +162,11 @@ default
             setSoundspace();
         }
     }
+	else if(METHOD == SoundspaceMethod$reset){
+		currentsound = "";
+		groundsound = "";
+		setSoundspace();
+	}
     #define LM_BOTTOM   
     #include "xobj_core/_LM.lsl" 
     

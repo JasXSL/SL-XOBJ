@@ -286,6 +286,7 @@ default
     }
 	
 	if(method$internal && METHOD == RLVMethod$reset){
+		llOwnerSay("@setenv_preset:midday=force");
 		llResetScript();
 	}
     
@@ -342,6 +343,7 @@ default
         }else if(METHOD == RLVMethod$unsit){
             string add = "";
             if((integer)method_arg(0))add="unsit=y,";
+			//qd("Unsit received from "+SENDER_SCRIPT);
             llOwnerSay("@"+add+"unsit=force");
         }else if(METHOD == RLVMethod$limitCamDist){
 			if((float)method_arg(0)<0)llOwnerSay("@camdistmax=y");
