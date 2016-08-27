@@ -19,12 +19,22 @@ integer BFL;
 #define BFL_DISMOUNTING 2
 #define BFL_CLIMBING_ANIM 4
 #define BF_CLIMB_INI 8
-#define BFL_DIR_UP 16
-#define BFL_CLIMBING 32
+#define BFL_DIR_UP 0x10
+#define BFL_CLIMBING 0x20
+// Prevents messages to SC more than every 0.4 sec
+#define BFL_LAST_UPDATE 0x40
 
+// Used in timer_move
+integer BFL_CACHE;
+
+// Frame ticker
 #define TIMER_MOVE "a"
+// Dismount complete
 #define TIMER_DISMOUNTING "b"
+// Mount complete
 #define TIMER_INI "c"
+// Can send a new translate request
+#define TIMER_CD "d"
 
 key CUBE;
 key ladder;
@@ -48,6 +58,12 @@ float perc;
 
 
 #define setCubePos(pos) llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]))
+
+translateCubePos(vector pos){
+	vector p = pos-prPos(CUBE);
+	rotation rot = rot*ladder_root_rot/prRot(CUBE);
+	llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tKFM, p, rot, 0.5]));
+}
 
 dismount(integer atoffset){
     if(BFL&BFL_DISMOUNTING)return;
@@ -93,6 +109,7 @@ dismount(integer atoffset){
 }
 
 mount(){
+	BFL_CACHE = 0;
     findNearestNode();
     // Position cube at node and start
     vector p = offset2global(llList2Vector(nodes, onNode));
@@ -111,7 +128,8 @@ mount(){
     RLV$cubeTask(([
         SupportcubeBuildTask(Supportcube$tForceSit, [])
     ]));
-
+	
+	// Wait a little while to initiate
     multiTimer([TIMER_MOVE, "", 1.5, FALSE]);
     
     if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0,0);
@@ -128,59 +146,97 @@ vector offset2global(vector offset){
 timerEvent(string id, string data){
     if(id == TIMER_MOVE && ~BFL&BFL_DISMOUNTING){
         multiTimer([id, "", .1, FALSE]);
-        if(~llGetAgentInfo(llGetOwner())&AGENT_SITTING){
+        
+		// Agent has unsat
+		if(~llGetAgentInfo(llGetOwner())&AGENT_SITTING){
             if(BFL&BF_CLIMB_INI)return;
             dismount(FALSE);
             return;
-        }else{
-            if(BFL&BFL_MOVING){
-                vector nodea = offset2global(llList2Vector(nodes,1)); 
-                vector nodeb = offset2global(llList2Vector(nodes,2));
-                float maxdist = llVecDist(nodea, nodeb);
-                float spd = CLIMBSPEED/maxdist*.1;
-                
-                if(BFL&BFL_DIR_UP)perc-=spd;
-                else perc+=spd;
-                    
-                if(isset(anim_active) && ~BFL&BFL_CLIMBING_ANIM){
-                    BFL = BFL|BFL_CLIMBING_ANIM;
-                    string a = anim_active;
-                    
-                    if(~BFL&BFL_DIR_UP)a = anim_active_down;
-                    if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0);
-                    anim_active_cur = a;
-                }
-                
+        }
+		
+		
+		// This is used to limit updates to 0.4 sec unless moving has just started or ended
+		
 
-                if(perc>1 || perc<0){
-                    dismount(TRUE);
-                    multiTimer([id]);
-                    return;
-                }
-                else{
-                    vector point = pointBetween(nodea, nodeb, maxdist*perc);
-                    setCubePos(point);
-                }
-            }else{
-                BFL = BFL&~BFL_CLIMBING_ANIM;
-                if(anim_active_cur != ""){
-                    AnimHandler$anim(anim_active_cur,FALSE,0,0);
-                    anim_active_cur = "";
-                }
+		if(BFL&BFL_LAST_UPDATE && (BFL&BFL_MOVING) == (BFL_CACHE&BFL_MOVING))
+			return;
+
+		BFL = BFL|BFL_LAST_UPDATE;
+		multiTimer([TIMER_CD, "", 0.4, FALSE]);
+		
+		
+        
+		if(BFL&BFL_MOVING){
+            vector nodea = offset2global(llList2Vector(nodes,1)); 
+            vector nodeb = offset2global(llList2Vector(nodes,2));
+            float maxdist = llVecDist(nodea, nodeb);
+            float spd = CLIMBSPEED/maxdist*.5;
+                
+            if(BFL&BFL_DIR_UP)
+				perc-=spd;
+            else
+				perc+=spd;
+                    
+            if(isset(anim_active) && ~BFL&BFL_CLIMBING_ANIM){
+                BFL = BFL|BFL_CLIMBING_ANIM;
+                string a = anim_active;
+                    
+                if(~BFL&BFL_DIR_UP)a = anim_active_down;
+                if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0);
+                anim_active_cur = a;
             }
+                
+				
+			// Reached top or bottom
+            if(perc>1 || perc<0){
+                dismount(TRUE);
+                multiTimer([id]);
+                return;
+            }
+            
+			// Move
+            vector point = pointBetween(nodea, nodeb, maxdist*perc);
+            translateCubePos(point);
+			
+        }
+		
+		else{
+		
+            BFL = BFL&~BFL_CLIMBING_ANIM;
+            if(anim_active_cur != ""){
+                AnimHandler$anim(anim_active_cur,FALSE,0,0);
+                anim_active_cur = "";
+            }
+			
+			// We just stopped moving, tell the cube
+			if(BFL&BFL_MOVING != BFL_CACHE&BFL_MOVING)
+				llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, (str)SupportcubeOverride$tKFMEnd);
+			
         }
         
+        BFL_CACHE = BFL;
         
-    }else if(id == TIMER_DISMOUNTING){
+    }
+	
+	// Dismount complete
+	else if(id == TIMER_DISMOUNTING){
         if(llGetAgentInfo(llGetOwner())&AGENT_SITTING){
             RLV$unsit(0);
         }
 
         // Raise climb unsit event
         BFL=BFL&~BFL_DISMOUNTING;
-    }else if(id == TIMER_INI){
+    }
+	
+	// Initialization complete
+	else if(id == TIMER_INI){
         BFL = BFL&~BF_CLIMB_INI;
     }
+	
+	else if(id == TIMER_CD){
+		BFL = BFL&~BFL_LAST_UPDATE;
+	}
+	
 }
 
 findNearestNode(){

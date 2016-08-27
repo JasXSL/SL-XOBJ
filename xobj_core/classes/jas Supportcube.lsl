@@ -17,6 +17,7 @@
 // Obj: {"t":(int)type, "p":[params]}
 #define SupportcubeMethod$killall 2			// NULL - kills support cubes
 
+
 #ifndef Supportcube$confWaitForSit		// Wait for an avatar to sit or unsit before performing next action
 	#define Supportcube$confWaitForSit 1	
 #endif
@@ -30,10 +31,17 @@
 #define Supportcube$tForceUnsit 4		// []
 #define Supportcube$tDelay 5			// [(float)delay]
 #define Supportcube$tRunMethod 6		// [(key)targ, (str)script, (int)method, (arr)data]
-#define Supportcube$tTranslateTo 7		// [(vec)pos, (rot)rot, (float)time, (int)mode] - Mode defaults to FWD
-#define Supportcube$tTranslateStop 8	// 
+// DEPRECATED
+//#define Supportcube$tTranslateTo 7		// [(vec)pos, (rot)rot, (float)time, (int)mode] - Mode defaults to FWD
+//#define Supportcube$tTranslateStop 8	// 
+#define Supportcube$tKFM 9				// (arr)coordinates, (arr)command - Same data as llSetKeyframedMotion
+#define Supportcube$tKFMEnd 10			// void - Calls KFM_CMD_STOP and clears the buffer, making sure global position updates will be instant
 
+
+#define SupportcubeOverride$tKFMEnd 5			// Tunneled through override - (arr)data, (arr)conf
+#define SupportcubeOverride$tKFM 5				// Tunneled through override - (vec)localOffset, (rot)localOffset, (float)time
 #define SupportcubeOverride$tSetPosAndRot 6		// Tunneled through override - (vec)pos, (rot)rotation
+
 
 #define SupportcubeBuildTask(task, params) llList2Json(JSON_OBJECT, (["t", task, "p", llList2Json(JSON_ARRAY, params)]))
 
