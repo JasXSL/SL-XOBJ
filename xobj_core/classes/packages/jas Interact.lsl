@@ -157,7 +157,9 @@ timerEvent(string id, string data){
 		}
 		else if( llGetPermissions()&PERMISSION_TRACK_CAMERA){
             integer ainfo = llGetAgentInfo(llGetOwner());
+			#ifndef InteractConf$allowWhenSitting
             if(~ainfo&AGENT_SITTING){
+			#endif
                 vector start;
                 vector fwd = llRot2Fwd(llGetCameraRot())*3;
                 if(ainfo&AGENT_MOUSELOOK){
@@ -207,7 +209,9 @@ timerEvent(string id, string data){
                         })
                     } 
                 }
+			#ifndef InteractConf$allowWhenSitting
             }
+			#endif
             targ = "";
             targDesc = "";
 			#ifdef PrimswimEvt$atLedge

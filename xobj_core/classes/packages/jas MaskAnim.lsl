@@ -511,7 +511,11 @@ default
 				});
 				integer p =llListFindList(idCache, [0]); 
 				if(~p){
-					qd("Error: Prims not found for "+method_arg(0)+" ("+(string)p+"). Your prim should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName);
+					list found = [];
+					list_shift_each(idCache, val,
+						found+= llGetLinkName((int)val);
+					)
+					qd("Error: Prims not found for "+method_arg(0)+" ("+(string)p+"). Your scripted prim name should not end in a number as that's auto-implemented. Missing prims for "+rootPrimName+" Found prims was "+mkarr(found));
 					return;
 				}
 				

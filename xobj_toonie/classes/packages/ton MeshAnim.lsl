@@ -63,6 +63,7 @@ integer BFL = 0;
 #define BFL_STOPPED 0x2
 
 startAnim(string name, integer restart){
+	debugCommon("Running startAnim");
 	integer i; integer found;
 	while(i<llGetListLength(MAIN_CACHE)){
 		if(llList2String(MAIN_CACHE, i) == name){
@@ -80,10 +81,12 @@ startAnim(string name, integer restart){
 	if(restart && name == CURRENT_ANIM){
 		CURRENT_ANIM = "";
 	}
+	debugCommon("Start anim ran");
     refreshAnims();
 }
 
 stopAnim(string name){
+	debugCommon("Running stop anim");
 	integer i;
 	while(i<llGetListLength(MAIN_CACHE)){
 		if(llList2String(MAIN_CACHE, i) == name){
@@ -92,7 +95,7 @@ stopAnim(string name){
 		}
 		i+=llList2Integer(MAIN_CACHE, i+1);
 	}
-	debugCommon("Stopping "+name);
+	debugCommon("Stopping ran on "+name);
     //llSetText("Stop", <1,1,1>,1);
     if(name == CURRENT_ANIM)refreshAnims();
 }
@@ -162,8 +165,12 @@ refreshAnims(){
 	raiseEvent(MeshAnimEvt$onAnimStart, CURRENT_ANIM);
 	#endif
 	
-	if(~BFL&BFL_STOPPED)
+	if(~BFL&BFL_STOPPED){
 		llSetTimerEvent(SPEED_CACHE);
+		debugCommon("Starting at speed: "+(str)SPEED_CACHE);
+	}
+	else{debugCommon("script is force stopped");}
+		
 }
 
 
@@ -208,6 +215,7 @@ default
 	
     state_entry()
     {
+		debugCommon("Script started");
 		//qd("Running v1");
 		#ifdef MeshAnimConf$remoteloadOnRez
 		integer pin = llFloor(llFrand(0xFFFFFF));
@@ -217,7 +225,11 @@ default
 		
         //hideAllAnimating();
         if(llGetStartParameter() == 2){
+			debugCommon("Raising init");
 			raiseEvent(evt$SCRIPT_INIT, "");
+		}
+		else{
+			debugCommon("Not raising init because start param was " +(str)llGetStartParameter());
 		}
 		#if MeshAnimConf$LIMIT_AGENT_RANGE>0
 			BFL = BFL|BFL_AGENTS_IN_RANGE;
@@ -229,8 +241,9 @@ default
 		raiseEvent(MeshAnimEvt$agentsInRange, "");
     }
 	
+	/*
 	attach(key id){llResetScript();}
-	
+	*/
 	
 	#if MeshAnimConf$LIMIT_AGENT_RANGE>0
 	sensor(integer total){sens(TRUE);}
@@ -252,8 +265,6 @@ default
 		
 		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
-		
-		
 		
 		
 		while(cl){
@@ -322,6 +333,7 @@ default
 			slot+=blockGetSize(block);
         }
 		
+		debugCommon("Ticked");
 		
 		if(llGetListLength(set)>1){
 			//debugCommon("Setting: "+mkarr(set));
@@ -336,9 +348,11 @@ default
 			if(FLAG_CACHE&MeshAnimFlag$STOP_ON_END){
 				BFL = BFL|BFL_STOPPED;
 				llSetTimerEvent(0);
+				debugCommon("Animation ended");
 			}else stopAnim(CURRENT_ANIM);
         }else{
 			//qd((string)SPEED_CACHE);
+			debugCommon("Resuming");
 			llSetTimerEvent(SPEED_CACHE);
 		}
     }
@@ -376,6 +390,7 @@ default
 						MAIN_CACHE = llDeleteSubList(MAIN_CACHE, i, i+len-1);
 					}else i+=llList2Integer(MAIN_CACHE, i+1);
 				}
+				debugCommon("Anim removed");
 				refreshAnims();
 			}
 			else if(METHOD == MeshAnimMethod$add){
@@ -429,6 +444,7 @@ default
 				}
 				package = llListReplaceList(package, [llGetListLength(package)], 1, 1);
 				MAIN_CACHE+=package;
+				debugCommon("Anim added");
 				refreshAnims();
 			}
         }   

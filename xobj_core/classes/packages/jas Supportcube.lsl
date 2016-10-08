@@ -288,6 +288,7 @@ default
             llStopAnimation("sit");
             llSleep(.2);
             llStopAnimation("sit"); 
+			llStartAnimation("stand");
         }
     } 
       

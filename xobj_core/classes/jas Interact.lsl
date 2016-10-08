@@ -60,6 +60,7 @@
 // #define InteractConf$usePrimSwim			// Define to use the primswim "exit water" label. onInteract receives "_PRIMSWIM_CLIMB_" from this
 // #define InteractConf$maxRate 0.5			// Seconds between allowed interact attempts
 // #define InteractConf$ignoreUnsit			// Prevents default action of unsitting when E hit while seated
+// #define InteractConf$allowWhenSitting 	// Allows interactions when player is sitting
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
 #define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)

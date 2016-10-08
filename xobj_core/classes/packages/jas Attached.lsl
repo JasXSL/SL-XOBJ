@@ -74,7 +74,10 @@ onEvt(string script, integer evt, list data){
 			else{
 				if(llGetPermissions()& PERMISSION_TRIGGER_ANIMATION){
 					if(llList2Integer(split, 2) || llGetListLength(split)<3)llStartAnimation(llList2String(split, 1));
-					else llStopAnimation(llList2String(split, 1));
+					else{
+						debugCommon("Stopping because split: "+l2s(split,1));
+						llStopAnimation(llList2String(split, 1));
+					}
 				}
 			}
 		}
@@ -109,6 +112,7 @@ integer DIE;
 kill(){
 #ifdef Attached$automateMeshAnim
 	if(localConfIdle != "" && llGetPermissions() & PERMISSION_TRIGGER_ANIMATION){
+		debugCommon("Stopping because kill");
 		llStopAnimation(localConfIdle);
 		llSleep(.1);
 	}
