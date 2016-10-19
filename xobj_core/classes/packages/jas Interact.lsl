@@ -131,6 +131,9 @@ onEvt(string script, integer evt, list data){
 					);
 				}else onInteract(targ, task, llList2List(split,1,-1));
 			}
+			#ifdef InteractConf$raiseEvent
+				raiseEvent(InteractEvt$onInteract, targ );
+			#endif
 		}else if(evt == evt$BUTTON_HELD_SEC){
 			integer btn = llList2Integer(data, 0);
 			if(btn == CONTROL_UP)held = llList2Integer(data, 1);
@@ -266,7 +269,7 @@ default
 		return;
 	}
 	
-	else if(METHOD == InteractEvt$onInteract){
+	else if(METHOD == InteractMethod$onClick){
 		string evt = method_arg(0);
 		string data = method_arg(1);
 		integer pos = llListFindList(llList2ListStrided(ON_INTERACT, 0, -1, 2), [evt]);

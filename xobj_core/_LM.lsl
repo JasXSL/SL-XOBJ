@@ -154,7 +154,7 @@ link_message(integer link, integer nr, string s, key id){
 				string _data = llList2String(llGetLinkMedia(nr, _i, [PRIM_MEDIA_HOME_URL]),0); // Only need home URL since names are limited
 				string name = llGetSubString(_data, 0, llSubStringIndex(_data, "|")-1);
 				// Occupied face
-				if(name){ 
+				if(name != "" && llListFindList(_index_tables, [name]) == -1){ 
 					_index_tables += name;
 					_occupied = _occupied | (int)llPow(2, _i);
 				}
@@ -162,6 +162,7 @@ link_message(integer link, integer nr, string s, key id){
 			_index_db += _occupied;
 		}
 	}
+	
 	_index_db = llListSort(_index_db, 3, TRUE);
 	for(_i = 0; _i<count(_to_create); _i++){
 		string _tbl = llGetSubString(llList2String(_to_create, _i),0,29);

@@ -50,7 +50,7 @@
 #define Interact$TASK_FOOTSTEPS "tFS"		// 
 
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
-#define InteractEvt$onInteract 2			// Not built in by default, you can raise this manually if you want
+#define InteractEvt$onInteract 2			// Not built in by default, you can raise this manually if you want or define InteractConf$raiseEvent
 
 // * Implemented by default. Though you might need to install a module for it.
 
@@ -61,6 +61,7 @@
 // #define InteractConf$maxRate 0.5			// Seconds between allowed interact attempts
 // #define InteractConf$ignoreUnsit			// Prevents default action of unsitting when E hit while seated
 // #define InteractConf$allowWhenSitting 	// Allows interactions when player is sitting
+// #define InteractConf$raiseEvent			// Raises the InteractEvt$onInteract on interact. Data is (key)id
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
 #define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)

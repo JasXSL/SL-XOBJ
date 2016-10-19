@@ -36,6 +36,9 @@
 	
 */
 
+// Constants
+#define db3$tableMaxlength 2111
+
 // Accepts a list of tables to add to the database
 #define db3$addTables(tables) llMessageLinked(LINK_ROOT, DB3_ADD, llList2Json(JSON_ARRAY, [llGetScriptName(), mkarr(tables)]), "")
 
@@ -51,6 +54,7 @@
 // GET is [(str)tableName] - Returns data
 // SET is [(str)tableName, (str)data[, (var)indexLv1, (var)indexLv2]] - Returns "1" on success and "" on fail
 // Index levels work as following: SET [llGetScriptName(), "Cat", "players", "jasdac"], essentially saves llJsonSetValue(dataForScript, ["players", "jasdac"], "Cat")
+// Returns 0 if a save failed due to overflow
 string db3(list input){
 	string table = llList2String(input,0);
 	integer i; string data; 
@@ -59,24 +63,38 @@ string db3(list input){
 		if(llGetSubString(name, 0, 1) == "DB"){
 			integer nrFaces = llGetLinkNumberOfSides(nr);
 			for(i=0; i<nrFaces; i++){
+				// For backwards compatibility, GET will grab whitelist, but SET cannot
+				// Editing existing levels will require a conversion by the local script
 				data = implode("", llGetLinkMedia(nr, i, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]));
 				// See if this is the proper table
 				integer pos = llSubStringIndex(data,"|");
+				
 				if(llGetSubString(data, 0, pos-1) == table){
+					// Remove the prefix
 					data = llDeleteSubString(data, 0, pos);
-					// return on GET
+					// return data on GET
 					if(count(input)==1)return data;
+					
+					
+					// SET data
 					data = table+"|"+llJsonSetValue(data, llDeleteSubList(input, 0, 1), llList2String(input, 1));
-					// SET
+					
+					if(llStringLength(data)>db3$tableMaxlength){
+						debugRare("Data overflow on DB3 table: "+table);
+						return "0";
+					}
+						
+					// SET data. Whitelist can only be 63 characters long for security purposes
 					llSetLinkMedia(nr, i, [
 						PRIM_MEDIA_HOME_URL, 
 						llGetSubString(data,0,1023), 
 						PRIM_MEDIA_CURRENT_URL, 
 						llGetSubString(data,1024,2047), 
 						PRIM_MEDIA_WHITELIST, 
-						llGetSubString(data, 2048, 3070), 
+						llGetSubString(data, 2048, 2110), 
 						PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE
 					]);
+					
 					return "1";
 				}
 			}

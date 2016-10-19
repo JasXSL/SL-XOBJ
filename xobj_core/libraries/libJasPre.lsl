@@ -209,6 +209,7 @@ list bitArrToList(integer n, integer bytesize){
 
 #define boundsHeight(obj, var) float var; {list _bounds = llGetBoundingBox(obj); vector _a =llList2Vector(_bounds, 0); vector _b = llList2Vector(_bounds,1); var = (llFabs(_a.z)+llFabs(_b.z));}
 
+#define norm2rot(normal, axis) llAxes2Rot(llVecNorm(normal % axis) % normal, llVecNorm(normal % axis), normal)
 
 
 
