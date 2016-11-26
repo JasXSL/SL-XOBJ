@@ -323,9 +323,9 @@ multiTimer(list data){
     llSetTimerEvent(t);
 }
 
-timerEvent(string id, string data){
-    
-}
+
+//timerEvent(string id, string data){}
+
 // Credits to Adeon Writer
 // Updated 2012-05-12
 // Normal = normal passed from raycast
