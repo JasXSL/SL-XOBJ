@@ -90,16 +90,19 @@ onEvt(string script, integer evt, list data){
 			){
 				return 
 				#ifdef InteractConf$soundOnFail
-					llPlaySound(InteractConf$soundOnFail, .25);
+					llPlaySound(InteractConf$soundOnFail, .25)
 				#endif
 				;
 			}
 			
+			integer successes;
 			while(llGetListLength(actions)){
 				string val = llList2String(actions,0);
 				actions = llDeleteSubList(actions,0,0);
 				list split = llParseString2List(val, ["$"], []);
 				string task = llList2String(split, 0); 
+				integer success = TRUE;
+				
 				if(task == Interact$TASK_TELEPORT){
 					vector to = (vector)llList2String(split,1); 
 					to+=prPos(targ);
@@ -129,11 +132,27 @@ onEvt(string script, integer evt, list data){
 						llList2String(split,9), // onStart
 						llList2String(split,10) // onEnd
 					);
-				}else onInteract(targ, task, llList2List(split,1,-1));
+				}else{ 
+					success = onInteract(targ, task, llList2List(split,1,-1));
+				}
+				successes+= success;
 			}
+			
+			// Raise interact event
 			#ifdef InteractConf$raiseEvent
 				raiseEvent(InteractEvt$onInteract, targ );
 			#endif
+			
+			#ifdef InteractConf$soundOnFail
+			if(!successes)
+				llPlaySound(InteractConf$soundOnFail, .25);
+			#endif
+			#ifdef InteractConf$soundOnSuccess
+			if(successes)
+				llPlaySound(InteractConf$soundOnSuccess, .25);
+			#endif
+			
+			
 		}else if(evt == evt$BUTTON_HELD_SEC){
 			integer btn = llList2Integer(data, 0);
 			if(btn == CONTROL_UP)held = llList2Integer(data, 1);

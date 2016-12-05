@@ -62,6 +62,8 @@
 // #define InteractConf$ignoreUnsit			// Prevents default action of unsitting when E hit while seated
 // #define InteractConf$allowWhenSitting 	// Allows interactions when player is sitting
 // #define InteractConf$raiseEvent			// Raises the InteractEvt$onInteract on interact. Data is (key)id
+// #define InteractConf$soundOnFail (str)sound // Triggers a sound if interact fails
+// #define InteractConf$soundOnSuccess (str)sound // Triggers a sound if interact is successful
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
 #define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)
