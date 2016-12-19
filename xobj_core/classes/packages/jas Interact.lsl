@@ -132,9 +132,13 @@ onEvt(string script, integer evt, list data){
 						llList2String(split,9), // onStart
 						llList2String(split,10) // onEnd
 					);
-				}else{ 
+				}
+				else{ 
 					success = onInteract(targ, task, llList2List(split,1,-1));
 				}
+				
+				// Custom should always be a success
+				success = (task == "CUSTOM");
 				successes+= success;
 			}
 			

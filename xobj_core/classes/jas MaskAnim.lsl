@@ -45,7 +45,7 @@
 
                                 // Methods //
 
-#define MaskAnimMethod$start 0				// (str)animName, (bool)restart, (bool)override
+#define MaskAnimMethod$start 0				// (str)animName, (bool)restart, (bool)override - Override will start a stopped anim
 #define MaskAnimMethod$stop 1				// (str)animName
 #define MaskAnimMethod$pause 2				// Stops the animation and prevents new animations from firing until resume is sent
 #define MaskAnimMethod$emulateFrameEvent 3	// (var)data - Sends a frame event with data
