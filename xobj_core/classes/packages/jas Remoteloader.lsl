@@ -5,6 +5,7 @@
 #include "xobj_core/_CLASS_STATIC.lsl"
 
 integer slave = 0;
+list slaves;			// [(float)time]
  
 list delayed_callbacks; // [name, script, callback, method]
 integer dcs = 4;
@@ -24,27 +25,27 @@ next(){
 		}
 		return;
 	}
-	integer i;
-	for(i=0; i<=RemoteloaderConf$slaves && queue != []; i++){
-		if(slave>=RemoteloaderConf$slaves){
-			BFL = BFL|BFL_QUE;
-			multiTimer(["A", "", 3, FALSE]);
-			multiTimer(["C"]);		// Clear load finish timer
-			return;
-		}else{
-			//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
-			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
-			queue = llDeleteSubList(queue, 0, QSTRIDE-1);
-		}
-		slave++;
+	
+	// Oldest slave is still cooling down, wait
+	if(llList2Float(slaves, slave)+3.1 >= llGetTime()){
+		BFL = BFL|BFL_QUE;
+		multiTimer(["A", "", llCeil(llList2Float(slaves, slave)+3-llGetTime()), FALSE]);
+		multiTimer(["C"]);		// Clear load finish timer
+		return;
 	}
+	
+	//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
+	slaves = llListReplaceList(slaves, [llGetTime()], slave, slave);
+	llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
+	queue = llDeleteSubList(queue, 0, QSTRIDE-1);
+	slave++;
+	if(slave>=RemoteloaderConf$slaves) slave = 0;
 	multiTimer(["C", "", 4, FALSE]);	// load finish timer
 }
 
 
 timerEvent(string id, string data){
 	if(id == "A"){
-		slave = 0;
 		BFL = BFL&~BFL_QUE;
 		next();
 	}
@@ -76,9 +77,16 @@ default
         }
     } 
 	
-	#ifdef stateEntry
-	state_entry(){stateEntry;}
-	#endif
+	state_entry(){
+		integer i;
+		for(i=0; i<=RemoteloaderConf$slaves && queue != []; i++){
+			slaves+=[-3.0];
+		}
+		
+		#ifdef stateEntry
+		stateEntry;
+		#endif
+	}
 	
     timer(){multiTimer([]);}
 
