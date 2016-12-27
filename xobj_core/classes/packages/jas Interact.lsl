@@ -138,8 +138,8 @@ onEvt(string script, integer evt, list data){
 				}
 				
 				// Custom should always be a success
-				success = (task == "CUSTOM");
-				successes+= success;
+				success += (task == "CUSTOM");
+				successes+= (success>0);
 			}
 			
 			// Raise interact event
