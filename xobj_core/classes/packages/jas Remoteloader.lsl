@@ -5,6 +5,7 @@
 #include "xobj_core/_CLASS_STATIC.lsl"
 
 integer slave = 0;
+list slaves;			// [(float)time]
  
 list delayed_callbacks; // [name, script, callback, method]
 integer dcs = 4;
@@ -12,7 +13,6 @@ integer dcs = 4;
 integer BFL;
 #define BFL_QUE 0x1
 
-integer queued;
 list queue;				// [(key)id, (str)script, (int)pin, (int)startparam]
 #define QSTRIDE 4
 
@@ -26,30 +26,31 @@ next(){
 	}
 	integer i;
 	for(i=0; i<=RemoteloaderConf$slaves && queue != []; i++){
-		if(slave>=RemoteloaderConf$slaves){
+		// Oldest slave is still cooling down, wait
+		if(llList2Float(slaves, slave)+3.1 >= llGetTime()){
 			BFL = BFL|BFL_QUE;
-			multiTimer(["A", "", 3, FALSE]);
+			multiTimer(["A", "", llCeil(llList2Float(slaves, slave)+3-llGetTime()), FALSE]);
 			multiTimer(["C"]);		// Clear load finish timer
 			return;
-		}else{
-			//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
-			llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
-			queue = llDeleteSubList(queue, 0, QSTRIDE-1);
 		}
+	
+		//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
+		slaves = llListReplaceList(slaves, [llGetTime()], slave, slave);
+		llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
+		queue = llDeleteSubList(queue, 0, QSTRIDE-1);
 		slave++;
+		if(slave>=RemoteloaderConf$slaves) slave = 0;
+		multiTimer(["C", "", 4, FALSE]);	// load finish timer
 	}
-	multiTimer(["C", "", 4, FALSE]);	// load finish timer
 }
 
 
 timerEvent(string id, string data){
 	if(id == "A"){
-		slave = 0;
 		BFL = BFL&~BFL_QUE;
 		next();
 	}
 	else if(id == "C"){
-		queued = 0;
 		#ifdef onLoadFinish
 		onLoadFinish;
 		#endif
@@ -76,9 +77,18 @@ default
         }
     } 
 	
-	#ifdef stateEntry
-	state_entry(){stateEntry;}
-	#endif
+	state_entry(){
+		// qd("state_entry");
+		slaves=[];
+		integer i;
+		for(i=0; i<=RemoteloaderConf$slaves; i++){
+			slaves+=[-3.0];
+		}
+		
+		#ifdef stateEntry
+		stateEntry;
+		#endif
+	}
 	
     timer(){multiTimer([]);}
 
@@ -97,7 +107,6 @@ default
         }
             
         if(METHOD == RemoteloaderMethod$load){
-			queued++;
 			list dta = PARAMS;
 			if(id == "")id = llList2String(dta, -1);		// Lets you override the ID to send to
 			
