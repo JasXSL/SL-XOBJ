@@ -24,11 +24,13 @@ xobj supports the following features:
 
 
 
-##Update 0.3.0##
+
+
+#Update 0.3.0
 DB2 has been replaced with DB3 and I have adopted a new philosophy on shared vars. DB3 will consume less memory and automatically preserve tables between script resets. But it runs a little slower and requires you to set up the tables in #ROOT.
 
 
-###Create your first project###
+#Install
 
 ###1. Enable preprocessing
 1. Open a script window, click the cogs icon at the top and check Enable LSL preprocessor, Script optimizer and #includes from local disk.
