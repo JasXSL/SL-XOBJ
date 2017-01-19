@@ -36,8 +36,10 @@ DB2 has been replaced with DB3 and I have adopted a new philosophy on shared var
 1. Create a folder for SL libraries on your drive (example C:\LSL)
 2. Download XOBJ as zip and extract the contents of the master folder to your SL libraries directory (C:\LSL). The important part is that you now have C:\LSL\xobj_core & C:\LSL\xobj_toonie folders. If you are familiar with git, you can also git clone and add these folders as symlinks in your libraries directory.
 3. Open a script window in your Firestorm viewer. Click the cogs icon at the top and check Enable LSL preprocessor. Then check **Script optimizer** and **#includes from local disk**. The other checkboxes are optional.
-4. Close and re-open your script window.
-5. Now you have installed the core and future scripts can use XOBJ!
+4. Click the ... button and navigate to your libraries directory (C:\LSL)
+5. Close and re-open your script window. Then hit OK.
+6. Click OK, you are done!
+7. (Optional) To test if it works create a new default LSL script (hello avatar), and above default add #include "xobj_core/_ROOT.lsl" Then compile. If you get no errors, it worked!
 
 ###2. Creating a new project
 1. Create a subfolder under your includes on disk. Ex: C:\LSL\MyFirstProject
