@@ -11,7 +11,7 @@ xobj supports the following features:
 * Prim DB
 * Macros
 
-**Don't forget to check the project Wiki for guides and script references!**
+**Don't forget to check [the project Wiki](https://github.com/JasXSL/SL-XOBJ/wiki) for guides and script references!**
  
 
 ###Glossary
