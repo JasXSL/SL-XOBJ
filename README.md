@@ -10,6 +10,8 @@ xobj supports the following features:
 * Methods with optional callbacks
 * Prim DB
 * Macros
+
+**Don't forget to check the project Wiki for guides and script references!**
  
 
 ###Glossary
