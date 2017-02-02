@@ -160,7 +160,7 @@ runLimitMethod(string tokenSender, string className, integer method, list data, 
 }
 
 // Placeholder function for events. Copy paste this and fill it with code in each module that needs to listen to events.
-onEvt(string script, integer evt, list data){}
+// onEvt(string script, integer evt, list data){}
 
 // Standard function to raise an event.
 #define raiseEvent(evt, data) llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, ([llGetScriptName(), data])), (string)evt)

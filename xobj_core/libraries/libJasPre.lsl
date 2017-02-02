@@ -13,7 +13,8 @@
 #define NULL null
 
 #define bool integer
-#define parseInt(input) (integer)(input)
+#define parseInt(input) ((integer)(input))
+#define floor(input) parseInt(input)
 #define str string
 #define int integer
 #define count(input) llGetListLength(input)
@@ -24,13 +25,14 @@
 #define l2s(input, index) llList2String(input, index)
 #define l2k(input, index) llList2Key(input, index)
 #define l2r(input, index) llList2Rot(input, index)
-#define floor(input) ((int)(input))
 
-
+#define translateStop() llSetKeyframedMotion([], [KFM_COMMAND, KFM_CMD_STOP])
+#define inRange(id, range) (llVecDist(llList2Vector(llGetObjectDetails(id,[OBJECT_POS]),0),llGetPos())<range)
+#define alnum(text) (~llSubStringIndex(llEscapeURL(text), "%"))
 
 // FOREACH LOOPS //
 // Iterate an lsl list getting index and val, leaving the list as it is
-	#define list_each(input, int, val, fnAction)  {integer int; for(int=0; int<llGetListLength(input); int++){ string val=llList2String(input, int); fnAction}}
+	#define list_each(input, n, val, fnAction)  {integer n; for(n=0; n<llGetListLength(input); n++){ string val=llList2String(input, n); fnAction}}
 	// Ex: list_each(myList, k, v, {llSay(0, (string)k+" => "+v);})
 
 // Iterate  an lsl list, deleting each value after it's been run
@@ -67,7 +69,7 @@
 	// Ex: list l = ["a", "a", "b"]; remByVal(l, "a"); llList2CSV(l) => ["b"]
 
 // Quickly split a string into a list
-	#define explode(delim, str) llParseString2List(str, [delim], [])
+	#define explode(delim, input) llParseString2List(input, [delim], [])
 
 // Quickly set a value of an array
 	#define set(arr, pos, val) arr = llListReplaceList(arr, [val], pos, pos)
@@ -220,4 +222,7 @@ list bitArrToList(integer n, integer bytesize){
 #define int2vec(input) <((input>>21)&255), ((input>>13)&255), (input&8191)>
 #define vecFloor(input) <floor(input.x), floor(input.y), floor(input.z)>
 #define vec2int(input) ((integer)input.x<<21)|((integer)input.y<<13)|(integer)input.z
+
+
+
 

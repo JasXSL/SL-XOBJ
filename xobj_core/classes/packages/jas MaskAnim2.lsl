@@ -30,11 +30,11 @@
 // Splices the next block for use in a while loop - blocksArray is the OBJ_CACHE clone to splice from, var is the list the extracted block should be saved to
 #define blockSplice(blocksArray, var) list var = llList2List(blocksArray, 0, blockGetSize(blocksArray)-1); blocksArray = llDeleteSubList(blocksArray, 0, blockGetSize(blocksArray)-1);
 
-
+// Name of the current anim
 string CURRENT_ANIM;
 /*
 		The animating frames are split into blocks with [bitfield, bitfield, prim1, prim2..., face1, face2...]
-		proposed new: [(int)0000000000arr_length 0000000000step, (int)00000000prims_stored 0000pre_face 00000000pre_prim, (int)prim1, (int)prim2... (int)frame1, frame2...]
+		proposed new: [(int)0000000000arr_length 0000000000step, (int)00000000prims_stored 0000pre_face(obsolete) 00000000pre_prim(obsolete), (int)prim1, (int)prim2... (int)frame1, frame2...]
         ex:
 			[(key)texture, 13<<10|0, 3<<12|0<<8|4, 1,2,3, 0,1,2,3,4,5,6,7]
 			13<<10 = Block length is 13 - |0 = currently on step 0/max1024
@@ -48,6 +48,7 @@ string CURRENT_ANIM;
 */
 // See above
 list OBJ_CACHE;
+list ACTIVE_FRAMES;		// 2stride: [(int)prim, (int)face] - Hide before a new anim starts
 
 // This contains all the data
 list MAIN_CACHE;	
@@ -64,75 +65,55 @@ float SPEED_CACHE;
 integer BFL = 0;
 #define BFL_AGENTS_IN_RANGE 0x1
 #define BFL_STOPPED 0x2
-#define BFL_AGENTS_INIT 0x4			// Animations have been started at least once
+
 #define BFL_AGENTS_IN_RANGE_OVERRIDE 0x8	// Can be set by other scripts, forces animations to play regardless of range
 
-string need_hide = "";				// Need to hide this animation
 
-startAnim(string name, integer restart){
-	integer i; integer found;
+integer findAnim(string name){
+	integer i;
 	while(i<llGetListLength(MAIN_CACHE)){
-		if(llList2String(MAIN_CACHE, i) == name){
-			//qd("Starting "+name);
-			integer f = llList2Integer(MAIN_CACHE, i+3)|MaskAnimFlag$PLAYING;
-			MAIN_CACHE = llListReplaceList(MAIN_CACHE, [f], i+3, i+3);
-			found = TRUE;
-		}
+		if(llList2String(MAIN_CACHE, i) == name)
+			return i;
 		i+=llList2Integer(MAIN_CACHE, i+1);
 	}
-	
-	if(!found){
+	return -1;
+}
+
+// Sets the playing flag on an anim
+startAnim(string name, integer restart){
+	integer i = findAnim(name); 
+	if(i == -1){
 		debugUncommon("Anim not found "+name+" in cache "+mkarr(MAIN_CACHE));
 		return;
 	}
+		
+	integer f = llList2Integer(MAIN_CACHE, i+3)|MaskAnimFlag$PLAYING;
+	MAIN_CACHE = llListReplaceList(MAIN_CACHE, [f], i+3, i+3);
+
 	if(name != CURRENT_ANIM)restart = FALSE;			// make sure we don't restart the current anim unless it's playing
     refreshAnims(restart);
 }
 
+// Sets an animation to not playing
 stopAnim(string name){
-	integer i;
-	while(i<llGetListLength(MAIN_CACHE)){
-		if(llList2String(MAIN_CACHE, i) == name){
-			integer f = llList2Integer(MAIN_CACHE, i+3)&~MaskAnimFlag$PLAYING;
-			MAIN_CACHE = llListReplaceList(MAIN_CACHE, [f], i+3, i+3);
-		}
-		i+=llList2Integer(MAIN_CACHE, i+1);
-	}
+	integer i = findAnim(name);;
+	if(i == -1)
+		return;
+	
+	integer f = llList2Integer(MAIN_CACHE, i+3)&~MaskAnimFlag$PLAYING;
+	MAIN_CACHE = llListReplaceList(MAIN_CACHE, [f], i+3, i+3);
+	
 	debugCommon("Stopping "+name);
     //llSetText("Stop", <1,1,1>,1);
-    if(name == CURRENT_ANIM)refreshAnims(FALSE);
-}
-
-// Switches an animation's blocks between mask and alpha
-list toggleMask(string anim, integer useMask, integer ret){
-	integer pos = llListFindList(MAIN_CACHE, [anim]);
-	if(pos == -1)return [];
-	
-	list CL = llList2List(MAIN_CACHE, pos+MAIN_PRE, pos+llList2Integer(MAIN_CACHE, pos+1)-1); 
-	list out;
-	while(CL){
-		blockSplice(CL, block);
-		list prims = blockGetPrims(block);
-		string texture = blockGetTexture(block);
-		
-		integer i;
-		for(i=0; i<llGetListLength(prims); i++){
-			if(useMask){
-				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, "11a77942-f739-544f-1c3a-cd00f4b911db", <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 1, PRIM_ALPHA_MODE, ALL_SIDES, PRIM_ALPHA_MODE_MASK, 100];
-			}else{
-				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, texture, <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 0];
-			}
-		}
-
-	}
-	if(ret)return out;
-	llSetLinkPrimitiveParamsFast(0,out);
-	return [];
+    
+	// This is active so we need to refresh
+	if(name == CURRENT_ANIM)
+		refreshAnims(FALSE);
 }
 
 #define stopAll() llSetTimerEvent(0)
 
-
+// Checks which anim is on top and starts it
 refreshAnims(integer restart){
 	if(BFL&BFL_STOPPED)return;
 	debugCommon("Refresh anim");
@@ -182,21 +163,16 @@ refreshAnims(integer restart){
 		}
 	}
 	else{
-		need_hide = CURRENT_ANIM;
-		debugUncommon("Setting hide to "+need_hide);
-	
 		
 		CURRENT_ANIM = top;
-		toggleMask(CURRENT_ANIM, FALSE, FALSE);
 		OBJ_CACHE = llList2List(MAIN_CACHE, topnr+MAIN_PRE, topnr+toplen-1);
-		
-		
 
-		//qd("OBJ CACHE: "+llList2CSV(OBJ_CACHE));
-		
-		
 		FLAG_CACHE = flags;
 		SPEED_CACHE = speed;
+		
+		if(flags&MaskAnimFlag$DONT_HIDE_PREVIOUS)
+			ACTIVE_FRAMES = [];
+		
 	}
 	
 	#ifdef MaskAnimConf$animStartEvent
@@ -224,16 +200,55 @@ onEvt(string script, integer evt, list data){
 }
 #endif
 
+
+// Switches an animation's blocks between mask and alpha
+list toggleMask(string anim, integer useMask){
+	integer pos = findAnim(anim);
+	if(pos == -1)return [];
+	
+	list CL = llList2List(MAIN_CACHE, pos+MAIN_PRE, pos+llList2Integer(MAIN_CACHE, pos+1)-1); 
+	list out;
+	while(CL){
+		blockSplice(CL, block);
+		list prims = blockGetPrims(block);
+		string texture = blockGetTexture(block);
+		
+		integer i;
+		for(i=0; i<llGetListLength(prims); i++){
+			if(useMask){
+				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, "11a77942-f739-544f-1c3a-cd00f4b911db", <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 1, PRIM_ALPHA_MODE, ALL_SIDES, PRIM_ALPHA_MODE_MASK, 100];
+			}else{
+				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, texture, <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 0];
+			}
+		}
+
+	}
+	
+	return out;
+}
+
+toggleAllMasks(integer hidden){
+	// Find the top level animation
+	list out; integer i;
+	while(i<llGetListLength(MAIN_CACHE)){
+		out+= toggleMask(l2s(MAIN_CACHE, i), hidden);
+		i+=llList2Integer(MAIN_CACHE, i+1);
+	}
+	PP(0, out);
+}
+
+
 sens(integer inrange){
+	list out;
 	if(inrange || BFL&BFL_AGENTS_IN_RANGE_OVERRIDE || llGetAttached()){
 		if(~BFL&BFL_AGENTS_IN_RANGE && CURRENT_ANIM != ""){
-			BFL = BFL|BFL_AGENTS_INIT;
 			#ifdef MaskAnimConf$animStartEvent
 			raiseEvent(MaskAnimEvt$onAnimStart, CURRENT_ANIM);
 			#endif
 			llSetTimerEvent(SPEED_CACHE);
 			raiseEvent(MaskAnimEvt$agentsInRange, "");
 			debugCommon("Player in range, setting timer: "+(string)SPEED_CACHE);
+			toggleAllMasks(FALSE);
 		}
 		BFL = BFL|BFL_AGENTS_IN_RANGE;
 	}else{
@@ -241,12 +256,17 @@ sens(integer inrange){
 			raiseEvent(MaskAnimEvt$agentsLost, "");
 			debugUncommon("No player in range, stopping");
 			llSetTimerEvent(0);
+			toggleAllMasks(TRUE);
 		}
 		BFL = BFL&~BFL_AGENTS_IN_RANGE; 
 	}
+	
+	if(out)
+		PP(0, out);
 }
 
 remAnim(string name){
+	
 	integer i;
 	while(i<llGetListLength(MAIN_CACHE) && llGetListLength(MAIN_CACHE)){
 		if(llList2String(MAIN_CACHE, i) == name){
@@ -295,22 +315,26 @@ default
 	#if MaskAnimConf$LIMIT_AGENT_RANGE>0
 	sensor(integer total){
 		#ifdef MaskAnimConf$LIMIT_RAYCAST_RANGE
-		if(~BFL&BFL_AGENTS_INIT){
-			integer i;
-			for(i=0; i<total; i++){
-				if(llVecDist(llGetPos(), llDetectedPos(i))<MaskAnimConf$LIMIT_RAYCAST_RANGE){
-					return sens(TRUE);
-					// Agent is lower than raycast req range
-				}
-				else if(llList2Integer(llCastRay(llGetPos()+<0,0,1>, llDetectedPos(i), [RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL]),-1) <=0){
-					return sens(TRUE);
-				}
+
+		integer i;
+		for(i=0; i<total; i++){
+			if(llVecDist(llGetPos(), llDetectedPos(i))<MaskAnimConf$LIMIT_RAYCAST_RANGE){
+				sens(TRUE);
+				return;
+				// Agent is lower than raycast req range
 			}
-			return sens(FALSE);
+			else if(llList2Integer(llCastRay(llGetPos()+<0,0,1>, llDetectedPos(i), [RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL]),-1) ==0){
+				sens(TRUE);
+				return;
+			}
 		}
+		sens(FALSE);
+		
+		#else
+			sens(TRUE);
 		#endif
 		
-		sens(TRUE);
+		
 		
 		
 	}
@@ -330,16 +354,19 @@ default
 		list set;
 		list cl = OBJ_CACHE; integer slot; // Slot keeps track of where we are
 		
-		// Just alpha out the previous
-		if(FLAG_CACHE&MaskAnimFlag$HIDE_PREVIOUS_PRE && need_hide != ""){
-			set+=toggleMask(need_hide, FALSE, TRUE);
-			need_hide = "";
+		while(ACTIVE_FRAMES){
+			integer l = l2i(ACTIVE_FRAMES, 0);
+			integer s = l2i(ACTIVE_FRAMES, 1);
+			set+= [PRIM_LINK_TARGET, l, PRIM_COLOR, s, <1,1,1>,0];
+			ACTIVE_FRAMES = llDeleteSubList(ACTIVE_FRAMES, 0, 1);
 		}
 		
 		while(cl){
 			blockSplice(cl, block);
+			/*
 			integer prePrim = blockGetPrePrim(block);
             integer preFace = blockGetPreFace(block);
+			*/
             integer step = blockGetStep(block);
 			
 
@@ -377,18 +404,9 @@ default
                 side-=pr*8;
                 prim = llList2Integer(prims, pr);
 				
-				
-				
 				//set+= [linkAlpha(prim, 1, side)];
 				set+= [PRIM_LINK_TARGET, prim, PRIM_COLOR, side, <1,1,1>, 1]; //, PRIM_ALPHA_MODE, side, PRIM_ALPHA_MODE_MASK, 100
-				//llSetLinkAlpha(prim, 1, side);
-				if(prePrim != prim || preFace != side)
-					set+= [PRIM_LINK_TARGET, prePrim, PRIM_COLOR, preFace, <1,1,1>, 0]; //, PRIM_ALPHA_MODE, side, PRIM_ALPHA_MODE_MASK, 100
-					//llSetLinkAlpha(prePrim, 0, preFace);
-                //llSetText((string)step+" :: "+(string)prim+" :: "+(string)side,<1,1,1>,1);
-				
-				
-				
+				ACTIVE_FRAMES += [prim, side];
 				
             }
             
@@ -404,12 +422,6 @@ default
 			slot+=blockGetSize(block);
         }
 
-		// Only hide previous if it actually animated
-		if(~FLAG_CACHE&MaskAnimFlag$DONT_HIDE_PREVIOUS && need_hide != ""){
-			toggleMask(need_hide, TRUE, FALSE);
-			need_hide = "";
-		}
-		
 		
 		//llSetText(llList2Json(JSON_ARRAY, [looping]+set), <1,1,1>, 1);
 		if(llGetListLength(set)>1){
@@ -530,7 +542,8 @@ default
 			}
 			package = llListReplaceList(package, [llGetListLength(package)], 1, 1);
 			MAIN_CACHE+=package;
-			toggleMask(method_arg(0), TRUE, FALSE); // Hide it
+			
+			PP(0,toggleMask(method_arg(0), ~BFL&BFL_AGENTS_IN_RANGE));
 			refreshAnims(FALSE);
 		}
     #define LM_BOTTOM  

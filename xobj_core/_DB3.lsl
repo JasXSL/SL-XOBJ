@@ -10,7 +10,7 @@
 	This can look like:
 	// Create schema before resetting the other scripts
 	list tables = [
-		"#ROOT"
+		"#ROOT",
 		"got Bridge"
 	];
 	db3$addTables(tables);

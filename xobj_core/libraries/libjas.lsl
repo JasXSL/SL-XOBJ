@@ -1,10 +1,4 @@
-integer alphaNumeric(string s){
-    if(~llSubStringIndex(llEscapeURL(s), "%"))return FALSE;
-    return TRUE;
-}
-rotation baserot(){
-    return llList2Rot(llGetObjectDetails(llList2Key(llGetObjectDetails(llGetOwner(), [OBJECT_ROOT]),0), [OBJECT_ROT]),0);   
-}
+
 string dateformat(integer utime){
     string output;
     float temp = (float)utime/(60*60*24);
@@ -37,24 +31,9 @@ string dateformat(integer utime){
     return output;
 }
 
-integer descmatch(key id)
-{
-    if(llList2String(llGetObjectDetails(id,[OBJECT_DESC]),0) == llGetObjectDesc())return TRUE;
-    return FALSE;
-}
-integer gameInRange(key id, float range){
-    if(llVecDist(llList2Vector(llGetObjectDetails(id,[OBJECT_POS]),0),llGetPos())<range)return TRUE;
-    else{
-        string name = llGetObjectName();
-        llSetObjectName("You");
-        llRegionSayTo(id, 0, "/me are out of range.");
-        llSetObjectName(name);
-        return FALSE;
-    }
-}
+
 //Searches for HEADER in INPUT and returns the value
 //If header isnt found, returns an empty string
-
 string getHeaderVar(string input, string header){
     integer hlength = llStringLength(header);
     integer startscan = llSubStringIndex(input, header+"=");
@@ -69,16 +48,8 @@ string getHeaderVar(string input, string header){
         return "";
     }
 }
-integer inFront(vector axis, key object, key infrontof){
-    list odata = llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]);
-    list ifdata = llGetObjectDetails(infrontof, [OBJECT_POS, OBJECT_ROT]);
-    rotation bet = llRotBetween(llVecNorm(axis * llList2Rot(ifdata, 1)), llVecNorm(llList2Vector(odata, 0)-llList2Vector(ifdata, 0))); 
-    return ((llRot2Angle(bet)*RAD_TO_DEG)<45);
-}
-integer inRange(key id, float range){
-    if(llVecDist(llList2Vector(llGetObjectDetails(id,[OBJECT_POS]),0),llGetPos())<range)return TRUE;
-    return FALSE;
-}
+
+// Old
 integer integerLizeKey(string id, integer salt)
 {
     return (integer)("0x1"+llGetSubString(id, 0, 6))+salt;
@@ -86,8 +57,7 @@ integer integerLizeKey(string id, integer salt)
 integer isDay()
 {
     vector sun = llGetSunDirection();
-    if(sun.z < 0)return FALSE;
-    return TRUE;
+    return sun.z > 0;
 }
 string jsonTypeName(string value){
     string t = llJsonValueType(value,[]);
@@ -103,26 +73,10 @@ string jsonTypeName(string value){
 // Removes a value from a json string
 string jsonUnset(string json, list ident){
     if(llJsonValueType(json, ident)!=JSON_INVALID)
-        json = llJsonSetValue(json,ident,JSON_DELETE);
+        return llJsonSetValue(json,ident,JSON_DELETE);
     return json;
 }
-//Attempts to sort a strided list, you can chose any start-entry to sort by
-list listSort(list input, integer stride, integer ascending, integer startEntry){
-if(llGetListLength(input)%stride == 0){
-	list stridedfirst = input;
-        if(startEntry)stridedfirst = llDeleteSubList(stridedfirst, 0, startEntry-1);
-        stridedfirst = llList2ListStrided(stridedfirst, 0, -1, stride);
-        list sortlist;
-        integer i;
-        for(i=0; i<llGetListLength(stridedfirst); i++)sortlist += llList2List(stridedfirst, i, i)+[i];
-        sortlist = llListSort(sortlist, 2, ascending);
-        stridedfirst = [];
-        for(i=0; i<llGetListLength(sortlist); i+=2)stridedfirst += llList2List(input, llList2Integer(sortlist, i+1)*stride, llList2Integer(sortlist, i+1)*stride+(stride-1));
-        return stridedfirst;
-    }else{
-        return input;
-    }
-}
+
 // Very rudimentary and can probably be written better.
 // You cant do a number immediately followed by a parentheses, ex: "3(4+6)". Use "3*(4+6)" instead.
 
@@ -197,96 +151,6 @@ string mergeJson(string input, string MERGE){
 	for(i=0; i<llGetListLength(js); i+=2)input = llJsonSetValue(input, llList2List(js,i,i), llList2String(js,i+1));
 	return input;
 }
-/*
-SETUP INSTRUCTIONS
-1. Do not use functions that reset script time or rely on script time in sync with these functions.
-2. Set your timer event like this:
-timer(){timersRefresh();}
-3. The function that allows you to trigger things on events is defined like this:
-multiTimerEvent(string identifier){}
-Identifier is the identifier of your timer.
-4. This function relies on the global list "timers", so don't define a variable with that name.
-5. This timer is not 100% accurate, and might go out of sync if the sim lags or if use is very heavy
-
-Examples:
-Set a timer: setMultiTimer(string identifier, float timeout, integer loop);
-Identifier should be a unique ID for your timer, if you call 2 timers with the same name, the old will be overwritten.
-Timeout is how long before the timer triggers.
-Loop is if it should loop or not
-
-Remove a timer:
-removeMultiTimer(string identifier);
-
-Checking a timer's existence:
-multiTimerExists(string identifier);
-
-Getting info about a timer
-multiTimerInfo(string identifier);
-Returns the following list: [(float)triggertime, (string)identifier, (int)looping, (float)duration]
-triggertime is when it will next trigger in script time, if you want the exact time remaining, do triggertime-llGetScriptTime()
-identifier is the ID of the timer
-looping is 1 or 0 if it loops or not
-duration is how long the timer was initially set for
-*/
-
-/* REQUIRED FUNCTIONS */
-// This is where the timer executes
-multiTimerEvent(string identifier){}
-
-list timers; 
-setMultiTimer(string identifier, float timeout, integer loop){
-    if(!llGetListLength(timers)){llResetTime();}
-    if(~llListFindList(realStride(timers, 4, 1),[identifier]))removeMultiTimer(identifier);
-    timers+=[llGetTime()+timeout, identifier, loop, timeout];
-    timers = llListSort(timers, 4, TRUE);
-    timersRefresh();
-}
- 
-removeMultiTimer(string identifier){
-    integer pos;
-    if(~(pos = llListFindList(realStride(timers, 4, 1), [identifier]))){
-	integer start = pos*4; integer end = pos*4+3;
-	timers = llDeleteSubList(timers, start, end);
-    }
-}
-
-
-
-timersRefresh(){
-	float gtime = llGetTime();
-    if(timers == [])llSetTimerEvent(0);
-    else if(llList2Float(timers, 0)<=gtime){
-        string id = llList2String(timers, 1);
-        integer loop = llList2Integer(timers, 2);
-        if(!loop){timers = llDeleteSubList(timers, 0, 3); }
-        else{
-            float time = gtime+llList2Float(timers, 3);
-            timers = llListReplaceList(timers, [time], 0, 0);
-            if(llList2Float(timers, 4)<time){
-                timers = llListSort(timers, 4, TRUE);
-            }
-        }
-	
-        multiTimerEvent(id);
-        timersRefresh();
-    }else{
-		llSetTimerEvent(llList2Float(timers, 0)-gtime);
-	}
-}
-
-
-/* OPTIONAL FUNCTIONS */
-integer multiTimerExists(string id){
-    if(~llListFindList(realStride(timers, 4, 1), [id]))return TRUE;
-    else return FALSE;
-}
-
-list multiTimerInfo(string id){
-    integer pos;
-    if(~(pos = llListFindList(realStride(timers, 4, 1), [id]))){
-        return llList2List(timers, pos*4, pos*4+3);
-    }else return [];
-}
 
 
 // USAGE
@@ -297,7 +161,6 @@ list multiTimerInfo(string id){
 // if repeating is TRUE, the timer will keep triggering until it's manually removed
 // You'll also need timer(){multiTimer([]);}
 // Timeouts are raised in timerEvent(integer id, list data)
-
 list _TIMERS;// timeout, id, data, looptime, repeating
 multiTimer(list data){
     integer i;
@@ -324,8 +187,6 @@ multiTimer(list data){
 }
 
 
-//timerEvent(string id, string data){}
-
 // Credits to Adeon Writer
 // Updated 2012-05-12
 // Normal = normal passed from raycast
@@ -343,69 +204,23 @@ rotation norm2rot(vector normal, vector axis){
 */
 //Sets objects name to NAME, then says MESSAGE and sets name to its previous name.
 outputAs(string name, string message){
-string o = llGetObjectName();
-llSetObjectName(name);
-llSay(0, message);
-llSetObjectName(o);
+	string o = llGetObjectName();
+	llSetObjectName(name);
+	llSay(0, message);
+	llSetObjectName(o);
 }
-//Example: You want to rez an object at an agent's location. If that agent is too far away >10m, rez it as close to him as you can.
-//Put the rezzer's position at A, Agents position at B, and distance to 9.99
-//Which would look something like pointBetween(llGetPos(), agentPos, 9.99);
-vector pointBetween(vector a, vector b, float distance){
-        vector offset = a-b;
-        return a-(llVecNorm(offset)*distance);
-}
-list realStride(list input, integer stride, integer start){
-    if(start>0)input = llDeleteSubList(input, 0,start-1);
-    return llList2ListStrided(input,0,-1,stride);
-}
-//replaceStringEntry(string source, string remove, string replacement);
-//Replaces all "remove" with "replacement" in "source"
-string replaceStringEntry(string input, string remove, string replace){
-    integer strlen = llStringLength(remove);
-    integer pos;
-    while(~(pos=llSubStringIndex(input, remove))){
-        input = llDeleteSubString(input, pos, pos+strlen-1);
-        input = llInsertString(input, pos, replace);
-    }
-    return input;
-}
+
 // Set stride to 0 or 1 to not use stride
 list reverseList(list input, integer stride){
     if(stride == 0)stride = 1;
-    integer i;
-    list output;
+    integer i; list output;
     for(i=llGetListLength(input)/stride-1; i>=0; i--){
         output+= llList2List(input, i*stride, i*stride+stride-1);
     }
     return output;
 }
-rotation rootRot(key id){
-    return llList2Rot(llGetObjectDetails(llList2Key(llGetObjectDetails(id, [OBJECT_ROOT]),0), [OBJECT_ROT]),0);   
-}
-// Speed/steps must be >.1 or you'll get an error
-rotDoor(float angle, float speed, integer steps){
-    speed /=steps;
-    list output;
-    vector prepos; integer i; vector scale = llGetScale();
-    for(i=1; i<=steps; i++){
-        float strot = angle*DEG_TO_RAD/steps;
-        vector vpos = (<scale.x/2*llCos(strot*i)-scale.x/2, scale.x/2*llSin(strot*i), 0>)*llGetRot();
-        vector v = vpos-prepos;
-        prepos = vpos;
-        output+=[v, llEuler2Rot(<0,0,angle/steps>*DEG_TO_RAD), speed];
-    }
-    llSetKeyframedMotion(output, [KFM_MODE,KFM_FORWARD, KFM_DATA, KFM_TRANSLATION|KFM_ROTATION]);
-}
-// Rounds off value to precision decimals
-string round(float value, integer precision){
-    if(!precision)return (string)llRound(value);
-    integer i = llFloor(value);
-    integer dec = llRound((1+value-i)*llPow(10, precision));
-    integer ex = (integer)llGetSubString((string)dec, 0, 0);
-    if(ex>1){i+=ex-1;}
-    return (string)i+"."+(string)llGetSubString((string)dec, 1,-1);
-}
+
+
 // total is how many x/y frames you have, like if you have 4x2 frames on an animation you put <4, 2,0>
 // frame is the frame of the animation you want
 // texture is either UUID or name of a texture in inventory
@@ -426,31 +241,7 @@ setLinkedFrame(integer link, vector total, integer frame, key texture, integer s
     integer row = llFloor((float)frame/total.x);
     llSetLinkPrimitiveParamsFast(link, [PRIM_TEXTURE, side, texture, <width, height, 0>, <-llFloor(total.x/2)*width+width/2+width*(frame-row*total.x), llFloor(total.y/2)*height-height/2-height*row, 0>, rot]);
 }
-string str_replace(string replace, string with, string source){
-    list l = llParseStringKeepNulls(source, [replace], []);
-    return llDumpList2String(l,with);
-}
-integer superScanx(vector pos, vector mypos, rotation mrot, integer limit){
-    if(pos != ZERO_VECTOR){
-        vector mpos = mypos;
-        list rotations;
-        if(limit & 1){
-            rotations += [llVecDist(pos, mpos+llRot2Fwd(mrot)*.001), 0];
-            rotations += [llVecDist(pos, mpos-llRot2Fwd(mrot)*.001), 1];
-        }
-        if(limit & 2){
-            rotations += [llVecDist(pos, mpos+llRot2Left(mrot)*.001), 2];
-            rotations += [llVecDist(pos, mpos-llRot2Left(mrot)*.001), 3];
-        }
-        if(limit & 4){
-            rotations += [llVecDist(pos, mpos+llRot2Up(mrot)*.001), 4];
-            rotations += [llVecDist(pos, mpos-llRot2Up(mrot)*.001), 5];
-        }
-        rotations = llListSort(rotations,2,TRUE);
-        if(llGetListLength(rotations))return llList2Integer(rotations, 1);
-        else return -1;
-    }else return -1;
-}
+
 translateTo(vector to, rotation rota, float time, integer mode){
     vector start = llGetPos();
     vector dist = to-start;
@@ -482,7 +273,7 @@ translateTo(vector to, rotation rota, float time, integer mode){
     llSetKeyframedMotion(frames, [KFM_MODE,mode]);    
 }
 
-#define translateStop() llSetKeyframedMotion([], [KFM_COMMAND, KFM_CMD_STOP])
+
 
 integer triggerAnim(string anim, integer start){
     if(llGetInventoryType(anim) == INVENTORY_ANIMATION && llGetPermissions() & PERMISSION_TRIGGER_ANIMATION){
@@ -536,3 +327,13 @@ string wordWrap(string input, integer rowlength, string separator){
     }
     return llDumpList2String(rows, separator);
 }
+
+
+// Normalizes a list of floats, where they all add up to norm
+list listNormalize(list input, float norm){
+    integer i; float s = norm/llListStatistics(LIST_STAT_SUM, input);
+    for(i=0; i<llGetListLength(input); ++i)
+        input = llListReplaceList(input, [llList2Float(input, i)*s], i, i);
+    return input;
+}
+
