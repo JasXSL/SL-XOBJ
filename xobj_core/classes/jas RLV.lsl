@@ -152,6 +152,33 @@
 #define RLVMethod$staticCamera 18		// (vec)region_pos, (rot)rotation - Forces camera to position and rot. If region_pos is 0 it clears
 #define RLVMethod$reset 19				// void - Resets the script, internal only
 
+#define RLVMethod$setWindlight 20		// Sets windlight settings. Accepts the following arguments:
+/*
+	
+	ambient 		(vec)Ambient
+	bluedensity		(vec)BlueDen
+	bluehorizon		(vec)BlueHrz
+	cloudcolor		(vec)CldColr
+	cloudcoverage	(float)Cld Cove
+	cloudoffset 	(vec)Cloud XY/Density
+	clouddetail		(vec)Cloud Detail (XY/Density)
+	cloudscale		(float)Cld Scale
+	cloudscroll		(vec)Cloud Scroll X/Cloud Scroll Y
+	fogdensity		(float)DenMult
+	fogdistance		(float)DistMult
+	hazedensity		(float)HazDen
+	hazehorizon		(float)HazHoz
+	maxaltitude		(int)MaxAlt
+	scenegamma		(float)Gamma
+	starbrightness	(float)Str.Brite
+	sunglowfocus	(float)SG.Foc
+	sunglowsize		(float)SG.Size
+	sunmooncolor	(vec)S/M Colr
+	sunmoonposition	(float)Est Ang 0.25 is midday
+
+
+*/
+
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
 #define RLVevt$cam_set 2					// (vec)pos - Raised when camera is set
@@ -175,6 +202,7 @@
 #define RLV$targUnsit(targ, override) runMethod(targ, "jas RLV", RLVMethod$unsit, [override], TNN)
 #define RLV$setCamera(targ, pos, rot) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [pos, rot], TNN)
 #define RLV$clearCamera(targ) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [], TNN)
+#define RLV$setWindlight(targ, settings) runMethod(targ, "jas RLV", RLVMethod$setWindlight, [settings], TNN)
 
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
 #define RLV$preventTP(prevent) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$preventTP, [prevent], TNN)

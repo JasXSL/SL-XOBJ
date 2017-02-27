@@ -372,6 +372,76 @@ default
 			WINDLIGHT_OVERRIDE = "";
             llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
 		}
+		
+		else if(METHOD == RLVMethod$setWindlight){
+			list allowed = [
+				"ambient", "RGB",				
+				"bluedensity", "RGB",				
+				"bluehorizon", "RGB",
+				"cloudcolor", "RGB",
+				"cloudcoverage", "",
+				"cloud", "XYD",
+				"clouddetail", "XYD",
+				"cloudscale", "",
+				"cloudscroll", "XY",				
+				"densitymultiplier", "",
+				"distancemultiplier", "",
+				"hazedensity", "",
+				"hazehorizon", "",
+				"maxaltitude", "",
+				"scenegamma", "",
+				"sunglowfocus", "",
+				"sunglowsize", "",
+				"starbrightness", "",
+				"sunmooncolorr", "RGB",
+				"sunmoonposition", ""
+			];
+			string d = method_arg(0);
+			
+			list dump;
+			
+			integer i;
+			for(i=0; i<count(allowed); i+= 2){
+				list add; string v = j(d, l2s(allowed, i));
+				
+				if(v != JSON_INVALID){
+					string type = l2s(allowed, i+1);
+					
+					// RGB
+					if(type == "RGB"){
+						vector vec = (vector)v;
+						add += "setenv_"+l2s(allowed,i)+"r:"+(string)vec.x+"=force";
+						add += "setenv_"+l2s(allowed,i)+"g:"+(string)vec.y+"=force";
+						add += "setenv_"+l2s(allowed,i)+"b:"+(string)vec.z+"=force";
+					}
+					
+					// XYD or XY
+					else if(type == "XYD" || type == "XY"){
+						vector vec = (vector)v;
+						add += "setenv_"+l2s(allowed,i)+"x:"+(string)vec.x+"=force";
+						add += "setenv_"+l2s(allowed,i)+"y:"+(string)vec.y+"=force";
+						if(type == "XYD")
+							add += "setenv_"+l2s(allowed,i)+"d:"+(string)vec.z+"=force";
+					}
+
+					// Float
+					else
+						add += "setenv_"+l2s(allowed,i)+":"+(string)((float)v)+"=force";
+					
+					if(llStringLength(implode(",",dump))+1+llStringLength(implode(",",add)) > 1000){
+						llOwnerSay("@"+implode(",",dump));
+						dump = [];
+					}
+					dump+= add;
+				}
+			}
+			
+			if(dump){
+				llOwnerSay("@"+implode(",",dump));
+			}
+		}
+		
+		
 		#endif
             
         #if RLVcfg$USE_SPRINT==1

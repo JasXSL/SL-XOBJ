@@ -95,6 +95,21 @@ timerEvent(string id, string data){
             llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
         }
     }
+	#ifdef Attached$removeIfSpawnerNotFound
+	if(id == "SC"){
+		key spawner = l2k(llGetObjectDetails(llGetKey(), [OBJECT_REZZER_KEY]), 0);
+		if(llKey2Name(spawner) == ""){
+			if(llGetAttached()){
+				if(llGetPermissions()& PERMISSION_ATTACH)
+					llDetachFromAvatar();
+				else
+					llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+			}
+			else
+				llDie();
+		}
+	}
+	#endif
 }
 
 #ifdef Attached$useOverride
@@ -168,8 +183,12 @@ default
                 P_SPLAT = nr;
             }
         )
-		
 		#endif
+		
+		#ifdef Attached$removeIfSpawnerNotFound
+		multiTimer(["SC", "", 5, TRUE]);
+		#endif
+		
     }
 	#ifdef Attached$automateMeshAnim
 	attach(key id){

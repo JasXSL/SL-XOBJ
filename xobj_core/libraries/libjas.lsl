@@ -187,21 +187,6 @@ multiTimer(list data){
 }
 
 
-// Credits to Adeon Writer
-// Updated 2012-05-12
-// Normal = normal passed from raycast
-// Axis = axis that should be pointing outwards I think
-// Example:
-/*
-list ray1 = llCastRay(llGetPos(), llGetPos()+llRot2Fwd(llGetRot())*15, [RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL, RC_DATA_FLAGS, RC_GET_NORMAL]);
-llRezObject(objname, llList2Vector(ray1, 1), ZERO_VECTOR, norm2rot(llList2Vector(ray1, 2), <0,0,1>), 1);
-*/
-/*
-rotation norm2rot(vector normal, vector axis){
-    vector left = llVecNorm(normal % axis);
-    return llAxes2Rot(left % normal, left, normal);
-}
-*/
 //Sets objects name to NAME, then says MESSAGE and sets name to its previous name.
 outputAs(string name, string message){
 	string o = llGetObjectName();

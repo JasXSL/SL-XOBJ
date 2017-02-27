@@ -34,7 +34,7 @@
 // #define Attached$onSpawn - Put any code you want to run on rez
 // #define Attached$remoteloadCommand; - Put code in this if you want to override the standard remoteload call
 // #define Attached$useOverride; - Uses listen override
-
+// #define Attached$removeIfSpawnerNotFound - Detaches if the object that spawned it is not found in the sim
 
 #define AttachedMethod$remove 0			// NULL
 
