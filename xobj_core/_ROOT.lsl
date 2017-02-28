@@ -146,6 +146,8 @@ runOmniMethod(string className, integer method, list data, string callback){
 	stdOmniCom(llGetOwner(), RUN_METHOD, className, op);
 }
 
+#define runOmniMethodOn(targ, className, method, data, callback) stdOmniCom(targ, RUN_METHOD, className, ([method, mkarr(data), llGetScriptName(), callback]))
+
 // Same as above, but is lets you limit by 96m, 20m, or 10m, reducing lag a little, tokenSender should by default be llGetOwner but can be changed if you need to AOE on another person's channel
 runLimitMethod(string tokenSender, string className, integer method, list data, string callback, float range){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
