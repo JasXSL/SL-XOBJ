@@ -84,12 +84,12 @@
 	#define RLVcfg$USE_KEEPATTACH 1
 #endif
 
-// Use RLV windlight
+// Use RLV windlight. You can use ton Footsteps to integrate the floor windlight settings.
 #ifndef RLVcfg$USE_WINDLIGHT
 	#define RLVcfg$USE_WINDLIGHT 1
 #endif
 
-// Use RLV windlight
+// Use RLV cam
 #ifndef RLVcfg$USE_CAM
 	#define RLVcfg$USE_CAM 1
 #endif

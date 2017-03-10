@@ -25,6 +25,8 @@
 // Preprocessor shortcuts
 #define AnimHandler$anim(anim, start, repDly, duration) runMethod((string)LINK_SET, "jas AnimHandler", AnimHandlerMethod$anim, ([anim, start, repDly, duration]), TNN)
 #define AnimHandler$targAnim(targ, anim, start) runMethod((string)targ, "jas AnimHandler", AnimHandlerMethod$anim, ([anim, start]), TNN)
+#define AnimHandler$targAnimFull(targ, anim, start, repDly, duration) runMethod((string)targ, "jas AnimHandler", AnimHandlerMethod$anim, ([anim, start, repDly, duration]), TNN)
+
 #define AnimHandler$remInventory(assets) runMethod((string)LINK_SET, "jas AnimHandler", AnimHandlerMethod$remInventory, [mkarr(assets)], TNN)
 #define AnimHandler$startSound(sound, vol, type, duration) runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [sound, vol, type, duration], TNN)
 #define AnimHandler$stopSound() runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [], TNN)
