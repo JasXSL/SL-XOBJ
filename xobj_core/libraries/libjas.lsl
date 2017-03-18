@@ -322,3 +322,28 @@ list listNormalize(list input, float norm){
     return input;
 }
 
+// Originally by Nexii Malthus - http://wiki.secondlife.com/wiki/Geometric
+float distFromLine(vector origin,vector dir,vector point){
+    vector k = ( point - origin ) % llVecNorm(origin-dir);
+    return llSqrt( k * k );
+}
+
+// Original math by Nexii Malthus - http://wiki.secondlife.com/wiki/Geometric
+integer standingInBeam(vector O, vector D, vector A, integer ignoreZ, float width){
+    if(ignoreZ){O.z = 0;D.z = 0;A.z = 0;}
+    vector d = llVecNorm(O-D);
+    vector k = ( A - O ) % d;
+    float xy = llSqrt( k * k );
+    if(xy > width)
+        return FALSE;
+    vector pointOnLine = ((O-A)-((O-A)*d)*d)+A;
+    float dist = llVecDist(O, D);
+    float pointToA = llVecDist(pointOnLine, O);
+    float pointToB = llVecDist(pointOnLine, D);
+    if(pointToA > dist || pointToB > dist)
+        return FALSE;    
+    return TRUE;
+}
+
+
+
