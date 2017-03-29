@@ -215,6 +215,7 @@ list toggleMask(string anim, integer useMask){
 	
 	integer flags = l2i(MAIN_CACHE, pos+3);
 	integer mode = PRIM_ALPHA_MODE_MASK;
+	
 	if(flags&MaskAnimFlag$USE_EMISSIVE && !useMask)
 		mode = PRIM_ALPHA_MODE_EMISSIVE;
 
@@ -228,7 +229,7 @@ list toggleMask(string anim, integer useMask){
 		integer i;
 		for(i=0; i<llGetListLength(prims); i++){
 			if(useMask){
-				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, "11a77942-f739-544f-1c3a-cd00f4b911db", <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 1, PRIM_ALPHA_MODE, ALL_SIDES, mode, 100];
+				out+= [PRIM_LINK_TARGET, llList2Integer(prims, i), PRIM_TEXTURE, ALL_SIDES, TEXTURE_TRANSPARENT, <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, <1,1,1>, 1, PRIM_ALPHA_MODE, ALL_SIDES, mode, 100];
 			}else{
 				integer m = mode;
 				if(blockGetAlphaMode(block) != PRIM_ALPHA_MODE_MASK)

@@ -5,6 +5,11 @@
 
 #define outputSprint() llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot])
 
+#ifdef RLVcfg$USER_EVENTS
+	#define USE_EVENTS
+	#define onEvt RLVcfg$USER_EVENTS
+#endif
+
 // Conf
 string CURRENT_FOLDER;
 string SUBFOLDER;
@@ -134,8 +139,11 @@ timerEvent(string id, string data){
         if(pstatus&AGENT_ALWAYS_RUN && pstatus&AGENT_WALKING){
             if(sprint==RLVcfg$limitSprint){
                 multiTimer([TIMER_SPRINT_FADE]);
-				#if RLVcfg$sprintFadeOut==1
-                llSetLinkAlpha(sprintPrim, 1, ALL_SIDES); 
+				#ifdef RLVcfg$sprintFadeOut
+					#ifdef RLVCfg$sprintPrimConf
+						llSetLinkPrimitiveParams(sprintPrim, RLVCfg$sprintPrimConf);
+					#endif
+					llSetLinkAlpha(sprintPrim, 1, RLVcfg$sprintFace); 
 				#endif
             }
             if(~BFL&BFL_SPRINTING)multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
@@ -144,42 +152,50 @@ timerEvent(string id, string data){
         else{
             if(BFL&BFL_SPRINT_STARTED){
                 multiTimer([TIMER_SPRINT_QUICK]);
-                multiTimer([TIMER_SPRINT_START_REGEN, "", 3, FALSE]);
+                multiTimer([TIMER_SPRINT_START_REGEN, "", RLVCfg$sprintGracePeriod, FALSE]);
 				BFL = BFL&~BFL_SPRINT_STARTED;
             }
             BFL = BFL&~BFL_SPRINTING;
         }
-    }else if(id == TIMER_SPRINT_QUICK){
+    }
+	
+	else if(id == TIMER_SPRINT_QUICK){
         if(BFL&BFL_SPRINTING){
             damageSprint(.1*sprintFadeModifier);
 			return;
-        }else{
-            if(BFL&BFL_RUN_LOCKED){
-                llOwnerSay("@alwaysrun=y,temprun=y");
-                BFL = BFL&~BFL_RUN_LOCKED;
-            }
-            sprint+=.025*sprintRegenModifier;
-            if(sprint>=RLVcfg$limitSprint){
-                multiTimer([id]);
-				#if RLVcfg$sprintFadeOut==1
-                multiTimer([TIMER_SPRINT_FADE, 1., .1, TRUE]);
-				#endif
-            }
         }
+        
+		if(BFL&BFL_RUN_LOCKED){
+			llOwnerSay("@alwaysrun=y,temprun=y");
+			BFL = BFL&~BFL_RUN_LOCKED;
+		}
+		
+		sprint+=.025*sprintRegenModifier;
+		if(sprint>=RLVcfg$limitSprint){
+			multiTimer([id]);
+			#ifdef RLVcfg$sprintFadeOut
+			multiTimer([TIMER_SPRINT_FADE, 1., .1, TRUE]);
+			#endif
+		}
+	
         if(sprint<0)sprint = 0;
         else if(sprint > RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
         outputSprint();
-    }else if(id == TIMER_SPRINT_START_REGEN){
+    }
+	
+	else if(id == TIMER_SPRINT_START_REGEN){
         multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
     }
-	#if RLVcfg$sprintFadeOut==1
+	
+	#ifdef RLVcfg$sprintFadeOut
 	else if(id == TIMER_SPRINT_FADE){
-        float f = (float)data-.05;
+		float f = 0;
+		if(RLVcfg$sprintFadeOut > 0)
+			f = (float)data-(.05/RLVcfg$sprintFadeOut);
+			
+        llSetLinkAlpha(sprintPrim, f, ALL_SIDES);
+        multiTimer([TIMER_SPRINT_FADE, f, .1, FALSE]);
         if(f <0)multiTimer([id]);
-        else{
-            llSetLinkAlpha(sprintPrim, f, ALL_SIDES);
-            multiTimer([TIMER_SPRINT_FADE, f, .1, FALSE]);
-        }
     }
 	#endif
 	else
@@ -237,9 +253,11 @@ default
         links_each(num, ln, {
             if(ln == RLVcfg$sprintName){sprintPrim = num;}
         })
-			#if RLVcfg$sprintFadeOut==1
+		
+		#ifdef RLVcfg$sprintFadeOut
 			llSetLinkAlpha(sprintPrim, 0, ALL_SIDES);
-			#endif
+		#endif
+		
 		#endif 
 		#if RLVcfg$USE_CAM==1
 		if(llGetAttached())
@@ -473,11 +491,13 @@ default
 	#ifndef RLVcfg$NO_RESTRICT	
     }
 	#endif
+	
+	#if RLVcfg$USE_SPRINT==1
     if(METHOD == RLVMethod$setSprintPercent){
-        #if RLVcfg$USE_SPRINT==1
         sprint = RLVcfg$limitSprint*(float)method_arg(0);
-        #endif
-    }
+		outputSprint();
+	}
+	#endif
 	
     
     #define LM_BOTTOM 

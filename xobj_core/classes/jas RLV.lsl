@@ -47,6 +47,8 @@
 	
 #endif
 
+
+// #define RLVcfg$USER_EVENTS <- Ex: #define RLVcfg$USER_EVENTS onUsrEvt to raise the onUserEvt function when an event is received
 // #define RLVcfg$NO_RESTRICT <- Makes all RLV methods public. Otherwise they are limited to owner
 
 // Use the sprint limit system
@@ -76,6 +78,12 @@
 	#ifndef RLVcfg$sprintFadeOut
 		#define RLVcfg$sprintFadeOut 1
 	#endif
+	
+	#ifndef RLVCfg$sprintGracePeriod
+		#define RLVCfg$sprintGracePeriod 3
+	#endif
+	
+	// #define RLVCfg$sprintPrimConf - Use with an llSetPrimitiveParams array for SHOW settings. Does not work with fade out
 	
 #endif
 
@@ -211,6 +219,7 @@
 
 #define RLV$sitTargOn(targ, uuid, prevent_unsit) runMethod((string)targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$unsitTarg(targ, override) runMethod((string)targ, "jas RLV", RLVMethod$unsit, [override], TNN)
+#define RLV$setSprintPercent(targ, perc) runMethod((str)targ, "jas RLV", RLVMethod$setSprintPercent, [perc], TNN)
 
 #define RLV$reset() runMethod((str)LINK_ROOT, "jas RLV", RLVMethod$reset, [], TNN)
 
