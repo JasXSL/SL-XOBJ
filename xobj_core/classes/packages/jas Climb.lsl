@@ -23,6 +23,7 @@ integer BFL;
 #define BFL_CLIMBING 0x20
 // Prevents messages to SC more than every 0.4 sec
 #define BFL_LAST_UPDATE 0x40
+#define BFL_GRACE_PERIOD 0x80		// Grace period for dismount
 
 // Used in timer_move
 integer BFL_CACHE;
@@ -35,6 +36,8 @@ integer BFL_CACHE;
 #define TIMER_INI "c"
 // Can send a new translate request
 #define TIMER_CD "d"
+// Blocks dismount through E
+#define TIMER_GRACE "e"
 
 key CUBE;
 key ladder;
@@ -130,13 +133,16 @@ mount(){
     ]));
 	
 	// Wait a little while to initiate
-    multiTimer([TIMER_MOVE, "", 1.5, FALSE]);
+    multiTimer([TIMER_MOVE, "", 1, FALSE]);
     
     if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0,0);
     multiTimer([TIMER_INI, 0, 3, FALSE]);
     BFL = BFL|BF_CLIMB_INI;
     BFL = BFL|BFL_CLIMBING;
     raiseEvent(ClimbEvt$start, mkarr(([(string)ladder, onStart])));
+	
+	BFL = BFL|BFL_GRACE_PERIOD;
+	multiTimer([TIMER_GRACE, "", 1.5, FALSE]);
 }
 
 vector offset2global(vector offset){
@@ -195,7 +201,7 @@ timerEvent(string id, string data){
             }
             
 			// Move
-            vector point = pointBetween(nodea, nodeb, maxdist*perc);
+            vector point = vecBetween(nodea, nodeb, maxdist*perc);
             translateCubePos(point);
 			
         }
@@ -236,6 +242,8 @@ timerEvent(string id, string data){
 	else if(id == TIMER_CD){
 		BFL = BFL&~BFL_LAST_UPDATE;
 	}
+	else if(id == TIMER_GRACE)
+		BFL = BFL&~BFL_GRACE_PERIOD;
 	
 }
 
@@ -319,17 +327,19 @@ default
     */
         
 	if(METHOD == ClimbMethod$stop){
-		if(BFL&BFL_CLIMBING) dismount(FALSE);
+		if(BFL&BFL_CLIMBING && (~BFL&BFL_GRACE_PERIOD || ~llGetAgentInfo(llGetOwner()) & AGENT_SITTING ))
+			dismount(FALSE);
 	}
     if(id == ""){
 		
         if(METHOD == ClimbMethod$start){
-            if(BFL&BFL_CLIMBING){
-                dismount(FALSE);
+			if(BFL&BFL_CLIMBING){
+                if(~BFL&BFL_GRACE_PERIOD)
+					dismount(FALSE);
 				debugUncommon("Dismount");
                 return;
             }
-
+			
 			debugUncommon("Climb start: "+PARAMS);
             ladder = tr(method_arg(0));
             rot = (rotation)method_arg(1);
@@ -345,7 +355,8 @@ default
 			onEnd = tr(method_arg(10)); 
 			
 
-            if(CLIMBSPEED<=0)CLIMBSPEED = ClimbCfg$defaultSpeed;
+            if(CLIMBSPEED<=0)
+				CLIMBSPEED = ClimbCfg$defaultSpeed;
             list dta = llGetObjectDetails(ladder, [OBJECT_POS, OBJECT_ROT]);
             ladder_root_pos = llList2Vector(dta,0);
             ladder_root_rot = llList2Rot(dta, 1);
