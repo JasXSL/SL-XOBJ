@@ -204,7 +204,12 @@ link_message(integer link, integer nr, string s, key id){
 		int _mnl = llStringLength(_mname);
 		// Make sure this script is the receiver
 		#ifndef SCRIPT_ALIASES 
-		if(llGetSubString(s,0,_mnl) != _mname+"["){
+		if(
+			llGetSubString(s,0,_mnl) != _mname+"["
+			#ifdef SCRIPT_IS_ROOT
+				&& llGetSubString(s,0,8) != "__ROOTS__"
+			#endif
+		){
 			return;
 		}
 		#else

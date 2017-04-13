@@ -78,6 +78,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 
 // Global events
+
 // These are events that are project-wide, module events and methods can NOT be negative integers. As they are reserved for project-wide ones.
 #define evt$SCRIPT_INIT -1		// NULL - Should be raised when a module is initialized
 #define evt$TOUCH_START -2		// [(int)prim, (key)id] - Raised when an agent clicks the prim
@@ -103,8 +104,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 
 // Standard methods
-// These are standard methods used by package modules. Do not define module-specific methods as negative numbers.
-#define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root. Note that this is only sent when db2 return "0" for asynchronous
+// These are standard methods used by package modules. Do not define module-specific methods as negative numbers between -1 and -1000. Use -1000 if you need project wide generic STD Methods
+#define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root / DB3 table has been created. Note that this is only sent when db2 return "0" for asynchronous
 
 
 // General methods.
@@ -121,6 +122,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", ""); llListen(0, "", "", "");
 #endif
 
+
+// NOTE: you can target all scripts with SCRIPT_IS_ROOT by using the recipient "__ROOTS__". Useful for things that need to be updated in ALL spawned items in a region.
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdOmniCom(sender, methodType, className, data) llRegionSay(playerChan(sender), getToken(llGetKey(), sender, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
