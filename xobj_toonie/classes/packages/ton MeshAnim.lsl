@@ -182,6 +182,8 @@ onEvt(string script, integer evt, list data){
 		runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
 	}
 }
+#else
+#define onEvt(script, evt, data)
 #endif
 
 sens(integer inrange){
