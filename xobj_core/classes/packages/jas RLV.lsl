@@ -355,9 +355,11 @@ default
 		if(METHOD == RLVMethod$cubeFlush){
 			cubeTask([]);
         }else if(METHOD == RLVMethod$sitOn){
-            string add = "";
+            
+			string add = ",unsit=y";
             if((integer)method_arg(1))add = ",unsit=n";
             llOwnerSay("@sit:"+method_arg(0)+"=force"+add);
+			
         }else if(METHOD == RLVMethod$unsit){
             string add = "";
             if((integer)method_arg(0))add="unsit=y,";
@@ -380,15 +382,31 @@ default
 
 		#if RLVcfg$USE_WINDLIGHT==1
 		if(METHOD == RLVMethod$windlightPreset){
+		
 			integer override = (int)method_arg(1);
 			string wl = method_arg(0);
-			if(override)WINDLIGHT_OVERRIDE = wl;
-			else WINDLIGHT = wl;
-            llOwnerSay("@setenv_preset:"+wl+"=force");
+			if(override)
+				WINDLIGHT_OVERRIDE = wl;
+			else 
+				WINDLIGHT = wl;
+			
+			if(WINDLIGHT_OVERRIDE == "NULL")
+				return;
+			
+			if(WINDLIGHT_OVERRIDE == "" || override){
+				
+				llOwnerSay("@setenv_preset:"+wl+"=force");
+				raiseEvent(RLVevt$windlight_override, SENDER_SCRIPT);
+			
+			}
+			
         }
         else if(METHOD == RLVMethod$resetWindlight){
+		
 			WINDLIGHT_OVERRIDE = "";
             llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
+			raiseEvent(RLVevt$windlight_reset, SENDER_SCRIPT);
+			
 		}
 		
 		else if(METHOD == RLVMethod$setWindlight){
