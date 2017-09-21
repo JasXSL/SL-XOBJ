@@ -2,12 +2,11 @@
 // Uncomment this if you need root to accept events. You'll want to create an onEvt(string script, integer evt, string data) function
 #define USE_EVENTS
 
-// This lets you use the db2$get and db2$set functions - See xobj_core/_DB2.lsl
-#define USE_SHARED ["*"]
-
 // You can uncomment this if you want to enable debugging. Debug levels are DEBUG_ALL, DEBUG_COMMON, DEBUG_UNCOMMON, DEBUG_RARE and DEBUG_USER
 // You can also use the qd("Message") function to quickly override debug settings
 //#define DEBUG DEBUG_COMMON
+
+// REPLACE THIS WITH YOUR PROJECT CORE FILE
 #include "template/_core.lsl"
  
 // Named timers
@@ -16,7 +15,7 @@ timerEvent(string id, string data){
 }
 
 // When event is received
-onEvt(string script, integer evt, string data){
+onEvt(string script, integer evt, list data){
 	
 }
 
