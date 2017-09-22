@@ -13,11 +13,12 @@ xobj supports the following features:
 
 **Learn how to use it on [the XOBJ Github-Wiki](https://github.com/JasXSL/SL-XOBJ/wiki)!**
 
-#Update 0.3.0
+# Update 0.3.0
 DB2 has been replaced with DB3 and I have adopted a new philosophy on shared vars. DB3 will consume less memory and automatically preserve tables between script resets. But it runs a little slower and requires you to set up the tables in #ROOT.
 
 
-#Install
+# Install
+
 1. Create a folder for SL libraries on your drive (example C:\LSL)
 2. Download XOBJ as zip and extract the contents of the master folder to your SL libraries directory (C:\LSL). The important part is that you now have C:\LSL\xobj_core & C:\LSL\xobj_toonie folders. If you are familiar with git, you can also git clone and add these folders as symlinks in your libraries directory.
 3. Open a script window in your Firestorm viewer. Click the cogs icon at the top and check Enable LSL preprocessor. Then check **Script optimizer** and **#includes from local disk**. The other checkboxes are optional.
