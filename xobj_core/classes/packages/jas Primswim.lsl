@@ -127,8 +127,12 @@ updateAnimstate(){
     integer bf_stop;
 	integer sitting = llGetAgentInfo(llGetOwner())&AGENT_SITTING;
 	integer forceStop = checkForceStop();
+	integer override;
+	#ifdef USE_SCRIPT_RUNNING_CHECK
+		override = !scriptRunning();
+	#endif
 	
-    if(BFL&BFL_IN_WATER && !sitting && !forceStop){
+    if(BFL&BFL_IN_WATER && !sitting && !forceStop && !override){
 		if(~BFA&BFA_IDLE){
 			bf_start = bf_start|BFA_IDLE;
 			BFA = BFA|BFA_IDLE;
@@ -138,7 +142,7 @@ updateAnimstate(){
         BFA = BFA&~BFA_IDLE;
     }
         
-    if(BFL&BFL_SWIMMING && !sitting && !forceStop){
+    if(BFL&BFL_SWIMMING && !sitting && !forceStop && !override){
 		if(~BFA&BFA_ACTIVE){
 			bf_start = bf_start|BFA_ACTIVE;
 			BFA = BFA|BFA_ACTIVE;
@@ -164,6 +168,11 @@ updateAnimstate(){
 
 
 enterWater(){
+	#ifdef USE_SCRIPT_RUNNING_CHECK
+		if(!scriptRunning())
+			return;
+	#endif
+
     BFL = BFL|BFL_IN_WATER;
     BFL=BFL&~BFL_FEET_SUBMERGED;
     setBuoyancy();
@@ -184,6 +193,8 @@ enterWater(){
 }
 
 exitWater(){
+	
+	
     // Just exited water
     CONTROL = 0;
     multiTimer([TIMER_SWIMSTROKE]);
@@ -215,6 +226,10 @@ exitWater(){
 }
 #if PrimswimCfg$USE_WINDLIGHT==1
 toggleCam(integer submerged){
+	#ifdef USE_SCRIPT_RUNNING_CHECK
+		if(!scriptRunning())
+			return;
+	#endif
 	if(!isset(wl_set))return;
     if(submerged){
         BFL = BFL|BFL_CAM_UNDER_WATER;
@@ -245,7 +260,14 @@ vector preCallPos; // What post was last TIMER_SWIM_CHECK
 float pp;
 
 timerEvent(string id, string data){
+	
     if(id == TIMER_SWIM_CHECK){
+		#ifdef USE_SCRIPT_RUNNING_CHECK
+			if(!scriptRunning()){
+				return;
+			}
+		#endif
+	
 		integer stopped = checkForceStop();
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;

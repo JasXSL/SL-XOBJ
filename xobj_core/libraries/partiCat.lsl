@@ -56,13 +56,13 @@ string escapeList(list input){
         integer t = llGetListEntryType(input,i);
         string v = llList2String(input,i);
         if(t == TYPE_STRING)v="<"+v+">";
-        else if(t == TYPE_FLOAT)v = round((float)v,2);
+        else if(t == TYPE_FLOAT)v = roundTo((float)v,2);
         else if(t == TYPE_VECTOR){
             vector ve = llList2Vector(input, i);
-            v = "<"+round(ve.x,2)+","+round(ve.y,2)+","+round(ve.z,2)+">";
+            v = "<"+roundTo(ve.x,2)+","+roundTo(ve.y,2)+","+roundTo(ve.z,2)+">";
         }else if(t == TYPE_ROTATION){
             rotation ve = llList2Rot(input, i);
-            v = "<"+round(ve.x,2)+","+round(ve.y,2)+","+round(ve.z,2)+","+round(ve.s,2)+">";
+            v = "<"+roundTo(ve.x,2)+","+roundTo(ve.y,2)+","+roundTo(ve.z,2)+","+roundTo(ve.s,2)+">";
         }
         op+=[(string)t+v];
     }

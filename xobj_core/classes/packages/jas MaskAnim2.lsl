@@ -12,7 +12,6 @@
 // Preprocessor definitions to spead up reading
 	// Get nr of entries in a block
 #define blockGetTexture(block) llList2Key(block, 1)
-	// Get nr of entries in a block
 #define blockGetAlphaMode(block) l2i(block, 2)
 #define blockGetAlpha(block) l2f(block, 3)
 #define blockGetGlow(block) l2f(block, 4)
@@ -153,20 +152,23 @@ refreshAnims(integer restart){
 		stopAll();
 	}
 	
+	// Ignore because this is already playing and not a restart
 	if((top == CURRENT_ANIM && !restart) || top == "")return;
 	
 	
-
+	// Restart
 	if(top == CURRENT_ANIM){
 		// Just reset the pointers
 		list cur = OBJ_CACHE; integer slot;
 		while(cur){
 			blockSplice(cur, block);
-			integer a = llList2Integer(block, 1)&~1023;
+			// Replace start position
+			integer a = llList2Integer(block, 0)&~1023;
 			OBJ_CACHE = llListReplaceList(OBJ_CACHE, [a], slot, slot);
 			slot+=blockGetSize(block);
 		}
 	}
+	// New anim
 	else{
 		
 		CURRENT_ANIM = top;
@@ -425,7 +427,7 @@ default
 				float alpha = blockGetAlpha(block);
 				
 				//set+= [linkAlpha(prim, 1, side)];
-				set+= [PRIM_LINK_TARGET, prim, PRIM_COLOR, side, <1,1,1>, alpha]; //, PRIM_ALPHA_MODE, side, PRIM_ALPHA_MODE_MASK, 100
+				set+= [PRIM_LINK_TARGET, prim, PRIM_COLOR, side, <1,1,1>, alpha];
 				if(glow)
 					set+= [PRIM_GLOW, side, glow];
 				

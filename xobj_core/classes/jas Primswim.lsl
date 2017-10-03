@@ -1,9 +1,10 @@
 /*
 
 	For primswim to work. You also need the following modules installed for full effect:
-	- st RLV, with windlight and sprint enabled
-	- st Animhandler
-	- st PrimswimAux
+	- A #ROOT script with control permissions
+	- jas RLV, (for windlight and sprint)
+	- jas Animhandler
+	- jas PrimswimAux
 
 	You will also need 2 animations, swim and swim_idle
 	1. Create a new script, name it "jas Primswim"
@@ -22,12 +23,27 @@
 	4. Compile.
 	5. Create a new prim in world, leave it as a .5 x .5 x .5 cube.
 	6. Create a new script in it, name it whatever you want.
-	7. Name your prim exactly: Particat
+	7. Name your prim exactly: partiCat
 	8. Open the script and paste all content from xobj_core/libraries/partiCatCube.lsl
 	9. Compile and pick up.
 	10. Make sure it's got copy permissions set.
 	11. Drop it in the prim inventory of the same prim you put st PrimswimAux in
 	
+	Now you'll need 2 swimming animation. Name them swim and swim_idle.
+	Swim will be played while swimming in a direction, swim_idle will be while you're idle in the water
+	
+	Your #ROOT script can how handle permissions via events:
+	onEvt(string script, integer evt, list data){
+		if(script == "jas Primswim" && evt == PrimswimEvt$onWaterEnter){
+			STATUS_CONTROLS = CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_UP|CONTROL_DOWN; 
+			takeControls();
+		}
+		else if(script == "jas Primswim" && evt == PrimswimEvt$onWaterExit){
+			STATUS_CONTROLS = 0;
+			takeControls();
+		}
+	}
+		
 	Hopefully everything should work now.
 	
 	
