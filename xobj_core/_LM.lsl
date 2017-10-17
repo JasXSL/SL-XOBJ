@@ -219,9 +219,7 @@ link_message(integer link, integer nr, string s, key id){
 		_mnl = llStringLength(_n);
 		#endif
 		
-		
-		// 
-		list _s_DATA = llJson2List(llGetSubString(s, _mnl, -1));
+		list _s_DATA = llJson2List(llGetSubString(s, llSubStringIndex(s, "["), -1));
 		integer METHOD = llList2Integer(_s_DATA, 0);
 		list PARAMS = llJson2List(llList2String(_s_DATA, 1));
 		string SENDER_SCRIPT = llList2String(_s_DATA, 2);

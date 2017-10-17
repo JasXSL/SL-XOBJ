@@ -109,7 +109,7 @@
 
 // RLV commands to send upon initialization
 #ifndef RLVcfg$onInit
-	#define RLVcfg$onInit "fly=n,camdistmax:10=y,tploc=n,tplure=n,setenv_preset:[TOR] NIGHT - Nocturne=force"           // RLV to be run on HUD attach
+	#define RLVcfg$onInit "setenv_daytime=-1"           // RLV to be run on HUD attach
 #endif
 
 // RLV commands to send a few sec after initialization
@@ -119,12 +119,7 @@
 
 // RLV commands to send upon HUD detach
 #ifndef RLVcfg$onRemove
-	#define RLVcfg$onRemove "clear"     // RLV to be run on HUD detach
-#endif
-
-// Default windlight setting
-#ifndef RLVcfg$defaultWindlight
-	#define RLVcfg$defaultWindlight "[TOR] NIGHT - Nocturne"
+	#define RLVcfg$onRemove "clear,setenv_daytime=-1"     // RLV to be run on HUD detach
 #endif
 
 // Default clothing layers that can be set
