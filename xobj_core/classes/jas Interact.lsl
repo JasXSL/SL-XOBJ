@@ -50,11 +50,12 @@
 #define Interact$TASK_FOOTSTEPS "tFS"		// 
 
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
-#define InteractEvt$onInteract 2			// Not built in by default, you can raise this manually if you want or define InteractConf$raiseEvent
+#define InteractEvt$onInteract 2			// (key)targ OR custom - Not built in by default, you can raise this manually if you want or define InteractConf$raiseEvent
 
 // * Implemented by default. Though you might need to install a module for it.
 
-#define InteractMethod$override 1			// (str)text - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
+#define InteractMethod$override 1			// (str)text, (int)flags - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
+	#define Interact$OF_AUTOREMOVE 0x1			// Auto removes the override if the object that called the override is not found
 #define InteractMethod$onClick 2			// (str)id, $list_actions - id is a unique identifier for your event used in removing, $list_actions is a string same as the Interact$TASK you'd expect. Only passing id unbinds
 
 // #define InteractConf$usePrimSwim			// Define to use the primswim "exit water" label. onInteract receives "_PRIMSWIM_CLIMB_" from this
@@ -66,7 +67,7 @@
 // #define InteractConf$soundOnSuccess (str)sound // Triggers a sound if interact is successful
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
-#define Interact$override(targ, text, callback) runMethod((string)targ, "jas Interact", InteractMethod$override, [text], callback)
+#define Interact$override(targ, text, callback, flags) runMethod((string)targ, "jas Interact", InteractMethod$override, [text, flags], callback)
 #define Interact$onClick(targ, id, list_actions) runMethod((string)targ, "jas Interact", InteractMethod$onClick, [id, list_actions], TNN)
 #define Interact$offClick(targ, id) runMethod((string)targ, "jas Interact", InteractMethod$onClick, [id], TNN)
 

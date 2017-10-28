@@ -20,7 +20,7 @@ key targ;
 key real_key;						// If ROOT is used, then this is the sublink. You can use this global in onInteract
 integer held;
 
-list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB]
+list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB, (int)flags]
 list ON_INTERACT = [];				// (str)id, (str)datastring - Stuff to be run on interact
 
 
@@ -180,6 +180,9 @@ timerEvent(string id, string data){
 				BFL = BFL|BFL_OVERRIDE_DISPLAYED;
 				onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
 			}
+			if(l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == ""){
+				OVERRIDE = [];
+			}
 		}
 		else if( llGetPermissions()&PERMISSION_TRACK_CAMERA){
             integer ainfo = llGetAgentInfo(llGetOwner());
@@ -191,9 +194,47 @@ timerEvent(string id, string data){
                 if(ainfo&AGENT_MOUSELOOK){
                     start = llGetCameraPos();
                 }else{
-                    vector ascale = llGetAgentSize(llGetOwner());
-                    start = llGetPos()+<0,0,ascale.z*.25>;
+                    vector apos = prPos(llGetOwner());
+					rotation arot = prRot(llGetOwner());
+					vector cpos = llGetCameraPos();
+					rotation crot = llGetCameraRot();
+					vector cV = llRot2Euler(crot);
+					vector aV = llRot2Euler(arot);
+					
+					// Prevents picking up items behind you
+					if(llFabs(cV.z-aV.z) > PI_BY_TWO){
+						return;
+					}
+					// We can use cpos if camera is in front of avatar
+					start = cpos;
+					
+					// If camera is behind the avatar. Then we must calculate where the avatar is and cast the ray from there
+					vector temp = (cpos-apos)/arot; 
+					if(llFabs(llAtan2(temp.y,temp.x))>PI_BY_TWO){
+					
+						// Owner Position
+						vector C = apos;
+						// Owner Fwd (Z rotation only) ( aV = llRot2Euler( arot ); )
+						vector B = llRot2Fwd(llEuler2Rot(<0,0,aV.z>));
+						// Camera position
+						vector A = cpos;
+						// Camera fwd
+						vector av = llRot2Fwd(crot);
+						
+						// Prevent division by 0
+						if(B == av)
+							return;
+							
+						// Calculation
+						start = (C-A)*B / (av*B) * av + A;
+						
+						
+					}
+						
+					
+                    //start = llGetPos()+<0,0,ascale.z*.25>;
                 }
+				
 				list ray = llCastRay(start, start+fwd, []);
     
                 if(llList2Integer(ray,-1) > 0){
@@ -286,8 +327,9 @@ default
 			
 		if(method_arg(0) == "")
 			OVERRIDE = [];
-		else
-			OVERRIDE = [method_arg(0), id, SENDER_SCRIPT, CB];
+		else{
+			OVERRIDE = [method_arg(0), id, SENDER_SCRIPT, CB, l2i(PARAMS, 1)];
+		}
 		
 		return;
 	}
