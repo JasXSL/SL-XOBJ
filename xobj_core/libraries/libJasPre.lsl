@@ -122,7 +122,13 @@ list bitArrToList(integer n, integer bytesize){
 
 #define setFlag(bitfield, flag) bitfield = bitfield|flag
 #define unsetFlag(bitfield, flag) bitfield = bitfield&~flag
-	
+
+// Debug outputs all bits set in flags
+#define debugBitSplit(flags) \
+	integer i; for(i=0; i<32; ++i){ \
+		if(flags&(int)llPow(2, i)){ \
+			qd((str)flags+" Has bit: "+(str)((int)(llPow(2,i)))+" [0x"+bits2nybbles((int)llPow(2,i))+"]"); \
+	}}
 	
 // STRING //
 // Quickly combine a list into a string
@@ -132,8 +138,13 @@ list bitArrToList(integer n, integer bytesize){
 	#define trim(input) tr(input)
 // Check if a string is not "" or JSON_INVALID
 	#define isset(input) ((string)input!="" && (string)input!=JSON_INVALID)
-	
 	#define algo(math, vars) mathToFloat(math, 0, vars)
+	// Returns string length
+	#define strlen(input) llStringLength(input)
+	// Returns true if string starts with
+	#define startsWith(input, check) (llGetSubString(input, 0, strlen(check)-1) == check)
+	// Returns the input characters after begins string length
+	#define strAfter(input, begins) llGetSubString(input, strlen(begins), -1)
 	
 	
 	

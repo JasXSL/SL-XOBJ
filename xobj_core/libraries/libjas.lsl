@@ -284,8 +284,7 @@ string vecComp(vector input, integer accuracy){
     return "<"+llDumpList2String(mpo, ",")+">";
 }
 // Vec is the vector of the target to look at
-float Vector2Avatar(vector vec)
-{
+float Vector2Avatar(vector vec){
     vec = vec-llGetPos();
     vector fwd = vec * <0.0, 0.0, -llSin(PI_BY_TWO * 0.5), llCos(PI_BY_TWO * 0.5)>;
     fwd.z = 0.0;
@@ -329,6 +328,9 @@ float distFromLine(vector origin,vector dir,vector point){
 }
 
 // Original math by Nexii Malthus - http://wiki.secondlife.com/wiki/Geometric
+// O is origin
+// D is end pont
+// A is avatar position
 integer standingInBeam(vector O, vector D, vector A, integer ignoreZ, float width){
     if(ignoreZ){O.z = 0;D.z = 0;A.z = 0;}
     vector d = llVecNorm(O-D);
@@ -344,6 +346,21 @@ integer standingInBeam(vector O, vector D, vector A, integer ignoreZ, float widt
         return FALSE;    
     return TRUE;
 }
+// Line and line intersection point
+vector gLLxX( vector A, vector B, vector C, vector D ){
+    vector b = B-A; vector d = D-C;
+    float dotperp = b.x*d.y - b.y*d.x;
+    if (dotperp == 0) return <-1,-1,-1>;
+    vector c = C-A;
+    float t = (c.x*d.y - c.y*d.x) / dotperp;
+    return <A.x + t*b.x, A.y + t*b.y, 0>;}
 
-
-
+// Bits to hex from http://wiki.secondlife.com/wiki/Efficient_Hex
+string bits2nybbles(integer bits){
+    integer lsn; // least significant nybble
+    string nybbles = "";
+    do
+        nybbles = llGetSubString("0123456789ABCDEF", lsn = (bits & 0xF), lsn) + nybbles;
+    while (bits = (0xfffFFFF & (bits >> 4)));
+    return nybbles;
+}
