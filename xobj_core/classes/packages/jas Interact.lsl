@@ -237,7 +237,7 @@ timerEvent(string id, string data){
 				
 				list ray = llCastRay(start, start+fwd, []);
     
-                if(llList2Integer(ray,-1) > 0){
+                if(llList2Integer(ray,-1) > 0 && llVecDist(llGetPos(), l2v(ray, 1)) < 2){
 					
 					key k = llList2Key(ray,0);
 					
