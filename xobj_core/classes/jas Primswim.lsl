@@ -59,8 +59,8 @@
 	
 */
 
-#define PrimswimMethod$airpockets 1			// airpocket1, airpocket2...
-
+#define PrimswimMethod$airpockets 1				// airpocket1, airpocket2...
+#define PrimswimMethod$swimSpeedMultiplier 2	// (float)speed | Allows you to swim faster or slower. 1 is default, higher is faster.
 
 // Includes
 #ifndef PrimswimCfg$USE_PARTICAT
@@ -70,11 +70,13 @@
 	#define PrimswimCfg$USE_WINDLIGHT 1		// Use particles (requires particat setup)
 #endif
 
-// Swim defaults
+// Timer tick speed
 #ifndef PrimswimCfg$maxSpeed
+	// While you are close to water
 	#define PrimswimCfg$maxSpeed .1
 #endif
 #ifndef PrimswimCfg$minSpeed
+	// While you are not close to water
 	#define PrimswimCfg$minSpeed 5
 #endif
 
@@ -128,6 +130,7 @@
 
 
 #define Primswim$airpockets(airpockets) runMethod((string)LINK_ROOT, "jas Primswim", PrimswimMethod$airpockets, airpockets, TNN)
+#define Primswim$swimSpeedMultiplier(targ, multiplier) runMethod((string)(targ), "jas Primswim", PrimswimMethod$swimSpeedMultiplier, [multiplier], TNN)
 
 // events raised
 #define PrimswimEvt$onWaterEnter 1

@@ -2,13 +2,17 @@
 #include "xobj_core/classes/jas Interact.lsl"
 #include "xobj_core/classes/jas RLV.lsl"
 #include "xobj_core/classes/jas Climb.lsl"
-  
+
+// TWEAKABLE VALUES  
 // List of additional (string)keys to allow
 list additionalAllow;
+integer ALLOW_ALL_AGENTS;				// Makes all agents use a CUSTOM type interact, regardless of additionalAllow
+
 integer BFL;
 #define BFL_RECENT_CLICK 1      		// Recently interacted
 #define BFL_OVERRIDE_DISPLAYED 0x2		// Override has been shown
 #define BFL_PRIMSWIM_LEDGE 0x4			// Requires InteractConf$usePrimSwim set. Shows a message if you're at a ledge you can climb out from
+
 
 #define TIMER_SEEK "a"
 #define TIMER_RECENT_CLICK "c"
@@ -96,7 +100,7 @@ onEvt(string script, integer evt, list data){
 			}
 			
 			integer successes;
-			while(llGetListLength(actions)){
+			while( llGetListLength(actions) ){
 				string val = llList2String(actions,0);
 				actions = llDeleteSubList(actions,0,0);
 				list split = llParseString2List(val, ["$"], []);
@@ -140,6 +144,7 @@ onEvt(string script, integer evt, list data){
 				// Custom should always be a success
 				success += (task == "CUSTOM");
 				successes+= (success>0);
+				
 			}
 			
 			// Raise interact event
@@ -172,28 +177,39 @@ onEvt(string script, integer evt, list data){
 }
 
 timerEvent(string id, string data){
-    if(id == TIMER_SEEK){
+
+    if( id == TIMER_SEEK ){
 		
 		// override is set, use the override text instead
-		if(OVERRIDE){
-			if(~BFL&BFL_OVERRIDE_DISPLAYED){
+		if( OVERRIDE ){
+		
+			if( ~BFL&BFL_OVERRIDE_DISPLAYED ){
+				
 				BFL = BFL|BFL_OVERRIDE_DISPLAYED;
 				onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
+				
 			}
-			if(l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == ""){
+			
+			if( l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == "" )
 				OVERRIDE = [];
-			}
+			
+			
 		}
-		else if( llGetPermissions()&PERMISSION_TRACK_CAMERA){
+		else if( llGetPermissions() & PERMISSION_TRACK_CAMERA ){
+		
             integer ainfo = llGetAgentInfo(llGetOwner());
 			#ifndef InteractConf$allowWhenSitting
             if(~ainfo&AGENT_SITTING){
 			#endif
+			
                 vector start;
                 vector fwd = llRot2Fwd(llGetCameraRot())*3;
-                if(ainfo&AGENT_MOUSELOOK){
+				
+                if( ainfo&AGENT_MOUSELOOK )
                     start = llGetCameraPos();
-                }else{
+					
+				else{
+				
                     vector apos = prPos(llGetOwner());
 					rotation arot = prRot(llGetOwner());
 					vector cpos = llGetCameraPos();
@@ -202,9 +218,9 @@ timerEvent(string id, string data){
 					vector aV = llRot2Euler(arot);
 					
 					// Prevents picking up items behind you
-					if(llFabs(cV.z-aV.z) > PI_BY_TWO){
+					if(llFabs(cV.z-aV.z) > PI_BY_TWO)
 						return;
-					}
+					
 					// We can use cpos if camera is in front of avatar
 					start = cpos;
 					
@@ -228,24 +244,27 @@ timerEvent(string id, string data){
 						// Calculation
 						start = (C-A)*B / (av*B) * av + A;
 						
-						
 					}
-						
 					
                     //start = llGetPos()+<0,0,ascale.z*.25>;
                 }
 				
 				list ray = llCastRay(start, start+fwd, []);
     
-                if(llList2Integer(ray,-1) > 0 && llVecDist(llGetPos(), l2v(ray, 1)) < 2){
+                if( llList2Integer(ray,-1) > 0 && llVecDist(llGetPos(), l2v(ray, 1)) < 2 ){
 					
 					key k = llList2Key(ray,0);
 					
-					if(~llListFindList(additionalAllow, [(string)k])){
+					if( 
+						~llListFindList(additionalAllow, [(string)k]) || 
+						(llGetAgentSize(k) != ZERO_VECTOR && ALLOW_ALL_AGENTS) 
+					){
+					
 						targ = llList2Key(ray,0);
 						targDesc = "CUSTOM";
 						onDesc(targ, "CUSTOM");
 						return;
+						
 					}
 						
 					string td = prDesc(k);
@@ -265,6 +284,7 @@ timerEvent(string id, string data){
                         list descparse = llParseString2List(td, ["$$"], []);
         
                         list_shift_each(descparse, val, {
+						
                             list parse = llParseString2List(val, ["$"], []);
                             if(llList2String(parse,0) == Interact$TASK_DESC){
                                 targDesc = td;
@@ -273,9 +293,13 @@ timerEvent(string id, string data){
                                 onDesc(targ, llList2String(parse, 1));
                                 return;
                             }
+							
                         })
+						
                     } 
+					
                 }
+				
 			#ifndef InteractConf$allowWhenSitting
             }
 			#endif

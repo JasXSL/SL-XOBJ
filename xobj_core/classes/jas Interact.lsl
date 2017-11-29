@@ -38,13 +38,13 @@
 //D$Climb$$CL$<0,.7,.7,0>$c_p$c_a$c_a$ $ $<-5,-.9,0>,<-5,-.9,0>,<5,-.9,0>,<5,-.9,0>
 //D$Climb$$CL$<0,0,-.7,.7>$l_p$l_a$l_a$l_d$ $<0,.5,-.5>,<0,.5,-.5>,<0,.5,.8>,<0,-.2,1.5>
 #define Interact$TASK_DESC "D"				// [(str)text] - Text that shows on your HUD
-#define Interact$TASK_TELEPORT "P"			// *[(vec)offset] - Teleports you
+#define Interact$TASK_TELEPORT "P"			// [(vec)offset] - Teleports you
 #define Interact$TASK_INTERACT "I"			// NULL - Sends an interact com to the object
-#define Interact$TASK_TRIGGER_SOUND "T"		// *[(key)uuid, (float)vol=1]
-#define Interact$TASK_PLAY_SOUND "S"		// *[(key)uuid, (float)vol=1]
-#define Interact$TASK_SITON "SO"			// *NULL - Calls RLV to sit on the object, does not use cube
-#define Interact$TASK_CLIMB "CL"			// *(rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (CSV)nodes, (float)climbspeed
-#define Interact$TASK_WATER "WT"			// *(vec)stream, (float)cyclone, (float)swimspeed_modifier, (str)windlight_preset
+#define Interact$TASK_TRIGGER_SOUND "T"		// [(key)uuid, (float)vol=1]
+#define Interact$TASK_PLAY_SOUND "S"		// [(key)uuid, (float)vol=1]
+#define Interact$TASK_SITON "SO"			// NULL - Calls RLV to sit on the object, does not use cube
+#define Interact$TASK_CLIMB "CL"			// (rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (CSV)nodes, (float)climbspeed
+#define Interact$TASK_WATER "WT"			// (vec)stream, (float)cyclone, (float)swimspeed_modifier, (str)windlight_preset
 #define Interact$TASK_SOUNDSPACE "SS"		// (str)name, (float)vol
 #define Interact$TASK_WL_PRESET "WL"		// (str)preset
 #define Interact$TASK_FOOTSTEPS "tFS"		// 

@@ -25,7 +25,7 @@ rotation climb_out_rot;			// Rotation to climb out at
 
 // Timers
 float timerSpeed;
-float ssm = 1;
+float SSM = 1;					// SwimSpeedMulti PrimswimMethod$swimSpeedMultiplier
 
 #define SURFACE_DEPTH -.4
 #define FOOTSTEP_SPEED .4
@@ -63,8 +63,7 @@ integer BF_COMBAT;
 
 
 // Checks if the object the script is in is intersecting id
-float waterZ(vector userPos, key id, integer inverse)
-{
+float waterZ(vector userPos, key id, integer inverse){
         vector vPos = userPos;
         
         list d = llGetObjectDetails(id, [OBJECT_POS, OBJECT_ROT]);
@@ -103,6 +102,7 @@ float waterZ(vector userPos, key id, integer inverse)
 // 0 = not submerged (linden air)
 // anything else = global Z for where bubble begins
 float pointSubmerged(vector point){
+
     integer i; float submerged = 0;
     float s; float vs;
     for(i=0;i<llGetListLength(water);i++){
@@ -113,16 +113,18 @@ float pointSubmerged(vector point){
     }
     
     for(i=0; i<llGetListLength(airpockets); i++){
-        if((s=waterZ(point, llList2Key(airpockets, i), TRUE))>0){
+	
+        if((s=waterZ(point, llList2Key(airpockets, i), TRUE))>0)
             return s;
-        }
+        
     }
-    
-    //debug((string)s+"\n"+(string)vs+"\n"+(string)llList2Key(airpockets, 0));    
+     
     return submerged;
+	
 }
 
 updateAnimstate(){
+
     integer bf_start;
     integer bf_stop;
 	integer sitting = llGetAgentInfo(llGetOwner())&AGENT_SITTING;
@@ -164,10 +166,12 @@ updateAnimstate(){
         if(bf_stop&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle, FALSE, 0,0);
         if(bf_stop&BFA_ACTIVE)AnimHandler$anim(PrimswimCfg$animActive, FALSE, 0,0);
     }
+	
 }
 
 
 enterWater(){
+
 	#ifdef USE_SCRIPT_RUNNING_CHECK
 		if(!scriptRunning())
 			return;
@@ -190,10 +194,10 @@ enterWater(){
     pp=.75;
 	
 	multiTimer([TIMER_COUT_CHECK, "", 1, TRUE]);
+	
 }
 
 exitWater(){
-	
 	
     // Just exited water
     CONTROL = 0;
@@ -223,21 +227,30 @@ exitWater(){
 	debugUncommon("Exited water");
 	raiseEvent(PrimswimEvt$atLedge, mkarr([FALSE]));
 	multiTimer([TIMER_COUT_CHECK]);
+	
 }
+
 #if PrimswimCfg$USE_WINDLIGHT==1
 toggleCam(integer submerged){
+
 	#ifdef USE_SCRIPT_RUNNING_CHECK
 		if(!scriptRunning())
 			return;
 	#endif
 	if(!isset(wl_set))return;
     if(submerged){
+	
         BFL = BFL|BFL_CAM_UNDER_WATER;
         RLV$windlightPreset(LINK_ROOT, wl_set, TRUE);
-    }else{
+		
+    }
+	else{
+	
         BFL = BFL&~BFL_CAM_UNDER_WATER;
         RLV$resetWindlight(LINK_ROOT);
+		
 	}
+	
 }
 #else
 	#define toggleCam(input)
@@ -245,9 +258,11 @@ toggleCam(integer submerged){
 
 float buoyancy_default = 0;
 setBuoyancy(){
+
     float b = buoyancy_default;
     if(BFL&BFL_IN_WATER)b = .9;
     llSetBuoyancy(b);
+	
 }
 
 vector ascale;
@@ -261,7 +276,9 @@ float pp;
 
 timerEvent(string id, string data){
 	
+	// Core frame
     if(id == TIMER_SWIM_CHECK){
+	
 		#ifdef USE_SCRIPT_RUNNING_CHECK
 			if(!scriptRunning()){
 				return;
@@ -296,10 +313,8 @@ timerEvent(string id, string data){
                     if(~BFL&BFL_CAM_UNDER_WATER){
                         toggleCam(TRUE);
                     }
-                }else{
-                    if(BFL&BFL_CAM_UNDER_WATER){
-                        toggleCam(FALSE);
-                    }
+                }else if(BFL&BFL_CAM_UNDER_WATER){
+                     toggleCam(FALSE);
                 }
                 
                 integer water_just_entered = FALSE;
@@ -313,23 +328,33 @@ timerEvent(string id, string data){
                 if(is==-1){ // water removed
                     water = llDeleteSubList(water,i,i);
                     i--; 
-                }else if(is==0){ 
+                }
+				else if(is==0){ 
                     is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
                     if(is>deepest)deepest=is;
-                }else if(depth>SURFACE_DEPTH || atSurface){ // || (is>0 && bottom==ZERO_VECTOR)
-                    //if(~BFL&BFL_IN_WATER)llOwnerSay((string)depth+" "+(string)SURFACE_DEPTH+" "+(string)is+" "+(string)bottom);
-                    
+                }
+				else if(depth>SURFACE_DEPTH || atSurface){
+					
                     if(i>0){ // INDEX THIS WATER
-                        water = llDeleteSubList(water, i, i); water = [wID]+water;i=0;
+					
+						water = [wID]+llDeleteSubList(water, i, i);
+						i=0;
+						
                     }  
+					
                     vector turb; vector tan;
                     
                     list dta = llGetObjectDetails(wID, [OBJECT_DESC, OBJECT_ROT, OBJECT_POS]);
                     string desc = llList2String(dta,0);
                     
-                    vector stream; float cyclone; float ssm; wl_set = "Nacon's nighty fog";
-                    list split = llParseString2List(desc, ["$$"], []);
-                    list_shift_each(split, val, {
+                    vector stream; 
+					float cyclone; 
+					float ssm; 
+					wl_set = "Nacon's nighty fog";
+                    
+					list split = llParseString2List(desc, ["$$"], []);
+                    list_shift_each(split, val, 
+					
                         list s = llParseString2List(val, ["$"], []);
                         string t = llList2String(s, 0);
                         if(t == Interact$TASK_WATER){
@@ -338,12 +363,15 @@ timerEvent(string id, string data){
                             ssm = llList2Float(s,3);
                             if(llGetListLength(s)>4)wl_set = llList2String(s,4);
                         }
-                    })
+						
+                    )
                     
                     
                     if(~ainfo&AGENT_SITTING){
+					
                         if(stream)
                             turb = stream*llList2Rot(dta,1);
+							
                         if(cyclone){
                             vector oPos = llList2Vector(dta,2);
                             rotation oRot = llList2Rot(dta,1);
@@ -356,20 +384,25 @@ timerEvent(string id, string data){
                             vector add = <llCos(atan),llSin(atan),0>*oRot*dist;
                             tan = add-pre;
                         }
+						
                     }
+					
                     vector dif; vector vel = llGetVel(); 
                     if(~BFL&BFL_IN_WATER){ // Just entered water
+					
                         enterWater();
                         #if PrimswimCfg$USE_PARTICAT==1
                         PrimswimAux$particleset(0,(<gpos.x,gpos.y,is-.5>));
                         #endif
 						water_just_entered = TRUE;
+						
                     }
                     
                     
 
 				
                     if(CONTROL && !stopped && ~ainfo&AGENT_SITTING){
+					
                         vector fwd; vector left; vector up;
                         if(CONTROL&(CONTROL_FWD|CONTROL_BACK))fwd = llRot2Fwd(llGetCameraRot());
                         if(CONTROL&CONTROL_BACK)fwd=-fwd;
@@ -388,10 +421,14 @@ timerEvent(string id, string data){
                         // Used for soft slowdown
                         prePush = dif;   
                         pp = 1.;
-                    }else if(pp>0){
+						
+                    }
+					else if(pp>0){
+					
                         pp-=.1;
                         if(pp>0)dif = prePush*(1-llSin(PI_BY_TWO+pp*PI_BY_TWO))*.5;
                         if(water_just_entered)dif*=4;
+						
                     }
                     
                     
@@ -407,14 +444,19 @@ timerEvent(string id, string data){
                         BFL=BFL&~BFL_SWIMMING;
                     }
                     
-                    float bssm = ssm;
-                    if(ssm!=0)bssm = bssm-1+ssm;
-                    else bssm = 1;
+                    if(ssm <= 0)
+						ssm = 1;
                     
                     vector SP = gpos;
 
-                    if(preCallPos != ZERO_VECTOR)SP = preCallPos;
-                    dif = (dif*.2*bssm)+turb+tan;
+					float sprint = (( llGetAgentInfo(llGetOwner()) & (AGENT_ALWAYS_RUN|AGENT_WALKING) ) == (AGENT_ALWAYS_RUN|AGENT_WALKING));
+                    if(sprint == 0 && llGetAgentInfo(llGetOwner()) & AGENT_ALWAYS_RUN)
+						sprint = -0.6;
+					
+					if(preCallPos != ZERO_VECTOR)
+						SP = preCallPos;
+						
+                    dif = (dif*.2*ssm*SSM*(1+sprint*.5))+turb+tan;
                     
                     
                     //SP = preCallPos;
@@ -436,7 +478,9 @@ timerEvent(string id, string data){
                             BFL = BFL&~BFL_AT_SURFACE;
                         }
                         SUB = FALSE;
-                    }else BFL = BFL&~BFL_AT_SURFACE;
+                    }
+					else 
+						BFL = BFL&~BFL_AT_SURFACE;
                     
                     
                     preCallPos = SP;
@@ -486,79 +530,112 @@ timerEvent(string id, string data){
         multiTimer([id,"", timerSpeed, FALSE]);
     }
     
+	// Removes wet feet
     else if(id == TIMER_WETFEET_FADE){
+	
         BFL=BFL&~BFL_HAS_WET_FEET;
 		#if PrimswimCfg$USE_PARTICAT==1
         PrimswimAux$killById("SPT");
 		#endif
+		
     }
 	
 	// See if you can climb out
 	else if(id == TIMER_COUT_CHECK){
+	
 		// Checks if you're at an edge and can climb out
-		if(BFL&BFL_IN_WATER && ~llGetAgentInfo(llGetOwner())&AGENT_SITTING && BFL&BFL_AT_SURFACE && ~BFL&BFL_CLIMBING){
+		if(
+			BFL&BFL_IN_WATER && 
+			~llGetAgentInfo(llGetOwner())&AGENT_SITTING && 
+			BFL&BFL_AT_SURFACE && 
+			~BFL&BFL_CLIMBING
+		){
+		
 			// Check ray
 			vector vrot = llRot2Euler(llGetRootRotation());
 			vector f = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
 			
 			vector gpos = llGetPos();
-			vector uppos = gpos+f*.5+<0,0,ascale.z/2>;
-
+			
+			// Need at least 1m free above the user
+			vector avTop = gpos+<0,0,ascale.z/2*0.95>;
+			float headOffset = 1;			
 			integer rejecttypes = RC_REJECT_AGENTS|RC_REJECT_LAND|RC_REJECT_PHYSICAL;
 			
-			// Checks if there's a standable ledge
-			list fwd = llCastRay(uppos+<0,0,.5>, uppos-<0,0,.5>, [RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
-			// Makes sure we're at an edge at least 1dm thick
-			vector v = l2v(fwd, 1);
-			list edge = llCastRay(<gpos.x, gpos.y, v.z-.1>, v-<0,0,.1>, [RC_REJECT_TYPES,rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
-			// Makes sure there's enough space to stand on
-			list space = llCastRay(llList2Vector(fwd, 1)+<0,0,.01>, llList2Vector(fwd, 1)+<0,0,ascale.z>, [RC_REJECT_TYPES, rejecttypes]);
-			vector norm = l2v(fwd, 2);
-			if(
-				// Check if the ledge is there and we didn't raycast inside an object
-				llVecDist(llList2Vector(fwd, 1), uppos+<0,0,1>)>.05 && 
-				llList2Integer(fwd, -1)!=0 &&
-				// Checks that we're actually at a ledge
-				llVecDist(llList2Vector(edge, 1), <gpos.x, gpos.y, v.z-.1>) > .01 &&
-				// Makes sure we have enough space on top
-				llList2Integer(space, -1) == 0 &&
-				// Makes sure the platform is less than 40 deg sharp
-				norm.z>0.9
-			){
+			// Checks if the position above your head is clear
+			list up = llCastRay(avTop, avTop+<0,0,headOffset>, [RC_REJECT_TYPES, rejecttypes]);
+			// Checks if there is a platform within 0.5m in front of the user
+			list fwd = llCastRay(avTop+<0,0,headOffset>, avTop+f*headOffset-<0,0,headOffset>, [RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
+			vector normal = l2v(fwd, 2);
+			vector landing = l2v(fwd, 1);
 
-				vector pos = llList2Vector(fwd,1);
-				pos.z += ascale.z/2;
+			// So far so good
+			if( l2i(up, -1) == 0 && l2i(fwd, -1) == 1 && normal.z > 0.9 ){
+				
+				// Check if there is enough space to fit the avatar
+				up = llCastRay(landing, landing+<0,0,ascale.z>, [RC_REJECT_TYPES, rejecttypes]);
+				
+				if( l2i(up, -1) == 0 ){
+
+					// We just reached a ledge
+					if(climb_out_to == ZERO_VECTOR)
+						raiseEvent(PrimswimEvt$atLedge, "1");
 					
-				// We just reached a ledge
-				if(climb_out_to == ZERO_VECTOR){
-					raiseEvent(PrimswimEvt$atLedge, "1");
+					// Base climb out pos and rot
+					climb_out_to = landing;
+					climb_out_rot = llEuler2Rot(<0,0,vrot.z>);
+					
+					// Find the edge rotation if possible, using 5cm as a buffer
+					fwd = llCastRay(<gpos.x, gpos.y, landing.z-0.05>, landing-<0,0,0.05>, [
+						RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL
+					]);
+					
+					if( l2i(fwd, -1) == 1 ){
+						
+						normal = l2v(fwd, 2);
+						climb_out_to = 
+							// Edge position
+							l2v(fwd, 1)+<0,0,0.05>+
+							// Plus 0.25m
+							llVecNorm(l2v(fwd, 1)-<gpos.x, gpos.y, landing.z-0.05>)*0.25
+						;
+						climb_out_rot = llRotBetween(<-1,0,0>, llVecNorm(<normal.x, normal.y, 0>));
+				
+					}
+					
+					climb_out_to.z += ascale.z/2-0.1;
+					return;
+					
 				}
-				climb_out_to = pos;
-				vector n = llList2Vector(edge, 2);
-				n.z = 0;
-				climb_out_rot = llRotBetween(<-1,0,0>, llVecNorm(n));
-				return;
+				
 			}
+			
 		}
 		
 		// No longer at ledge
-		if(climb_out_to != ZERO_VECTOR){
+		if(climb_out_to != ZERO_VECTOR)
 			raiseEvent(PrimswimEvt$atLedge, "");
-		}
 		climb_out_to = ZERO_VECTOR;
+		
 	}
     
     else if(id == TIMER_SPEEDCHECK){ // Dynamic timer speed
         multiTimer([TIMER_SPEEDCHECK, "", 4, TRUE]);
         
         if(BFL&BFL_IN_WATER){
+		
             if(~BFL&BFL_WITHIN_20M_OF_WATER){
+			
                 BFL=BFL|BFL_WITHIN_20M_OF_WATER;
                 timerSpeed = PrimswimCfg$maxSpeed;
                 multiTimer([TIMER_SWIM_CHECK,"",timerSpeed, FALSE]);
+				
             }
             return;
-        }else{
+			
+        }
+		else{
+		
             vector gpos = llGetPos();
             integer i; 
             for(i=0; i<llGetListLength(water); i++){
@@ -572,6 +649,7 @@ timerEvent(string id, string data){
                     return;
                 }
             }
+			
         }
         
         if(BFL&BFL_WITHIN_20M_OF_WATER){
@@ -652,8 +730,8 @@ onEvt(string script, integer evt, list data){
 
 default
 {
-    state_entry()
-    {
+    state_entry(){
+	
 		llSetText("", ZERO_VECTOR, 0);
         ascale = llGetAgentSize(llGetOwner());
         llStopMoveToTarget();
@@ -669,9 +747,11 @@ default
 		if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
         if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
 		memLim(1.5);
+		
     }
         
     sensor(integer total){ 
+	
         integer i;
         for(i=0;i<total;i++){
             key id = llDetectedKey(i);
@@ -680,24 +760,26 @@ default
             }
         }
         llSensorRepeat(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI, 5);
+		
     }
-    no_sensor(){llSensorRepeat(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI, 5);}
+	
+    no_sensor(){
+		llSensorRepeat(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI, 5);
+	}
     
     #include "xobj_core/_LM.lsl"
-    /*
-        Included in all these calls:
-        METHOD - (int)method
-        INDEX - (int)obj_index
-        PARAMS - (var)parameters
-        SENDER_SCRIPT - (var)parameters
-        CB_DATA - This is where you set any callback data you have
-    */
+
     if(method$isCallback){return;}
-    if(id == ""){
-        if(METHOD == PrimswimMethod$airpockets)airpockets = PARAMS;
+    if(method$internal){
+	
+        if(METHOD == PrimswimMethod$airpockets)
+			airpockets = PARAMS;
+		
+		else if(METHOD == PrimswimMethod$swimSpeedMultiplier)
+			SSM = l2f(PARAMS, 0);
+		
     }
-    // Make sure to check the climbing event to prevent swimming while climbing
-        
+
     #define LM_BOTTOM 
     #include "xobj_core/_LM.lsl"
 
