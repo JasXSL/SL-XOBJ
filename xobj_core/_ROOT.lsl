@@ -136,7 +136,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 
 // This is the standard way to run a method on a module. See the readme files on how to use it properly.
-runMethod(string uuidOrLink, string className, integer method, list data, string callback){
+runMethod( string uuidOrLink, string className, integer method, list data, string callback ){
 	list op = [method, llList2Json(JSON_ARRAY, data), llGetScriptName()];
 	if(callback)op+=[callback];
 	if((key)uuidOrLink){stdObjCom(RUN_METHOD, uuidOrLink, className, op);}

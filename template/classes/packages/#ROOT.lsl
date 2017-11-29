@@ -9,7 +9,15 @@
 // You can uncomment this if you want to enable debugging. Debug levels are DEBUG_ALL, DEBUG_COMMON, DEBUG_UNCOMMON, DEBUG_RARE and DEBUG_USER
 // You can also use the qd("Message") function which works regardless of debug level
 //#define DEBUG DEBUG_COMMON
+
+
+
+
+// !! REPLACE THIS WITH YOUR PROJECT _core.lsl FILE include !!
 #include "xobj_core/_ROOT.lsl"
+
+
+
  
 // We'll accept custom key bindings through the RootMethod$statusControls method
 integer STATUS_CONTROLS;
@@ -89,6 +97,7 @@ default
 
     
     control(key id, integer level, integer edge){
+	
         if(level&edge){ // Pressed
             pressStart = llGetTime();
             raiseEvent(evt$BUTTON_PRESS, (string)(level&edge));
@@ -115,6 +124,7 @@ default
                 if(~level&edge&pow)multiTimer(["H_"+(string)pow]);
             }
         } 
+		
     }
     
     changed(integer change){

@@ -6,10 +6,7 @@
 	Don't forget to run initiateListen() wherever you want to initiate the listener (usually state_entry)
 	The following are definitions you can define right above your #include "xobj_core/_LISTEN.lsl"
 	
-	#define LISTEN_LIMIT_BY_NAME - Requires the customtarg to be this name
-	#define LISTEN_LIMIT_ALLOW_WILDCARD - If used in combination with above, * will be allowed too
 	#define REQUIRE_INIT - Will not raise events until BFL_INIT is set
-	#define DEBUG - Outputs all messages to owner
 	#define ALLOW_USER_DEBUG 2=anyone - Lets anyone/owner raise events by saying debug script, method, arg1, arg2...
 	#define ALLOW_USER_DEBUG_KEY (key)id - Limit to a specific key
 	#define LISTEN_LIMIT_FREETEXT - Lets you define freetext code to be injected into _LISTEN
@@ -26,7 +23,8 @@ listen(integer chan, string name, key id, string message){
 	#endif
 	
 	#ifdef REQUIRE_INIT
-	if(~BFL&BFL_INIT)return;
+	if(~BFL&BFL_INIT)
+		return;
 	#endif
 	
 	#ifdef ALLOW_USER_DEBUG
