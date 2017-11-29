@@ -78,11 +78,16 @@ timerEvent(string id, string data){
 default 
 {
     listen(integer chan, string name, key id, string message){
+	
 		integer pos = findByKey(id);
 		if(~pos){
-            if(message == DialogConf$nextButton)loadPage(id, 1);
-            else if(message == DialogConf$prevButton)loadPage(id, -1);
+		
+            if(message == DialogConf$nextButton)
+				loadPage(id, 1);
+            else if(message == DialogConf$prevButton)
+				loadPage(id, -1);
             else{
+			
                 key senderID = llList2String(objects, pos+9);
                 sendCallback(
                     senderID, 							// UUID to send callback to (or link)
@@ -94,10 +99,13 @@ default
                         id
                     ]), 
                     llList2String(objects, pos+3)			// Callback
-                )  
+                );
                 remove(id); 
+				
             }
+			
         }
+		
     } 
     
     timer(){multiTimer([]);}
