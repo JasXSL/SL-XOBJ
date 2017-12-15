@@ -588,6 +588,8 @@ default
 			
 			list set = toggleMask(method_arg(0), ~BFL&BFL_AGENTS_IN_RANGE);
 			PP(0,set);
+			
+			raiseEvent(MaskAnimEvt$animInstalled, mkarr(([SENDER_SCRIPT, method_arg(0)])));
 			refreshAnims(FALSE);
 		}
     #define LM_BOTTOM  

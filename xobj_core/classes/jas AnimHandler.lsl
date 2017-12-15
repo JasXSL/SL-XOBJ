@@ -29,6 +29,7 @@
 
 #define AnimHandler$remInventory(assets) runMethod((string)LINK_SET, "jas AnimHandler", AnimHandlerMethod$remInventory, [mkarr(assets)], TNN)
 #define AnimHandler$startSound(sound, vol, type, duration) runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [sound, vol, type, duration], TNN)
+#define AnimHandler$targStartSound(targ, sound, vol, type, duration) runMethod((str)(targ), "jas AnimHandler", AnimHandlerMethod$sound, [sound, vol, type, duration], TNN)
 #define AnimHandler$stopSound() runMethod((str)LINK_SET, "jas AnimHandler", AnimHandlerMethod$sound, [], TNN)
 
 

@@ -42,6 +42,7 @@
 #define MaskAnimEvt$agentsInRange MeshAnimEvt$agentsInRange		// Player is within LOD range, start animating
 #define MaskAnimEvt$agentsLost MeshAnimEvt$agentsLost		// Out of bounds, the animator will stop
 #define MaskAnimEvt$onAnimStart MeshAnimEvt$onAnimStart		// (str)anim - Requires the MaskAnimConf
+#define MaskAnimEvt$animInstalled 100						// (str)anim - Animation has been installed
 
                                 // Methods //
 
