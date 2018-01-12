@@ -1,8 +1,10 @@
-
-
 // Preprocessor shortcuts
 #include "xobj_core/classes/jas Remoteloader.lsl" 
 
+// DEfaults
+#ifndef onAnim
+	#define onAnim 
+#endif
 
 #define TIMER_CHECK_ATTACH "a"
 
@@ -13,11 +15,16 @@
 integer anim_step;
 integer P_SPLAT;
 onEvt(string script, integer evt, list data){
-	if((script == "ton MeshAnim" || script == "jas MaskAnim") && evt == MeshAnimEvt$frame){
+
+	if( 
+		(script == "ton MeshAnim" || script == "jas MaskAnim") && 
+		evt == MeshAnimEvt$frame 
+	){
 		
 		list split = llParseString2List(llList2String(data,0), [";"], []);
 		string type = llList2String(split, 0);
-		if(type == FRAME_AUDIO){
+		if( type == FRAME_AUDIO ){
+		
 			list sounds = ["e47ba69b-2b81-1ead-a354-fe8bb1b7f554", "9f81c0cb-43fc-6a56-e41e-7f932ceff1dc"];
 			float vol = .5+llFrand(.5);
 			if(llList2String(split, 1) != "*"){
@@ -28,8 +35,11 @@ onEvt(string script, integer evt, list data){
 			key sound = randElem(sounds);
 			if(sound)
 				llTriggerSound(sound, vol);
+				
 		}
-		else if(type == FRAME_ANIM){
+		
+		else if( type == FRAME_ANIM ){
+		
 			llLinkParticleSystem(P_SPLAT, [
                 PSYS_PART_MAX_AGE,.4, // max age
                 PSYS_PART_FLAGS, 
@@ -64,23 +74,48 @@ onEvt(string script, integer evt, list data){
                 PSYS_SRC_ANGLE_END, PI_BY_TWO-.5 // angleend
 
             ]);
-			if(llList2String(split, 1) == "*"){
-				if(localConfAnims != [] && llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
-					llStartAnimation(llList2String(localConfAnims, anim_step));
+			
+			
+			string anim;
+			integer start = true;
+			
+			if( llList2String(split, 1) == "*" ){
+			
+				if( localConfAnims != [] && llGetPermissions()&PERMISSION_TRIGGER_ANIMATION ){
+				
+					anim = llList2String(localConfAnims, anim_step);
 					anim_step++;
-					if(anim_step>=llGetListLength(localConfAnims))anim_step = 0;
+					if(anim_step>=llGetListLength(localConfAnims))
+						anim_step = 0;
+					
 				}
+				
 			}
+			
 			else{
-				if(llGetPermissions()& PERMISSION_TRIGGER_ANIMATION){
-					if(llList2Integer(split, 2) || llGetListLength(split)<3)llStartAnimation(llList2String(split, 1));
-					else{
-						debugCommon("Stopping because split: "+l2s(split,1));
-						llStopAnimation(llList2String(split, 1));
-					}
+			
+				if( llGetPermissions()& PERMISSION_TRIGGER_ANIMATION ){
+				
+					anim = llList2String(split, 1);
+					if( !llList2Integer(split, 2) && llGetListLength(split) >= 3 )
+						start = false;
+
 				}
+				
 			}
+			
+			if( anim == "" ) 
+				return;
+				
+			if( start )
+				llStartAnimation(anim);
+			else
+				llStopAnimation(anim);
+				
+			onAnim( anim, llDeleteSubList(split, 0, 0) );
+			
 		}
+		
 	}
 }
 #endif
