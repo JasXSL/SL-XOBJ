@@ -1,26 +1,43 @@
 #include "xobj_core/classes/jas Animhandler.lsl" 
+timerEvent( string id, string data ){
 
-
-timerEvent(string id, string data){
 	string pre = llGetSubString(id, 0, 1);
-	if(pre == "e_" || pre == "r_"){
-		integer start = FALSE;
-		if(pre == "r_")start = (integer)data;
+	
+	if( pre == "m_" ){
 		
+		if( llGetAgentInfo(llGetOwner()) & AGENT_WALKING ){
+		
+			list anims = llJson2List(llGetSubString(id, 2, -1));
+			list_shift_each( anims, anim, 
+				llStopAnimation(anim);
+			)
+		
+		}
+		
+	}
+	else if( pre == "e_" || pre == "r_" ){
+	
+		integer start = FALSE;
+		if( pre == "r_" )
+			start = (integer)data;
 
 		list anims = llJson2List(llGetSubString(id, 2, -1));
-		list_shift_each(anims, anim, 		
-			if(start){
+		list_shift_each(anims, anim, 	
+			
+			if( start )
 				llStartAnimation(anim);
-			}
-			else{
+			else
 				llStopAnimation(anim);
-			}
+			
 		)
+		
 	}
+	
 	#ifdef AnimHandlerConf$useAudio
-	if(id == "STOP_SOUND")llStopSound();
+	if( id == "STOP_SOUND" )
+		llStopSound();
 	#endif
+	
 }
 
 default
@@ -62,45 +79,61 @@ default
 		}
 		
 		#ifndef AnimHandlerConf$allowAll
-        if(method$byOwner){
+        if( method$byOwner ){
 		#endif
-            if(METHOD == AnimHandlerMethod$anim){
+		
+            if( METHOD == AnimHandlerMethod$anim ){
+			
                 list anims = [method_arg(0)];
-				if(llJsonValueType((string)anims, []) == JSON_ARRAY)anims = llJson2List((string)anims);
+				if( llJsonValueType((string)anims, []) == JSON_ARRAY )
+					anims = llJson2List((string)anims);
+					
 				integer start = (integer)method_arg(1);
 				float dly = (float)method_arg(2);
 				float end = (float)method_arg(3);
+				integer flags = l2i(PARAMS, 4);
 				
+				if( flags&jasAnimHandler$animFlag$randomize )
+					anims = [randElem(anims)];
 				
 				integer i;
-				for(i=0; i<llGetListLength(anims); i++){
+				for( i=0; i<llGetListLength(anims); i++ ){
+				
 					string anim = llList2String(anims, i);
 					
+					if( ~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION ){
 					
-					if(~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION){
 						#ifndef AnimHandlerConf$suppressErrors
 						qd("Error: Anim permissions lacking, reattach  your HUD.");
 						#endif
 						return;
+						
 					}
-					if(llGetInventoryType(anim) != INVENTORY_ANIMATION && method_arg(0) != "sit"){
+					if( llGetInventoryType(anim) != INVENTORY_ANIMATION && method_arg(0) != "sit" ){
+						
 						#ifndef AnimHandlerConf$suppressErrors
 						qd("Error: Anim not found: "+method_arg(0));
 						#endif
 						return;
+						
 					}
 
-					if(start)
+					if( start )
 						llStartAnimation(anim);
-					
 					else
 						llStopAnimation(anim);
+						
 				}
 				
-				if(dly)
+				if( flags&jasAnimHandler$animFlag$stopOnMove )
+					multiTimer(["m_"+mkarr(anims), "", 0.25, TRUE]);
+				
+				if( dly )
 					multiTimer(["r_"+mkarr(anims), start, dly, FALSE]);
-				if(end)
+					
+				if( end )
 					multiTimer(["e_"+mkarr(anims), "", end, FALSE]);
+					
             }
 			#ifdef AnimHandlerConf$useAudio
 			if(METHOD == AnimHandlerMethod$sound){
