@@ -7,8 +7,8 @@
 // PROGRAM
 
 	// Creates and returns a new Program
-	#define jasVibHub$newProgram( repeats ) \
-		llList2Json(JSON_OBJECT, ["stages","[]", "repeats",repeats])
+	#define jasVibHub$newProgram( repeats, port ) \
+		llList2Json(JSON_OBJECT, ["stages","[]", "repeats",repeats, "port",port])
 	// Adds a stage to a Program
 	#define jasVibHub$program$addStage( program, stage ) \
 		program = llJsonSetValue(program, ["stages", -1], stage)
@@ -18,6 +18,9 @@
 			"?id="+llEscapeURL(id)+ \
 			"&type=vib"+ \
 			"&data="+llEscapeURL(program), [], "")
+	// Executes multiple programs on different ports
+	#define jasVibHub$program$executeMany( id, programs ) \
+		jasVibHub$program$execute(id, mkarr(programs))
 
 // STAGE
 	// Creates and returns a new Stage
