@@ -4,6 +4,11 @@
 	See the package file for a demo!
 */
 
+// SERVER
+#ifndef jasVibHub$server
+	#define jasVibHub$server "http://api.vibhub.io/"
+#endif
+
 // PROGRAM
 
 	// Creates and returns a new Program
@@ -14,7 +19,7 @@
 		program = llJsonSetValue(program, ["stages", -1], stage)
 	// Executes the program
 	#define jasVibHub$program$execute( id, program ) \
-		llHTTPRequest("http://vibhub.dangly.parts/"+ \
+		llHTTPRequest(jasVibHub$server+ \
 			"?id="+llEscapeURL(id)+ \
 			"&type=vib"+ \
 			"&data="+llEscapeURL(program), [], "")
