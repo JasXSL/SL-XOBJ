@@ -135,10 +135,12 @@ timerEvent(string id, string data){
 		key spawner = l2k(llGetObjectDetails(llGetKey(), [OBJECT_REZZER_KEY]), 0);
 		if(llKey2Name(spawner) == ""){
 			if(llGetAttached()){
+			
 				if(llGetPermissions()& PERMISSION_ATTACH)
 					llDetachFromAvatar();
 				else
 					llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+					
 			}
 			else
 				llDie();
@@ -194,7 +196,9 @@ default
     
     state_entry()
     {
-		initiateListen();
+		#ifdef SCRIPT_IS_ROOT
+			initiateListen();
+		#endif
 		llSetStatus(STATUS_PHANTOM, TRUE);
         memLim(1.5);
 		
@@ -233,12 +237,19 @@ default
 	}
 	#endif 
 	
-	#include "xobj_core/_LISTEN.lsl"
-    
+	#ifdef SCRIPT_IS_ROOT
+		#include "xobj_core/_LISTEN.lsl"
+    #endif
+	
     run_time_permissions(integer perm){
-        if(perm & PERMISSION_ATTACH){
-			if(DIE)llDetachFromAvatar();
-            else llAttachToAvatarTemp(0);
+        
+		if(perm & PERMISSION_ATTACH){
+
+			if(DIE)
+				llDetachFromAvatar();
+            else 
+				llAttachToAvatarTemp(0);
+				
         }
 		#ifdef Attached$automateMeshAnim
 		if(perm & PERMISSION_TRIGGER_ANIMATION){
@@ -261,12 +272,11 @@ default
         */
 		if(method$isCallback)return;
 		
-		if(method$byOwner){
-			if(METHOD == AttachedMethod$remove){
-				if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*"){
-					kill();
-				}
-            }
+		if(method$byOwner && METHOD == AttachedMethod$remove){
+
+			if(method_arg(0) == llGetObjectName() || id == "" || method_arg(0) == "*")
+				kill();
+		
 		}
     
     #define LM_BOTTOM  
