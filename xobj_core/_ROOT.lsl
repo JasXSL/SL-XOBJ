@@ -5,23 +5,6 @@
 	
 */
 
-// xobj_core comes with a couple of libraries, they are included
-#include "xobj_core/libraries/libJas.lsl"
-#include "xobj_core/libraries/libJasPre.lsl"
-#include "xobj_core/libraries/partiCat.lsl"
-#include "xobj_core/_CLASS_STATIC.lsl"
-
-
-/*
-	Header vars that you can use in each script:
-	#define SCRIPT_IS_ROOT <- Always define this on top of #ROOT
-	#define USE_EVENTS <- Add to top of a script that should be listening to events
-	#define USE_SHARED (DEPRECATED) (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
-	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
-	#define SCRIPT_ALIASES [] <- Alias names the script can be run as. Array of names. Like if you have a script named "got LevelLite" and you want it to also be callable with "got Level", then define this as ["got Level"]
-	
-*/
-
 #define DEBUG_ALL 100
 #define DEBUG_USER 10
 #define DEBUG_RARE 20
@@ -47,6 +30,26 @@
 	#define debugCommon(text) _dbg(text, DEBUG_COMMON)
 	#define debug(text) _dbg(text, DEBUG_USER)
 #endif
+
+
+
+// xobj_core comes with a couple of libraries, they are included
+#include "xobj_core/libraries/libJasPre.lsl"
+#include "xobj_core/libraries/libJas.lsl"
+
+#include "xobj_core/libraries/partiCat.lsl"
+#include "xobj_core/_CLASS_STATIC.lsl"
+
+
+/*
+	Header vars that you can use in each script:
+	#define SCRIPT_IS_ROOT <- Always define this on top of #ROOT
+	#define USE_EVENTS <- Add to top of a script that should be listening to events
+	#define USE_SHARED (DEPRECATED) (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
+	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
+	#define SCRIPT_ALIASES [] <- Alias names the script can be run as. Array of names. Like if you have a script named "got LevelLite" and you want it to also be callable with "got Level", then define this as ["got Level"]
+	
+*/
 
 
 // These constants should be overwritten and defined in your _core.lsl file for each project

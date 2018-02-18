@@ -87,24 +87,34 @@ string jsonUnset(string json, list ident){
 // al is the algorithm, part is only used internally so it should be 0, varObj is a JSON object with variables
 // If you have libJasPre (see JasX Github) you can also use shorthand algo(mathString, varObj)
 
-float mathToFloat(string al, integer part, string varObj){
+float mathToFloat( string al, integer part, string varObj ){
+
+	qd("mathToFloat is deprecated, see ");
+
     list parts = [
         "(,)",                              // Parentheses work different in that they are calculated separately
         "+,-",                              // AS
         "*,/",                              // MD
+		"&,~,|",							// Bitwise
+		">,<,=",							// Less than, greater than, equals
         "^",                                // E
-        "RAND,CEIL,FLOOR,ROUND"             // This is the math order inverse
+        "RAND,CEIL,FLOOR,ROUND,BOOL"             // This is the math order inverse
     ];
-    list exp = llCSV2List(llList2String(parts,part));
+	
+    list exp = llParseString2List(llList2String(parts,part), [","], []);
     float val; integer i; 
     list split = llParseString2List(al, [], exp);
      
     if(part == 0){
+	
         for(i=0; i<llGetListLength(split); i++){
+		
             string s = llStringTrim(llList2String(split,i), STRING_TRIM);
             if(s == "("){
+			
                 integer x; integer ps = 1; list out;
                 for(x = i+1; x<llGetListLength(split); x++){
+				
                     if(llList2String(split,x) == "(")ps++;
                     else if(llList2String(split,x) == ")") ps--;
                     out+=llList2String(split, x);
@@ -113,24 +123,36 @@ float mathToFloat(string al, integer part, string varObj){
                         split = llListReplaceList(split, [nr], i, x);
                         x = llGetListLength(split);
                     }
+					
                 }
+				
             }
+			
         }
+		
         part = 1;
-        exp = llCSV2List(llList2String(parts,part));
+        exp = llParseString2List(llList2String(parts,part), [","], []);
         split = llParseString2List((string)split, [], exp);
+		
     }
     string action = "+";
     
-    //llOwnerSay("Step: "+(string)part+" : "+llDumpList2String(split, " ")); 
-    for(i=0; i<llGetListLength(split); i++){
+    //llOwnerSay("Step: "+(string)part+" : "+llDumpList2String(split, " ")+" (Split by "+llList2CSV(exp)+")"); 
+    for( i=0; i<llGetListLength(split); ++i ){
+	
         string s = llStringTrim(llList2String(split, i), STRING_TRIM);
-        if(~llListFindList(exp, [s]))action = s;
+        if(~llListFindList(exp, [s]))
+			action = s;
         else{
+		
             float v;
-            if(llJsonValueType(varObj, [s]) != JSON_INVALID)v = (float)llJsonGetValue(varObj, [s]);
-            else if(part < llGetListLength(parts)-1)v = mathToFloat(s, part+1, varObj);
-            else v = (float)s;
+            if( llJsonValueType(varObj, [s]) != JSON_INVALID )
+				v = (float)llJsonGetValue(varObj, [s]);
+			// go up a level
+            else if( part <= llGetListLength(parts) )
+				v = mathToFloat(s, part+1, varObj);
+            else 
+				v = (float)s;
 
             if(action == "+")val+=v;
             else if(action == "-")val-=v;
@@ -141,7 +163,14 @@ float mathToFloat(string al, integer part, string varObj){
             else if(action == "CEIL")val+=llCeil(v);
             else if(action == "FLOOR")val+=llFloor(v);
             else if(action == "ROUND")val+=llRound(v);
-            
+			else if(action == "BOOL")val = (v!=0);
+            else if(action == ">")val = val > v;
+			else if(action == "<")val = val < v;
+			else if(action == "=")val = val == v;
+			else if(action == "&")val = (integer)val&(integer)v;
+			else if(action == "~")val = ~(integer)val&(integer)v;
+			
+			
         }
     }
     return val;
@@ -152,6 +181,167 @@ string mergeJson(string input, string MERGE){
 	return input;
 }
 
+
+
+// pandaMath
+	// Takes an input and repaces entries of consts. Consts are [(str)const, (var)val]
+	string pmathApplyConsts(string a, list b)
+	{
+		list con;
+		integer i;
+		for (; i < (b != []); i = -~-~i)
+			con = con + ((list)llStringLength(llList2String(b, i)) + llList2String(b, i) + llList2List(b, -~i, -~i));
+		b = [];
+		con = llListSort(con, 3, 0);
+		for (i = 0; i < (con != []); i = i + 3)
+		{
+			string c = llList2String(con, -~i);
+			string v = llList2String(con, -~-~i);
+			integer pos;
+			while (~(pos = llSubStringIndex(a, c)))
+			{
+				a = llDeleteSubString(a, pos, ~-(pos + llStringLength(c)));
+				a = llInsertString(a, pos, v);
+			}
+		}
+		return a;
+	}
+	
+	// Runs a math string
+	// If you do not need parentheses you can use #define PMATH_IGNORE_PARENTHESES to save space and time
+	float pandaMath(string I)
+	{
+		
+		list parse;
+		#ifndef PMATH_IGNORE_PARENTHESES
+		parse = llParseString2List(I, [], (list)"(" + ")");
+		if (1 < (parse != []))
+		{
+			integer n;
+			integer nIn = ((integer)-1);
+			integer i;
+			for (; i < (parse != []); ++i)
+			{
+				if (llList2String(parse, i) == "(")
+				{
+					++n;
+					if (!~nIn)
+						nIn = i;
+				}
+				else if (llList2String(parse, i) == ")")
+				{
+					if (!--n)
+					{
+						parse = llListReplaceList(parse, (list)pandaMath((string)llList2List(parse, -~nIn, ~-i)), nIn, i);
+						i = ~-~-i;
+						nIn = ((integer)-1);
+					}
+				}
+			}
+			I = (string)parse;
+		}
+		#endif
+		
+		// 1+2>3
+		// 1, 2, >, 3
+		
+		list order = (list)"^" + "*,/" + "" + ">,<,==,&";
+		parse = llParseString2List(I, (list)"+", (list)"^" + "*" + "/" + "-" + "&" + "<" + ">" + "==");
+		I = "";
+		
+		// Convert to float
+		integer i;
+		for( ; i < (parse != []); ++i ){
+
+			string s = llList2String(parse, i);
+			if (s == "-")
+				parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
+			else if ((!(s == "0")) & (float)s == ((float)0))
+			{
+				list functions = (list)"π" + "~" +"!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN";
+				integer n;
+				for (; n < (functions != []); ++n)
+				{
+					string f = llList2String(functions, n);
+					if (llGetSubString(s, 0, ~-llStringLength(f)) == f)
+					{
+						float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
+						if (f == "CEIL")
+							v = llCeil(v);
+						else if (f == "RAND")
+							v = llFrand(v);
+						else if (f == "FLOOR")
+							v = (integer)v;
+						else if (f == "ROUND")
+							v = llRound(v);
+						else if (f == "!")
+							v = !((integer)v);
+						else if (f == "~")
+							v = ~(integer)v;
+						else if (f == "COS")
+							v = llCos(v);
+						else if (f == "SIN")
+							v = llSin(v);
+						else if (f == "π")
+							v = PI;
+						parse = llListReplaceList(parse, (list)v, i, i);
+						functions = [];
+					}
+				}
+			}
+			else
+				parse = llListReplaceList(parse, (list)((float)s), i, i);
+		}
+		
+		for( i = 0; i < (order != []); ++i ){
+		
+			list o = llParseString2List(llList2String(order, i), (list)",", []);
+			integer pointer;
+			for (; pointer < (parse != []); ++pointer){
+			
+				if( llGetListEntryType(parse, pointer) == TYPE_FLOAT && (o != [] || !pointer) )
+					jump pandaMath_continue;
+				
+				float a = llList2Float(parse, ~-pointer);
+				
+				
+				string v = llList2String(parse, pointer);
+				
+				// Handle addition
+				if( o == [] && llGetListEntryType(parse, ~-pointer) + llGetListEntryType(parse, pointer) == 4 ){
+
+					parse = llListReplaceList(parse, (list)(a+llList2Float(parse, pointer)), ~-pointer, pointer);
+					pointer = ~-pointer;
+					
+				}
+				else if( ~llListFindList(o, (list)v) ){
+				
+					
+					float b = llList2Float(parse, -~pointer);
+					if (v == "*")
+						a = a * b;
+					else if(v == "/")
+						a = a / b;
+					else if(v == "^")
+						a = llPow(a, b);
+					else if(v == "&")
+						a = (integer)a & (integer)b;
+					else if(v == ">")
+						a = a > b;
+					else if(v == "<")
+						a = a < b;
+					else if(v == "==")
+						a = a == b;
+					
+					parse = llListReplaceList(parse, (list)a, ~-pointer, -~pointer);
+					pointer = ~-~-pointer;
+				}
+				@pandaMath_continue;
+			}
+		}
+		
+		return llList2Float(parse, 0);
+	}
 
 // USAGE
 // multiTimer([id]) deletes timer with id

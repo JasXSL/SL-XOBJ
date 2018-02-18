@@ -17,7 +17,7 @@
 #define floor(input) parseInt(input)
 #define str string
 #define int integer
-#define count(input) llGetListLength(input)
+#define count(input) (input != [])	// Sorcery!
 
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)
@@ -151,7 +151,8 @@ list bitArrToList(integer n, integer bytesize){
 // NUMBER //
 // Round a float to a decimal and return a string
 	#define roundTo(number, decimals) llGetSubString((string)(llRound(number*llPow(10, decimals))/llPow(10, decimals)), 0, -7+decimals)
-	
+	#define max(values) l2i(llListSort(values, 1, FALSE),0)
+	#define min(values) l2i(llListSort(values, 1, TRUE),0)
 	
 // JSON //
 // Add an item to the end of a JSON ARRAY . Cannot be run as a parameter or in a statement

@@ -126,7 +126,7 @@ timerEvent(string id, string data){
         if(llGetAttached()){
             multiTimer([id]);
         }else{
-            llOwnerSay("@acceptpermission=add");
+            
             llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
         }
     }
