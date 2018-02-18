@@ -184,32 +184,11 @@ string mergeJson(string input, string MERGE){
 
 
 // pandaMath
-	// Takes an input and repaces entries of consts. Consts are [(str)const, (var)val]
-	string pmathApplyConsts(string a, list b)
-	{
-		list con;
-		integer i;
-		for (; i < (b != []); i = -~-~i)
-			con = con + ((list)llStringLength(llList2String(b, i)) + llList2String(b, i) + llList2List(b, -~i, -~i));
-		b = [];
-		con = llListSort(con, 3, 0);
-		for (i = 0; i < (con != []); i = i + 3)
-		{
-			string c = llList2String(con, -~i);
-			string v = llList2String(con, -~-~i);
-			integer pos;
-			while (~(pos = llSubStringIndex(a, c)))
-			{
-				a = llDeleteSubString(a, pos, ~-(pos + llStringLength(c)));
-				a = llInsertString(a, pos, v);
-			}
-		}
-		return a;
-	}
 	
 	// Runs a math string
 	// If you do not need parentheses you can use #define PMATH_IGNORE_PARENTHESES to save space and time
-	float pandaMath(string I)
+	// If you want to use a list of constants, use #define PMATH_CONSTS varName
+	float pandaMath( string I )
 	{
 		
 		list parse;
@@ -258,41 +237,59 @@ string mergeJson(string input, string MERGE){
 				parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
 			else if ((!(s == "0")) & (float)s == ((float)0))
 			{
+				// Redeem functions and constants
 				list functions = (list)"π" + "~" +"!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN";
-				integer n;
-				for (; n < (functions != []); ++n)
-				{
-					string f = llList2String(functions, n);
-					if (llGetSubString(s, 0, ~-llStringLength(f)) == f)
+				
+				// Check constants
+				#ifdef PMATH_CONSTS
+				integer p = llListFindList(llList2ListStrided(PMATH_CONSTS, 0, -1, 2), (list)s);
+				if( ~p )
+					parse = llListReplaceList(parse, (list)llList2Float(PMATH_CONSTS, p*2+1), i, i);
+				// Check built in functions
+				else{
+				#endif				
+			
+					integer n;
+					for (; n < (functions != []); ++n)
 					{
-						float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
-						if (f == "CEIL")
-							v = llCeil(v);
-						else if (f == "RAND")
-							v = llFrand(v);
-						else if (f == "FLOOR")
-							v = (integer)v;
-						else if (f == "ROUND")
-							v = llRound(v);
-						else if (f == "!")
-							v = !((integer)v);
-						else if (f == "~")
-							v = ~(integer)v;
-						else if (f == "COS")
-							v = llCos(v);
-						else if (f == "SIN")
-							v = llSin(v);
-						else if (f == "π")
-							v = PI;
-						parse = llListReplaceList(parse, (list)v, i, i);
-						functions = [];
+						string f = llList2String(functions, n);
+						
+						if(llGetSubString(s, 0, ~-llStringLength(f)) == f)
+						{
+							float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
+							if (f == "CEIL")
+								v = llCeil(v);
+							else if (f == "RAND")
+								v = llFrand(v);
+							else if (f == "FLOOR")
+								v = (integer)v;
+							else if (f == "ROUND")
+								v = llRound(v);
+							else if (f == "!")
+								v = !((integer)v);
+							else if (f == "~")
+								v = ~(integer)v;
+							else if (f == "COS")
+								v = llCos(v);
+							else if (f == "SIN")
+								v = llSin(v);
+							else if (f == "π")
+								v = PI;
+								
+							parse = llListReplaceList(parse, (list)v, i, i);
+							functions = [];
+						}
 					}
+				
+				#ifdef PMATH_CONSTS
 				}
+				#endif
+				
 			}
 			else
 				parse = llListReplaceList(parse, (list)((float)s), i, i);
 		}
-		
+
 		for( i = 0; i < (order != []); ++i ){
 		
 			list o = llParseString2List(llList2String(order, i), (list)",", []);
