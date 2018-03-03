@@ -68,7 +68,6 @@ string db3(list input){
 				data = implode("", llGetLinkMedia(nr, i, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]));
 				// See if this is the proper table
 				integer pos = llSubStringIndex(data,"|");
-				
 				if(llGetSubString(data, 0, pos-1) == table){
 					// Remove the prefix
 					data = llDeleteSubString(data, 0, pos);
@@ -78,7 +77,6 @@ string db3(list input){
 					
 					// SET data
 					data = table+"|"+llJsonSetValue(data, llDeleteSubList(input, 0, 1), llList2String(input, 1));
-					
 					if(llStringLength(data)>db3$tableMaxlength){
 						debugRare("Data overflow on DB3 table: "+table);
 						return "0";

@@ -49,16 +49,6 @@ string getHeaderVar(string input, string header){
     }
 }
 
-// Old
-integer integerLizeKey(string id, integer salt)
-{
-    return (integer)("0x1"+llGetSubString(id, 0, 6))+salt;
-}
-integer isDay()
-{
-    vector sun = llGetSunDirection();
-    return sun.z > 0;
-}
 string jsonTypeName(string value){
     string t = llJsonValueType(value,[]);
     if(t == JSON_INVALID)return "Invalid";
@@ -86,7 +76,7 @@ string jsonUnset(string json, list ident){
 // llSay(0, algorithm+" (Where: "+variables+")  = "+(string)mathToFloat(algorithm, 0, variables));
 // al is the algorithm, part is only used internally so it should be 0, varObj is a JSON object with variables
 // If you have libJasPre (see JasX Github) you can also use shorthand algo(mathString, varObj)
-
+/*
 float mathToFloat( string al, integer part, string varObj ){
 
 	qd("mathToFloat is deprecated, see ");
@@ -175,12 +165,14 @@ float mathToFloat( string al, integer part, string varObj ){
     }
     return val;
 }
+*/
+/*
 string mergeJson(string input, string MERGE){
 	integer i; list js = llJson2List(MERGE);
 	for(i=0; i<llGetListLength(js); i+=2)input = llJsonSetValue(input, llList2List(js,i,i), llList2String(js,i+1));
 	return input;
 }
-
+*/
 
 
 // pandaMath
@@ -220,22 +212,17 @@ string mergeJson(string input, string MERGE){
 			I = (string)parse;
 		}
 		#endif
-		
-		// 1+2>3
-		// 1, 2, >, 3
-		
+
 		list order = (list)"^" + "*,/" + "" + ">,<,==,&";
 		parse = llParseString2List(I, (list)"+", (list)"^" + "*" + "/" + "-" + "&" + "<" + ">" + "==");
 		I = "";
 		
-		// Convert to float
+		// Convert constants and functions
 		integer i;
-		for( ; i < (parse != []); ++i ){
+		for( ; i < count(parse); ++i ){
 
 			string s = llList2String(parse, i);
-			if (s == "-")
-				parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
-			else if ((!(s == "0")) & (float)s == ((float)0))
+			if ((!(s == "0")) & (float)s == ((float)0))
 			{
 				// Redeem functions and constants
 				list functions = (list)"π" + "~" +"!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN";
@@ -250,12 +237,12 @@ string mergeJson(string input, string MERGE){
 				#endif				
 			
 					integer n;
-					for (; n < (functions != []); ++n)
-					{
+					for (; n < (functions != []); ++n){
+					
 						string f = llList2String(functions, n);
 						
-						if(llGetSubString(s, 0, ~-llStringLength(f)) == f)
-						{
+						if( llGetSubString(s, 0, ~-llStringLength(f)) == f ){
+						
 							float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
 							if (f == "CEIL")
 								v = llCeil(v);
@@ -278,18 +265,27 @@ string mergeJson(string input, string MERGE){
 								
 							parse = llListReplaceList(parse, (list)v, i, i);
 							functions = [];
+							
 						}
 					}
 				
 				#ifdef PMATH_CONSTS
 				}
 				#endif
-				
 			}
 			else
 				parse = llListReplaceList(parse, (list)((float)s), i, i);
+				
 		}
-
+		// Handle minuses
+		for( i = 0; i<count(parse); ++i ){
+		
+			string s = l2s(parse, i);
+			if (s == "-")
+				parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
+				
+		}
+		
 		for( i = 0; i < (order != []); ++i ){
 		
 			list o = llParseString2List(llList2String(order, i), (list)",", []);
@@ -348,30 +344,53 @@ string mergeJson(string input, string MERGE){
 // if repeating is TRUE, the timer will keep triggering until it's manually removed
 // You'll also need timer(){multiTimer([]);}
 // Timeouts are raised in timerEvent(integer id, list data)
-list _TIMERS;// timeout, id, data, looptime, repeating
-multiTimer(list data){
-    integer i;
-    if(data != []){
-        integer pos = llListFindList(llList2ListStrided(llDeleteSubList(_TIMERS,0,0), 0, -1, 5), llList2List(data,0,0));
-        if(~pos)_TIMERS = llDeleteSubList(_TIMERS, pos*5, pos*5+4);
-        if(llGetListLength(data)==4)_TIMERS+=[llGetTime()+llList2Float(data,2)]+data;
+
+list _T;// timeout, id, data, looptime, repeating
+multiTimer( list da ){
+    
+	integer i;
+    if( da ){
+	
+        integer pos = llListFindList(llList2ListStrided(llDeleteSubList(_T,0,0), 0, -1, 5), llList2List(da,0,0));
+        if( ~pos )
+			_T = llDeleteSubList(_T, pos*5, pos*5+4);
+        if( count(da) == 4 )
+			_T = _T + (list)(llGetTime() + llList2Float(da,2)) + da;
+
     }
-    for(i=0; i<llGetListLength(_TIMERS); i+=5){
-        if(llList2Float(_TIMERS,i)<=llGetTime()){
-            string t = llList2String(_TIMERS, i+1);
-            string d = llList2String(_TIMERS,i+2);
-            if(!llList2Integer(_TIMERS,i+4))_TIMERS= llDeleteSubList(_TIMERS, i, i+4);
-            else _TIMERS= llListReplaceList(_TIMERS, [llGetTime()+llList2Float(_TIMERS,i+3)], i, i);
+	
+	for( i=0; i<count(_T); i = i+5 ){
+	
+        if( !(llGetTime() < llList2Float(_T,i)) ){
+            
+			string t = llList2String(_T, -~i);
+            string d = llList2String(_T,-~-~i);
+
+            if( llList2Integer(_T,i+4) )
+				_T = llListReplaceList(_T, (list)(llGetTime()+llList2Float(_T,i+3)), i, i);
+            else 
+				_T= llDeleteSubList(_T, i, i+4);
+				
             timerEvent(t, d);
-            i-=5;
+            i = i+((integer)-5);
+			
         }
     }
-    if(_TIMERS== []){llSetTimerEvent(0); return;}
-    _TIMERS= llListSort(_TIMERS, 5, TRUE);
-    float t = llList2Float(_TIMERS,0)-llGetTime();
-    if(t<.01)t=.01;
+	
+    if( _T == [] )
+		return llSetTimerEvent(0); 
+	
+    _T= llListSort(_T, 5, TRUE);
+	
+    float t = llList2Float(_T,0) + -llGetTime();
+    if( t < .01 )
+		t=.01;
+	
     llSetTimerEvent(t);
+	
 }
+
+
 
 
 //Sets objects name to NAME, then says MESSAGE and sets name to its previous name.

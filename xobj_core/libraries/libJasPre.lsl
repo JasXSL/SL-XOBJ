@@ -138,7 +138,6 @@ list bitArrToList(integer n, integer bytesize){
 	#define trim(input) tr(input)
 // Check if a string is not "" or JSON_INVALID
 	#define isset(input) ((string)input!="" && (string)input!=JSON_INVALID)
-	#define algo(math, vars) mathToFloat(math, 0, vars)
 	// Returns string length
 	#define strlen(input) llStringLength(input)
 	// Returns true if string starts with

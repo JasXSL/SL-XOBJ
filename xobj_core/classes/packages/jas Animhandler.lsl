@@ -84,10 +84,13 @@ default
 		
             if( METHOD == AnimHandlerMethod$anim ){
 			
-                list anims = [method_arg(0)];
+                list anims = (list)method_arg(0);
 				if( llJsonValueType((string)anims, []) == JSON_ARRAY )
 					anims = llJson2List((string)anims);
 					
+				if( llJsonValueType(l2s(anims, 0), []) == JSON_ARRAY )
+					anims = llJson2List(randElem(anims));
+				
 				integer start = (integer)method_arg(1);
 				float dly = (float)method_arg(2);
 				float end = (float)method_arg(3);
