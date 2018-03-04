@@ -18,6 +18,8 @@
 #define str string
 #define int integer
 #define count(input) (input != [])	// Sorcery!
+#define Infinity ((float)"inf")
+#define NaN ((float)"nan")
 
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)

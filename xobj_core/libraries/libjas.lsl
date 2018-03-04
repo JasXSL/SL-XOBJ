@@ -212,21 +212,28 @@ string mergeJson(string input, string MERGE){
 			I = (string)parse;
 		}
 		#endif
-
-		list order = (list)"^" + "*,/" + "" + ">,<,==,&";
+		// "" is needed for addition
+		list order = (list)"^" + "*,/" + "" + ">,<,==,&,|";
 		parse = llParseString2List(I, (list)"+", (list)"^" + "*" + "/" + "-" + "&" + "<" + ">" + "==");
+		#ifndef PMATH_CAPTURE_MATH_ERRORS
 		I = "";
+		#endif
 		
 		// Convert constants and functions
 		integer i;
 		for( ; i < count(parse); ++i ){
 
+			// Split by additional separators
+			list l = llParseString2List(l2s(parse, i), [], (list)"|");
+			if( (l != []) > 1 )
+				parse = llListReplaceList(parse, l, i, i);
+		
 			string s = llList2String(parse, i);
 			if ((!(s == "0")) & (float)s == ((float)0))
 			{
 				// Redeem functions and constants
-				list functions = (list)"π" + "~" +"!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN";
-				
+				list functions = (list)"~" + "!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN" + "SQRT" + "ABS";
+								
 				// Check constants
 				#ifdef PMATH_CONSTS
 				integer p = llListFindList(llList2ListStrided(PMATH_CONSTS, 0, -1, 2), (list)s);
@@ -242,7 +249,7 @@ string mergeJson(string input, string MERGE){
 						string f = llList2String(functions, n);
 						
 						if( llGetSubString(s, 0, ~-llStringLength(f)) == f ){
-						
+
 							float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
 							if (f == "CEIL")
 								v = llCeil(v);
@@ -260,8 +267,12 @@ string mergeJson(string input, string MERGE){
 								v = llCos(v);
 							else if (f == "SIN")
 								v = llSin(v);
-							else if (f == "π")
-								v = PI;
+							else if( f == "SQRT" )
+								v = llSqrt(v);
+							else if( f == "ABS" && l2s(parse, -~i) == "-" ){
+								parse = llDeleteSubList(parse, i, -~i);
+								jump pmath_functionLoop;
+							}
 								
 							parse = llListReplaceList(parse, (list)v, i, i);
 							functions = [];
@@ -275,8 +286,12 @@ string mergeJson(string input, string MERGE){
 			}
 			else
 				parse = llListReplaceList(parse, (list)((float)s), i, i);
-				
+			
+			@pmath_functionLoop;
 		}
+		
+		
+		
 		// Handle minuses
 		for( i = 0; i<count(parse); ++i ){
 		
@@ -298,8 +313,7 @@ string mergeJson(string input, string MERGE){
 				float a = llList2Float(parse, ~-pointer);
 				
 				
-				string v = llList2String(parse, pointer);
-				
+				string v = llList2String(parse, pointer);				
 				// Handle addition
 				if( o == [] && llGetListEntryType(parse, ~-pointer) + llGetListEntryType(parse, pointer) == 4 ){
 
@@ -313,10 +327,22 @@ string mergeJson(string input, string MERGE){
 					float b = llList2Float(parse, -~pointer);
 					if (v == "*")
 						a = a * b;
-					else if(v == "/")
+					else if(v == "/"){
+						#ifdef PMATH_CAPTURE_MATH_ERRORS
+						if( b == 0 )
+							qd("MATH ERROR Captured: Division by zero in "+I);
+						else
+						#endif 
 						a = a / b;
-					else if(v == "^")
+					}
+					else if(v == "^"){
+						#ifdef PMATH_CAPTURE_MATH_ERRORS
+						if((b != (integer)b) && (a < 0.0))
+							qd("MATH ERROR Captured: Invalid base or exponent in pow: "+I);
+						else
+						#endif
 						a = llPow(a, b);
+					}
 					else if(v == "&")
 						a = (integer)a & (integer)b;
 					else if(v == ">")
@@ -325,7 +351,9 @@ string mergeJson(string input, string MERGE){
 						a = a < b;
 					else if(v == "==")
 						a = a == b;
-					
+					else if( v == "|" )
+						a = (integer)a|(integer)b;
+						
 					parse = llListReplaceList(parse, (list)a, ~-pointer, -~pointer);
 					pointer = ~-~-pointer;
 				}
