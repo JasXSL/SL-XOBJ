@@ -57,7 +57,7 @@
 // Returns 0 if a save failed due to overflow
 string db3(list input){
 	string table = llList2String(input,0);
-	integer i; string data; 
+	integer i;
 	// Scan the linkset
 	links_each(nr, name,
 		if(llGetSubString(name, 0, 1) == "DB"){
@@ -65,14 +65,24 @@ string db3(list input){
 			for(i=0; i<nrFaces; i++){
 				// For backwards compatibility, GET will grab whitelist, but SET cannot
 				// Editing existing levels will require a conversion by the local script
-				data = implode("", llGetLinkMedia(nr, i, [PRIM_MEDIA_HOME_URL, PRIM_MEDIA_CURRENT_URL, PRIM_MEDIA_WHITELIST]));
+				string data = "";
+				string add = llGetSubString(llList2String(llGetLinkMedia(nr, i, [PRIM_MEDIA_HOME_URL]), 0), 8, -1);
+				if(add == "https://")add = "";
+				data += add;
+				add = llGetSubString(llList2String(llGetLinkMedia(nr, i, [PRIM_MEDIA_CURRENT_URL]), 0), 8, -1);
+				if(add == "https://")add = "";
+				data += add;
+				data += llList2String(llGetLinkMedia(nr, i, [PRIM_MEDIA_WHITELIST]), 0);
+
 				// See if this is the proper table
 				integer pos = llSubStringIndex(data,"|");
 				if(llGetSubString(data, 0, pos-1) == table){
+
 					// Remove the prefix
 					data = llDeleteSubString(data, 0, pos);
 					// return data on GET
 					if(count(input)==1)return data;
+					
 					
 					
 					// SET data
@@ -85,11 +95,11 @@ string db3(list input){
 					// SET data. Whitelist can only be 63 characters long for security purposes
 					llSetLinkMedia(nr, i, [
 						PRIM_MEDIA_HOME_URL, 
-						llGetSubString(data,0,1023), 
+						"https://"+llGetSubString(data,0,1015), 
 						PRIM_MEDIA_CURRENT_URL, 
-						llGetSubString(data,1024,2047), 
+						"https://"+llGetSubString(data,1016,2040), 
 						PRIM_MEDIA_WHITELIST, 
-						llGetSubString(data, 2048, 2110), 
+						llGetSubString(data, 2041, 2105), 
 						PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE
 					]);
 					

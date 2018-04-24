@@ -152,7 +152,7 @@ link_message(integer link, integer nr, string s, key id){
 			integer _occupied; // Bitwise combination
 			for(_i = 0; _i <llGetLinkNumberOfSides(nr); _i++){
 				string _data = llList2String(llGetLinkMedia(nr, _i, [PRIM_MEDIA_HOME_URL]),0); // Only need home URL since names are limited
-				string name = llGetSubString(_data, 0, llSubStringIndex(_data, "|")-1);
+				string name = llGetSubString(_data, 8, llSubStringIndex(_data, "|")-1);
 				// Occupied face
 				if(name != "" && llListFindList(_index_tables, [name]) == -1){ 
 					_index_tables += name;
@@ -177,7 +177,7 @@ link_message(integer link, integer nr, string s, key id){
 				for(_y = 0; _y<llGetLinkNumberOfSides(_prim); _y++){
 					integer _n = (int)llPow(2, _y);
 					if(~_occupied & _n){
-						llSetLinkMedia(_prim, _y, [PRIM_MEDIA_HOME_URL, _tbl+"|[]"]);
+						llSetLinkMedia(_prim, _y, [PRIM_MEDIA_HOME_URL, "https://"+_tbl+"|[]"]);
 						_index_db = llListReplaceList(_index_db, [_occupied|_n], _x+2, _x+2);
 						// Continue adding tables
 						jump _db4_add_continue;

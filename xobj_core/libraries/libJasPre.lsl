@@ -20,6 +20,7 @@
 #define count(input) (input != [])	// Sorcery!
 #define Infinity ((float)"inf")
 #define NaN ((float)"nan")
+#define ONE_VECTOR <1.0,1.0,1.0>
 
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)
