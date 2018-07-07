@@ -1,78 +1,75 @@
-#include "xobj_core/_CLASS_STATIC.lsl"
+#include "xobj_core/_ROOT.lsl"
 #include "xobj_core/classes/jas SoundspaceAux.lsl"
 
 float vol_max = 1;
 float vol;
 integer BFL;
 #define BFL_DIR_UP 1
-string sound_next;
 
+default{
 
-timerEvent(string id, string data){
-    if(id == "A"){
-        if(BFL&BFL_DIR_UP){
-            vol+=.05;
-            if(vol>vol_max){
-                vol = vol_max;
-                multiTimer(["A"]);
-                sound_next = "";
-            }
-        }else{
-            vol-=.05;
-            if(vol<0){
-                vol = 0;
-                if(sound_next != ""){
-                    llLoopSound(sound_next, 0.01);
-                    BFL = BFL|BFL_DIR_UP;
-                }else{
-                    multiTimer(["A"]);
-                }
-            }
-        }
-        llAdjustSoundVolume(vol);    
-    }
-}
-
-default
-{
-    state_entry()
-    {
+    state_entry(){
+	
         llStopSound();
         llSetMemoryLimit(llCeil(llGetUsedMemory()*1.5));
+		
     }
     
     timer(){
-        multiTimer([]);
+		
+		float dir = -0.05;
+		if( BFL&BFL_DIR_UP )
+			dir = -dir;
+		
+		vol += dir;
+		if( vol < 0 ){
+		
+			vol = 0;
+			llStopSound();
+			llSetTimerEvent(0);
+			return;
+			
+		}
+		
+		if( vol > vol_max ){
+			
+			vol = vol_max;
+			llSetTimerEvent(0);
+			
+		}
+		
+		llAdjustSoundVolume(vol);
+		
     }
     
     #include "xobj_core/_LM.lsl" 
-    /*
-        Included in all these calls:  
-        METHOD - (int)method 
-        INDEX - (int)obj_index
-        PARAMS - (var)parameters
-        SENDER_SCRIPT - (var)parameters
-        CB - The callback you specified when you sent a task
-    */
-        if(method$isCallback){
-            return;
-        }
-        if(id != "")return;
-        
-        integer sub = (integer)method_arg(0);
-        if(sub != THIS_SUB && sub != -1)return;
-        
-        if(METHOD == SoundspaceAuxMethod$start){
-            BFL = BFL|BFL_DIR_UP;
-            vol_max = (float)method_arg(2);
-            sound_next = method_arg(1);
-            if(vol == 0)llLoopSound(sound_next,0.01);
-            else BFL = BFL&~BFL_DIR_UP;
-            multiTimer(["A", "", .05, TRUE]);
-        }else if(METHOD == SoundspaceAuxMethod$stop){
-            BFL = BFL&~BFL_DIR_UP;
-            multiTimer(["A", "", .05, TRUE]);
-            sound_next = "";
+	
+        if( id != "" || method$isCallback )
+			return;
+
+        if( METHOD == SoundspaceAuxMethod$set ){
+			
+			int active = l2i(PARAMS, 0);
+			key sound = method_arg(1);
+			float v = l2f(PARAMS, 2);
+			
+			if( active != THIS_SUB && vol > 0 ){
+				
+				llSetTimerEvent(0.05);
+				BFL = BFL&~BFL_DIR_UP;
+			
+			}
+			else if( active == THIS_SUB ){
+				
+				vol = 0;
+				vol_max = v;
+				BFL = BFL|BFL_DIR_UP;
+				llStopSound();
+				llLoopSound(sound, 0.01);
+				llSetTimerEvent(0.05);
+			
+			}
+
         }
         
         

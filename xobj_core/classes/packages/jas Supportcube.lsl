@@ -66,8 +66,12 @@ runTask(){
             
 			// Wait until seated before executing more commands
 			if(waitUntilSeated){
+				
+				// Give a HOLD 5 sec
+				multiTimer(["ST", 0, 5, FALSE]);
                 BFL = BFL|BFL_ON_SIT;
                 return;
+				
             }
 			
         }
@@ -169,6 +173,13 @@ timerEvent(string id, string data){
 	else if(id == TIMER_CHECK && llKey2Name(llGetOwner()) == "")
 		kill();
 		
+	else if( id == "ST" ){
+	
+		BFL = BFL&~BFL_ON_SIT;
+		runTask();
+		
+	}
+		
 }
 
 onListenOverride(integer chan, key id, string message){
@@ -250,12 +261,16 @@ default
 			key ast = llAvatarOnSitTarget();
 			
 			// Owner seated
-			if(ast == llGetOwner()){
+			if( ast == llGetOwner() ){
+			
                 llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 				if(BFL&BFL_ON_SIT){
+				
                     BFL = BFL&~BFL_ON_SIT;
                     runTask();
+					
                 }
+				
             }
 			
 			// Unsits or other person seated

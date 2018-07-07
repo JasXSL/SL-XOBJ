@@ -18,7 +18,7 @@
 #define str string
 #define int integer
 #define count(input) (input != [])	// Sorcery!
-#define Infinity ((float)"inf")
+#define Infinity 340282356779733642748073463979561713664.00000000
 #define NaN ((float)"nan")
 #define ONE_VECTOR <1.0,1.0,1.0>
 

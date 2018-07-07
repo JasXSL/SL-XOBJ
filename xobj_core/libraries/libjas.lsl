@@ -405,9 +405,10 @@ multiTimer( list da ){
         }
     }
 	
-    if( _T == [] )
-		return llSetTimerEvent(0); 
-	
+    if( _T == [] ){
+		llSetTimerEvent(0); 
+		return;
+	}
     _T= llListSort(_T, 5, TRUE);
 	
     float t = llList2Float(_T,0) + -llGetTime();

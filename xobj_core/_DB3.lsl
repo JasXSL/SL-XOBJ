@@ -81,13 +81,12 @@ string db3(list input){
 					// Remove the prefix
 					data = llDeleteSubString(data, 0, pos);
 					// return data on GET
-					if(count(input)==1)return data;
-					
-					
-					
+					if(count(input)==1)
+						return data;
+
 					// SET data
 					data = table+"|"+llJsonSetValue(data, llDeleteSubList(input, 0, 1), llList2String(input, 1));
-					if(llStringLength(data)>db3$tableMaxlength){
+					if( llStringLength(data) > db3$tableMaxlength ){
 						debugRare("Data overflow on DB3 table: "+table);
 						return "0";
 					}

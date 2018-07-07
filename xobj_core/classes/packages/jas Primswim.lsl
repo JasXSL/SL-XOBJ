@@ -156,15 +156,21 @@ updateAnimstate(){
     
 	
 	
-    if(bf_start != 0){
-        if(bf_start&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle,TRUE,0,0);
-        if(bf_start&BFA_ACTIVE){
-            AnimHandler$anim(PrimswimCfg$animActive, TRUE, 0,0);
-        }
+    if( bf_start != 0 ){
+	
+        if( bf_start&BFA_IDLE )
+			AnimHandler$anim(PrimswimCfg$animIdle,TRUE,0,0,0);
+        if( bf_start&BFA_ACTIVE )
+            AnimHandler$anim(PrimswimCfg$animActive, TRUE, 0,0,0);
+        
     }
     if(bf_stop != 0){
-        if(bf_stop&BFA_IDLE)AnimHandler$anim(PrimswimCfg$animIdle, FALSE, 0,0);
-        if(bf_stop&BFA_ACTIVE)AnimHandler$anim(PrimswimCfg$animActive, FALSE, 0,0);
+	
+        if( bf_stop&BFA_IDLE )
+			AnimHandler$anim(PrimswimCfg$animIdle, FALSE, 0,0,0);
+        if( bf_stop&BFA_ACTIVE )
+			AnimHandler$anim(PrimswimCfg$animActive, FALSE, 0,0,0);
+			
     }
 	
 }
@@ -203,7 +209,6 @@ exitWater(){
     CONTROL = 0;
     multiTimer([TIMER_SWIMSTROKE]);
     llStopMoveToTarget();
-    llStopSound();
     BFL=BFL&~BFL_IN_WATER;
     BFL=BFL&~BFL_AT_SURFACE;
     BFL=BFL&~BFL_SWIMMING;
