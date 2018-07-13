@@ -1,5 +1,5 @@
 
-#include "xobj_core/_CLASS_STATIC.lsl"
+#include "xobj_core/libraries/libJasPre.lsl"
 #include "xobj_core/classes/jas Supportcube.lsl"
 #include "xobj_core/classes/jas RLV.lsl"
 #include "xobj_core/classes/jas AnimHandler.lsl"

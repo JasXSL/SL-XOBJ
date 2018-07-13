@@ -56,7 +56,7 @@
 	
 	
 	
-	
+#define integerLizeKey(id, salt) ((integer)("0x1"+llGetSubString(id, 0, 6))+salt)
 	
 	
 // LISTS //
