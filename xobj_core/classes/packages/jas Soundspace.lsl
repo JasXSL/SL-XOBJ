@@ -88,8 +88,7 @@ updateSoundspace(){
 	++aux;
     if( aux > 2 )
 		aux = 1;
-	
-	//qd("Soundspace is now "+(str)cs);
+		
 }
 clearSoundspace(){
 
@@ -172,7 +171,6 @@ default
 			
 		}
 		
-		qd("Overridesound is now "+(str)s);
 		updateSoundspace();
 		
 	}

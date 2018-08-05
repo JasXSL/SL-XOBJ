@@ -34,20 +34,6 @@
 	
 */
 
-// There are lots of configs you can set up, if so, define them above the st RLV.lsl include line
-// Use the RLV folder system
-#ifndef RLVcfg$USE_FOLDERS
-	#define RLVcfg$USE_FOLDERS 1
-	
-	// Root folder of clothing
-	#ifndef RLVcfg$FOLDER_ROOT
-		#define RLVcfg$FOLDER_ROOT "Tentacle Moon"
-	#endif
-	
-	
-#endif
-
-
 // #define RLVcfg$USER_EVENTS <- Ex: #define RLVcfg$USER_EVENTS onUsrEvt to raise the onUserEvt function when an event is received
 // #define RLVcfg$NO_RESTRICT <- Makes all RLV methods public. Otherwise they are limited to owner
 
@@ -92,7 +78,7 @@
 	#define RLVcfg$USE_KEEPATTACH 1
 #endif
 
-// Use RLV windlight. You can use ton Footsteps to integrate the floor windlight settings.
+// Use RLV windlight. You can use ton Footsteps to integrate the floor windlight settings. This requires at least 2 prims in the linkset to use LINK_ROOT
 #ifndef RLVcfg$USE_WINDLIGHT
 	#define RLVcfg$USE_WINDLIGHT 1
 #endif
@@ -102,9 +88,9 @@
 	#define RLVcfg$USE_CAM 1
 #endif
 
-
-
-
+#ifndef RLVcfg$USE_FOV
+	#define RLVcfg$USE_FOV 1
+#endif
 
 
 // RLV commands to send upon initialization
@@ -127,14 +113,10 @@
 	#define RLVcfg$CLOTHLAYERS ["Clothes", "Undies", "Genitals"]
 #endif
 
-
-
-
 #include "xobj_core/classes/jas Supportcube.lsl" // Required
 
 // Methods //
-#define RLVMethod$setFolder 0			// str folder		Current top level folder ex #RLV/BARE/Lynx/<folder>
-#define RLVMethod$setSubFolder 1		// str Subfolder	Current mid level folder ex #RLV/BARE/<subFolder>/Clothes
+
 #define RLVMethod$cubeTask 2			// Task1, task2... - Sends supportcube tasks to the support cube, spawns one if not exists
 #define RLVMethod$keepAttached 3		// (str)objName		- Forces an attachment and tries to keep it attached if detached
 #define RLVMethod$remAttached 4			// (str)objName		- Removes an attachment
@@ -155,7 +137,7 @@
 #define RLVMethod$staticCamera 18		// (vec)region_pos, (rot)rotation - Forces camera to position and rot. If region_pos is 0 it clears
 #define RLVMethod$reset 19				// void - Resets the script, internal only
 
-#define RLVMethod$setWindlight 20		// Sets windlight settings. Accepts the following arguments:
+#define RLVMethod$setWindlight 20		// (obj)settings. Sets windlight settings. Accepts the following parameters:
 /*
 	
 	ambient 		(vec)Ambient
@@ -179,8 +161,8 @@
 	sunmooncolor	(vec)S/M Colr
 	sunmoonposition	(float)Est Ang 0.25 is midday
 
-
 */
+#define RLVMethod$setFov 21					// float fov. Use 0 to reset
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
@@ -191,8 +173,7 @@
 
 
 // Shortcuts
-#define RLV$setFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFolder, [folder], TNN)
-#define RLV$setSubFolder(folder) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setSubFolder, [folder], TNN)
+#define RLV$setFov(fov) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFov, (list)fov, TNN)
 #define RLV$cubeTask(tasks) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$cubeTask, tasks, TNN)
 #define RLV$cubeTaskOn(targ, tasks) runMethod((string)targ, "jas RLV", RLVMethod$cubeTask, tasks, TNN)
 #define RLV$keepAttached(item) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$keepAttached, [item], TNN)

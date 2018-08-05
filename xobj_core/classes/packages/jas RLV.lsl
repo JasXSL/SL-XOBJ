@@ -17,6 +17,9 @@ string SUBFOLDER;
 list KEEP_ATTACHED = []; // (str)itemName, (key)id
 #endif
 
+integer CHAN_VERSION;
+#define CHAN_FOV (CHAN_VERSION+1)
+
 #if RLVcfg$USE_SPRINT==1
 float sprint = RLVcfg$limitSprint;
 string sprintTexture = "c0f942a2-46c3-2489-33ef-f072a6cb4e0d";
@@ -92,22 +95,37 @@ public_remAttached(string item){
 }
 #endif
 
-
-#if RLVcfg$USE_FOLDERS==1
-public_setFolder(string folder){
-    string pre = CURRENT_FOLDER;
-    if(folder == pre)return;
-    CURRENT_FOLDER = folder;
-    list folders = RLVcfg$CLOTHLAYERS;
-    string subfolder = SUBFOLDER;
-    if(subfolder)subfolder = subfolder+"/";
-
-    list_shift_each(folders,val, {
-        if(val != folder)llOwnerSay("@detachAll:"+RLVcfg$FOLDER_ROOT+"/"+subfolder+val+"=force");
-    });
-    llOwnerSay("@attachAllOver:"+RLVcfg$FOLDER_ROOT+"/"+subfolder+folder+"=force");
-}
+#if RLVcfg$USE_FOV == 1
+	float CACHE_FOV;			// If 0, it needs to be recached
+	float ACTIVE_FOV;			// Set by a script
+	setFoV( float fov ){
+		
+		ACTIVE_FOV = fov;
+		// Reset
+		if( ACTIVE_FOV <= 0 ){
+			
+			float base = CACHE_FOV;
+			if( base <= 0 )
+				base = 1.047;
+			llOwnerSay("@setcam_fov:"+(str)base+"=force");
+			CACHE_FOV = 0;
+			return;
+			
+		}
+		// FoV is already cached, we can change immediately
+		if( CACHE_FOV > 0 ){
+		
+			llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
+			return;
+			
+		}
+		
+		// FoV is not cached
+		llOwnerSay("@getcam_fov="+(str)CHAN_FOV);
+		
+	}
 #endif
+
 
 #if RLVcfg$USE_SPRINT==1
 damageSprint(float amount){
@@ -220,38 +238,49 @@ timerEvent(string id, string data){
     }
 } 
 
-#if RLVcfg$USE_FOLDERS==1
-public_setSubFolder(string folder){
-    if(folder == JSON_INVALID || folder == JSON_NULL)folder = "";
-    SUBFOLDER = folder;
-}
-#endif
 
-default 
-{
+
+default {
+
     object_rez(key id){
-        if(llKey2Name(id) == "SupportCube"){
-            supportcube = id;
-
-            raiseEvent(RLVevt$supportcubeSpawn, (string)id);
-            //llSleep(.2);
-            //cubeTask([]);
+	
+        if( llKey2Name(id) == "SupportCube" ){
+            
+			supportcube = id;
+			raiseEvent(RLVevt$supportcubeSpawn, (string)id);
+			
         }
+		
     }
     
     attach(key id){
-        if(id != llGetOwner())llOwnerSay("@"+RLVcfg$onRemove);
-		else llResetScript();
+        
+		if( id != llGetOwner() ){
+		
+			string out = "@"+RLVcfg$onRemove;
+			if( CACHE_FOV > 0 )
+				out += ",setcam_fov:"+(str)CACHE_FOV+"=force";
+			llOwnerSay(out);
+			
+		}
+		else 
+			llResetScript();
+			
     }
     
-    state_entry()
-    {
-        integer chan = llAbs(playerChan(llGetOwner())+133);
-        llListen(chan, "", llGetOwner(), "");
-        if(llGetAttached())llOwnerSay("@versionnum="+(string)chan);
+    state_entry(){
+	
+        CHAN_VERSION = llAbs(playerChan(llGetOwner())+133);
+        llListen(CHAN_VERSION, "", llGetOwner(), "");
+		llListen(CHAN_FOV, "", llGetOwner(), "");
+		
+        if( llGetAttached() )
+			llOwnerSay("@versionnum="+(string)CHAN_VERSION);
+			
         #if RLVcfg$USE_SPRINT==1
         links_each(num, ln, {
-            if(ln == RLVcfg$sprintName){sprintPrim = num;}
+            if(ln == RLVcfg$sprintName)
+				sprintPrim = num;
         })
 		
 		#ifdef RLVcfg$sprintFadeOut
@@ -260,21 +289,33 @@ default
 		
 		#endif 
 		#if RLVcfg$USE_CAM==1
-		if(llGetAttached())
+		if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
 		#endif
 		memLim(1.5);
+		
     }
     
-    listen(integer chan, string name, key id, string message){
-        if((integer)message){
+    listen( integer chan, string name, key id, string message ){
+	
+        if( chan == CHAN_VERSION ){
+		
             raiseEvent(evt$SCRIPT_INIT, llList2Json(JSON_OBJECT, ["s", cls$name]));
             llOwnerSay("@"+RLVcfg$onInit);
             multiTimer([TIMER_INIT_DLY, "", 1, FALSE]);
             #if RLVcfg$USE_SPRINT==1
             multiTimer([TIMER_SPRINT_CHECK, "", .5, TRUE]);
             #endif
+			
         }
+		else if( chan == CHAN_FOV ){
+			
+			CACHE_FOV = (float)message;
+			if( ACTIVE_FOV > 0 )
+				llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
+			
+		}
+		
     }
 
     timer(){multiTimer([]);}
@@ -284,7 +325,6 @@ default
     /*
         Included in all these calls:
         METHOD - (int)method
-        INDEX - (int)obj_index
         PARAMS - (var)parameters
         SENDER_SCRIPT - (var)parameters
         CB_DATA - This is where you set any callback data you have
@@ -312,14 +352,6 @@ default
     if(method$byOwner){
 	#endif
 	
-        #if RLVcfg$USE_FOLDERS==1
-		if(METHOD == RLVMethod$setFolder)
-            public_setFolder(method_arg(0));
-        else if(METHOD == RLVMethod$setSubFolder){
-            public_setSubFolder(method_arg(0));
-        }
-		#endif
-		
 		#if RLVcfg$USE_CAM==1
 		if(METHOD == RLVMethod$staticCamera){
 			if(~llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
@@ -478,6 +510,13 @@ default
 		}
 		
 		
+		#endif
+		
+		
+		// -- FOV --
+		#if RLVcfg$USE_FOV == 1
+		if( METHOD == RLVMethod$setFov )
+			setFoV(l2f(PARAMS, 0));
 		#endif
             
         #if RLVcfg$USE_SPRINT==1
