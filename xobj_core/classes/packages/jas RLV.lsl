@@ -99,11 +99,15 @@ public_remAttached(string item){
 	float CACHE_FOV;			// If 0, it needs to be recached
 	float ACTIVE_FOV;			// Set by a script
 	setFoV( float fov ){
-		
+
 		ACTIVE_FOV = fov;
+
 		// Reset
 		if( ACTIVE_FOV <= 0 ){
 			
+			// But only if set
+			if( CACHE_FOV <= 0 )
+				return;
 			float base = CACHE_FOV;
 			if( base <= 0 )
 				base = 1.047;
@@ -112,17 +116,15 @@ public_remAttached(string item){
 			return;
 			
 		}
-		// FoV is already cached, we can change immediately
-		if( CACHE_FOV > 0 ){
 		
-			llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
-			return;
+		// Cache
+		if( CACHE_FOV  <= 0 )
+			return llOwnerSay("@getcam_fov="+(str)CHAN_FOV);
 			
-		}
-		
-		// FoV is not cached
-		llOwnerSay("@getcam_fov="+(str)CHAN_FOV);
-		
+			
+		// FoV is already cached, we can change immediately
+		llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
+
 	}
 #endif
 
@@ -196,14 +198,17 @@ timerEvent(string id, string data){
 			#endif
 		}
 	
-        if(sprint<0)sprint = 0;
-        else if(sprint > RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
+        if( sprint<0 )
+			sprint = 0;
+        else if( sprint > RLVcfg$limitSprint )
+			sprint = RLVcfg$limitSprint;
         outputSprint();
+		
     }
 	
-	else if(id == TIMER_SPRINT_START_REGEN){
+	else if( id == TIMER_SPRINT_START_REGEN )
         multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
-    }
+    
 	
 	#ifdef RLVcfg$sprintFadeOut
 	else if(id == TIMER_SPRINT_FADE){
