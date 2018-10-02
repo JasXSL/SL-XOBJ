@@ -6,7 +6,7 @@
 
 // SERVER
 #ifndef jasVibHub$server
-	#define jasVibHub$server "http://api.vibhub.io/"
+	#define jasVibHub$server "https://vibhub.io/api"
 #endif
 
 // PROGRAM

@@ -6,7 +6,6 @@
 
 //    Included in all these calls:
 //    METHOD - (int)method
-//    INDEX - (int)obj_index
 //    PARAMS - (var)parameters
 //    SENDER_SCRIPT - (var)parameters
 //    CB - The callback you specified when you sent a task
