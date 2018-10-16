@@ -50,7 +50,7 @@ multiTimerEvent(string id){
             llSetRegionPos(gtp+add);
         }else{
             // Move2
-            float t = llVecDist(llGetPos(), gtp+add);
+            float t = llVecDist(llGetRootPosition(), gtp+add);
             llMoveToTarget(gtp+add,t/MS);
         }
 
@@ -60,7 +60,7 @@ multiTimerEvent(string id){
     else if(id == "HC"){
         // Height check
         if(startpos==ZERO_VECTOR)return;
-        vector gpos = llGetPos();
+        vector gpos = llGetRootPosition();
         float dist  = llVecDist(startpos,gpos);
         if((dist>maxDist && maxDist!=0) || (minDist!=0 && dist<minDist) || (gpos.z>startpos.z+maxHeight && maxHeight!=0) || (gpos.z<startpos.z-MINHEIGHT && MINHEIGHT!=0)){
             die();
@@ -105,7 +105,7 @@ default
     state_entry()
     { 
         llListen(integerLizeKey(llGetKey(),3268), "", "", "");
-        startpos = llGetPos();
+        startpos = llGetRootPosition();
         CHAN_GLOBAL = integerLizeKey(llGetOwner(), 13278);
         llSetStatus(STATUS_PHYSICS, FALSE);
         llSetStatus(STATUS_DIE_AT_EDGE|STATUS_PHANTOM, TRUE);

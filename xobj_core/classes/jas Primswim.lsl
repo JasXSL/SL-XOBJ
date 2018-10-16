@@ -61,13 +61,11 @@
 
 #define PrimswimMethod$airpockets 1				// airpocket1, airpocket2...
 #define PrimswimMethod$swimSpeedMultiplier 2	// (float)speed | Allows you to swim faster or slower. 1 is default, higher is faster.
+#define PrimswimMethod$particleHelper 3			// (key)helper
 
 // Includes
-#ifndef PrimswimCfg$USE_PARTICAT
-	#define PrimswimCfg$USE_PARTICAT 1		// Use particles (requires particat setup)
-#endif
 #ifndef PrimswimCfg$USE_WINDLIGHT
-	#define PrimswimCfg$USE_WINDLIGHT 1		// Use particles (requires particat setup)
+	#define PrimswimCfg$USE_WINDLIGHT 1		// Use RLV windlight (requires jas RLV)
 #endif
 
 // Timer tick speed
@@ -130,11 +128,12 @@
 
 
 #define Primswim$airpockets(airpockets) runMethod((string)LINK_ROOT, "jas Primswim", PrimswimMethod$airpockets, airpockets, TNN)
-#define Primswim$swimSpeedMultiplier(targ, multiplier) runMethod((string)(targ), "jas Primswim", PrimswimMethod$swimSpeedMultiplier, [multiplier], TNN)
+#define Primswim$swimSpeedMultiplier(targ, multiplier) runMethod((string)(targ), "jas Primswim", PrimswimMethod$swimSpeedMultiplier, (list)multiplier, TNN)
+#define Primswim$particleHelper(helper) runMethod((string)LINK_THIS, "jas Primswim", PrimswimMethod$particleHelper, (list)helper, TNN);
 
 // events raised
-#define PrimswimEvt$onWaterEnter 1
+#define PrimswimEvt$onWaterEnter 1		// [(int)speed, (vec)position] - Speed is a value between 0 (slowly entered water) and 2 (very rapidly)
 #define PrimswimEvt$onWaterExit 2
 #define PrimswimEvt$atLedge 3			// [(bool)at_ledge] - Player is at a ledge and can climb out
-
+#define PrimswimEvt$feetWet 4			// [(bool)wet] - Feet are now wet or not
 

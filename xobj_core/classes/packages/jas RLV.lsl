@@ -61,7 +61,7 @@ cubeTask(list tasks){
             cubetasks = [];
         }else{
 			debugUncommon("Spawning cube");
-            llRezAtRoot("SupportCube", llGetPos()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
+            llRezAtRoot("SupportCube", llGetRootPosition()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
         }
         
     }
@@ -541,7 +541,7 @@ default {
         #endif
 		
 		if(METHOD == RLVMethod$turnTowards){
-			vector vec = (vector)method_arg(0)-llGetPos();
+			vector vec = (vector)method_arg(0)-llGetRootPosition();
             vector fwd = vec * <0.0, 0.0, -llSin(PI_BY_TWO * 0.5), llCos(PI_BY_TWO * 0.5)>;
             fwd.z = 0.0;
             fwd = llVecNorm(fwd);

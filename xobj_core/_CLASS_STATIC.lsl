@@ -16,7 +16,7 @@
 	#define method$byOwner (id == "" || llGetOwnerKey(id) == llGetOwner())
 
 // Check if a method is called by a script within the same linkset
-	#define method$internal id == ""
+	#define method$internal (id == "")
 
 // Check if a method was a callback
 	#define method$isCallback nr == METHOD_CALLBACK

@@ -88,7 +88,7 @@ dismount(integer atoffset){
     
     string anm = anim_dismount_bottom;
     if(atoffset){
-        vector gpos = llGetPos();
+        vector gpos = llGetRootPosition();
         vector offset = offset2global(llList2Vector(nodes,0));
 		
         if(~BFL&BFL_DIR_UP){
@@ -253,7 +253,7 @@ findNearestNode(){
     
     integer i;
     for(i=0; i<llGetListLength(l); i++){
-        float d = llVecDist(llGetPos(), offset2global(llList2Vector(l,i)));
+        float d = llVecDist(llGetRootPosition(), offset2global(llList2Vector(l,i)));
         if(dist == 0 || d<dist){
             nn = i; dist = d;
         }

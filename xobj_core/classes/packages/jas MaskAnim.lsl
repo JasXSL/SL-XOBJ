@@ -298,11 +298,11 @@ default
 		if(~BFL&BFL_AGENTS_INIT){
 			integer i;
 			for(i=0; i<total; i++){
-				if(llVecDist(llGetPos(), llDetectedPos(i))<MaskAnimConf$LIMIT_RAYCAST_RANGE){
+				if(llVecDist(llGetRootPosition(), llDetectedPos(i))<MaskAnimConf$LIMIT_RAYCAST_RANGE){
 					return sens(TRUE);
 					// Agent is lower than raycast req range
 				}
-				else if(llList2Integer(llCastRay(llGetPos()+<0,0,1>, llDetectedPos(i), [RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL]),-1) <=0){
+				else if(llList2Integer(llCastRay(llGetRootPosition()+<0,0,1>, llDetectedPos(i), [RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL]),-1) <=0){
 					return sens(TRUE);
 				}
 			}

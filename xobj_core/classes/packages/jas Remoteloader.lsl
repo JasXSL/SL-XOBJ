@@ -125,7 +125,7 @@ default
             llGiveInventory(id, method_arg(0));
         }else if(METHOD == RemoteloaderMethod$attach){
             //llOwnerSay("Rezzing: "+method_arg(0));
-            llRezAtRoot(method_arg(0), llGetPos(), ZERO_VECTOR, ZERO_ROTATION, 1);
+            llRezAtRoot(method_arg(0), llGetRootPosition(), ZERO_VECTOR, ZERO_ROTATION, 1);
             if(CB != ""){
                 delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
 				return;

@@ -9,12 +9,14 @@ list additionalAllow;
 integer ALLOW_ALL_AGENTS;				// Makes all agents use a CUSTOM type interact, regardless of additionalAllow
 
 integer BFL;
+
+
 #define BFL_RECENT_CLICK 1      		// Recently interacted
 #define BFL_OVERRIDE_DISPLAYED 0x2		// Override has been shown
 #define BFL_PRIMSWIM_LEDGE 0x4			// Requires InteractConf$usePrimSwim set. Shows a message if you're at a ledge you can climb out from
+#define BFL_ALLOW_SITTING 0x8			// Allow when sitting
 
 
-#define TIMER_SEEK "a"
 #define TIMER_RECENT_CLICK "c"
 
 integer pInteract;
@@ -28,6 +30,8 @@ list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str
 list ON_INTERACT = [];				// (str)id, (str)datastring - Stuff to be run on interact
 
 
+list NEARBY;
+
 onEvt(string script, integer evt, list data){ 
 	#ifdef USE_EVENT_OVERRIDE
 	evt(script, evt, data);
@@ -39,10 +43,11 @@ onEvt(string script, integer evt, list data){
 		#endif
 		)
 		){
-			if(BFL&BFL_RECENT_CLICK){
+			if( BFL&BFL_RECENT_CLICK )
 				return;
-			}
-			if(!preInteract(targ))return;
+			
+			if( !preInteract(targ) )
+				return;
 			
 			while(ON_INTERACT){
 				list split = llParseString2List(llList2String(ON_INTERACT, 1), ["$$"], []);
@@ -178,156 +183,241 @@ onEvt(string script, integer evt, list data){
 
 timerEvent(string id, string data){
 
-    if( id == TIMER_SEEK ){
-		
-		// override is set, use the override text instead
-		if( OVERRIDE ){
-		
-			if( ~BFL&BFL_OVERRIDE_DISPLAYED ){
+    if(id == TIMER_RECENT_CLICK)
+        BFL = BFL&~BFL_RECENT_CLICK;
+    
+
+}
+
+
+// Loads targ and targDesc into the global
+fetchFromCamera(){
+
+	targ = "";
+	targDesc = "";
+
+	if( llGetPermissions() & PERMISSION_TRACK_CAMERA ){
+	
+		integer ainfo = llGetAgentInfo(llGetOwner());
+		if(~ainfo&AGENT_SITTING || BFL&BFL_ALLOW_SITTING){
+
+			vector start;
+			vector fwd = llRot2Fwd(llGetCameraRot())*3;
+			
+			if( ainfo&AGENT_MOUSELOOK )
+				start = llGetCameraPos();
 				
-				BFL = BFL|BFL_OVERRIDE_DISPLAYED;
-				onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
+			else{
+			
+				vector apos = prPos(llGetOwner());
+				rotation arot = prRot(llGetOwner());
+				vector cpos = llGetCameraPos();
+				rotation crot = llGetCameraRot();
+				vector cV = llRot2Euler(crot);
+				vector aV = llRot2Euler(arot);
 				
+				// Prevents picking up items behind you
+				if( llFabs(cV.z-aV.z) > PI_BY_TWO )
+					return;
+				
+				// We can use cpos if camera is in front of avatar
+				start = cpos;
+				
+				// If camera is behind the avatar. Then we must calculate where the avatar is and cast the ray from there
+				vector temp = (cpos-apos)/arot; 
+				if(llFabs(llAtan2(temp.y,temp.x))>PI_BY_TWO){
+				
+					// Owner Position
+					vector C = apos;
+					// Owner Fwd (Z rotation only) ( aV = llRot2Euler( arot ); )
+					vector B = llRot2Fwd(llEuler2Rot(<0,0,aV.z>));
+					// Camera position
+					vector A = cpos;
+					// Camera fwd
+					vector av = llRot2Fwd(crot);
+					
+					// Prevent division by 0
+					if(B == av)
+						return;
+						
+					// Calculation
+					float div = (av*B);
+					if( div == 0 )
+						return;
+					start = (C-A)*B / div * av + A;
+					
+				}
+				
+				//start = llGetRootPosition()+<0,0,ascale.z*.25>;
 			}
 			
-			if( l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == "" )
-				OVERRIDE = [];
+			list ray = llCastRay(start, start+fwd, []);
+
+			if( llList2Integer(ray,-1) > 0 && llVecDist(llGetRootPosition(), l2v(ray, 1)) < 2 ){
+				
+				key k = llList2Key(ray,0);
+				
+				if( 
+					~llListFindList(additionalAllow, [(string)k]) || 
+					(llGetAgentSize(k) != ZERO_VECTOR && ALLOW_ALL_AGENTS) 
+				){
+				
+					targ = llList2Key(ray,0);
+					targDesc = "CUSTOM";
+					return;
+					
+				}
+					
+				string td = prDesc(k);
+				key real = k;
+				#ifdef InteractConf$USE_ROOT
+				k = prRoot(k);
+				#else
+				if(td == "ROOT"){
+					k = prRoot(k);
+					td = prDesc(k);
+				}
+				#endif
+
+				if(prRoot(llGetOwner()) != prRoot(k)){
+
+					list descparse = llParseString2List(td, ["$$"], []);
+	
+					list_shift_each(descparse, val, {
+					
+						list parse = llParseString2List(val, ["$"], []);
+						if(llList2String(parse,0) == Interact$TASK_DESC){
+							targDesc = td;
+							targ = k;
+							real_key = real;
+							return;
+						}
+						
+					})
+					
+				} 
+				
+			}
+
+		}
+
+	}
+	
+}
+
+seek( list sensed ){
+
+	// override is set, use the override text instead
+	if( OVERRIDE ){
+	
+		if( ~BFL&BFL_OVERRIDE_DISPLAYED ){
 			
+			BFL = BFL|BFL_OVERRIDE_DISPLAYED;
+			onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
 			
 		}
-		else if( llGetPermissions() & PERMISSION_TRACK_CAMERA ){
 		
-            integer ainfo = llGetAgentInfo(llGetOwner());
-			#ifndef InteractConf$allowWhenSitting
-            if(~ainfo&AGENT_SITTING){
-			#endif
+		if( l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == "" )
+			OVERRIDE = [];
 			
-                vector start;
-                vector fwd = llRot2Fwd(llGetCameraRot())*3;
-				
-                if( ainfo&AGENT_MOUSELOOK )
-                    start = llGetCameraPos();
-					
-				else{
-				
-                    vector apos = prPos(llGetOwner());
-					rotation arot = prRot(llGetOwner());
-					vector cpos = llGetCameraPos();
-					rotation crot = llGetCameraRot();
-					vector cV = llRot2Euler(crot);
-					vector aV = llRot2Euler(arot);
-					
-					// Prevents picking up items behind you
-					if(llFabs(cV.z-aV.z) > PI_BY_TWO)
-						return;
-					
-					// We can use cpos if camera is in front of avatar
-					start = cpos;
-					
-					// If camera is behind the avatar. Then we must calculate where the avatar is and cast the ray from there
-					vector temp = (cpos-apos)/arot; 
-					if(llFabs(llAtan2(temp.y,temp.x))>PI_BY_TWO){
-					
-						// Owner Position
-						vector C = apos;
-						// Owner Fwd (Z rotation only) ( aV = llRot2Euler( arot ); )
-						vector B = llRot2Fwd(llEuler2Rot(<0,0,aV.z>));
-						// Camera position
-						vector A = cpos;
-						// Camera fwd
-						vector av = llRot2Fwd(crot);
-						
-						// Prevent division by 0
-						if(B == av)
-							return;
-							
-						// Calculation
-						start = (C-A)*B / (av*B) * av + A;
-						
-					}
-					
-                    //start = llGetPos()+<0,0,ascale.z*.25>;
-                }
-				
-				list ray = llCastRay(start, start+fwd, []);
-    
-                if( llList2Integer(ray,-1) > 0 && llVecDist(llGetPos(), l2v(ray, 1)) < 2 ){
-					
-					key k = llList2Key(ray,0);
-					
-					if( 
-						~llListFindList(additionalAllow, [(string)k]) || 
-						(llGetAgentSize(k) != ZERO_VECTOR && ALLOW_ALL_AGENTS) 
-					){
-					
-						targ = llList2Key(ray,0);
-						targDesc = "CUSTOM";
-						onDesc(targ, "CUSTOM");
-						return;
-						
-					}
-						
-					string td = prDesc(k);
-					key real = k;
-					#ifdef InteractConf$USE_ROOT
-					k = prRoot(k);
-					#else
-					if(td == "ROOT"){
-						k = prRoot(k);
-						td = prDesc(k);
-					}
-					#endif
+		return;
 
-                    if(prRoot(llGetOwner()) != prRoot(k)){
-						
-                        
-                        list descparse = llParseString2List(td, ["$$"], []);
-        
-                        list_shift_each(descparse, val, {
-						
-                            list parse = llParseString2List(val, ["$"], []);
-                            if(llList2String(parse,0) == Interact$TASK_DESC){
-                                targDesc = td;
-                                targ = k;
-								real_key = real;
-                                onDesc(targ, llList2String(parse, 1));
-                                return;
-                            }
-							
-                        })
-						
-                    } 
-					
-                }
-				
-			#ifndef InteractConf$allowWhenSitting
-            }
-			#endif
-            targ = "";
-            targDesc = "";
-			#ifdef PrimswimEvt$atLedge
-			if(BFL&BFL_PRIMSWIM_LEDGE)targ = "_PRIMSWIM_CLIMB_";
-			#endif
-            onDesc(targ, targDesc);
-        }
-    }
+	}
+	
+	// Scan camera
+	fetchFromCamera();
+	
+	// Fail
+	if( !count(sensed) && targ == "" ){
+		
+		#ifdef PrimswimEvt$atLedge
+		if(BFL&BFL_PRIMSWIM_LEDGE)
+			targ = "_PRIMSWIM_CLIMB_";
+		#endif
+	
+	}
+	// No camera available but we sensed some
+	else if( count(sensed) && targ == "" ){
+	
+		// ALGORITHMS!
+		list scales;
+		vector as = llGetAgentSize(llGetOwner());
+		vector gp = llGetRootPosition();
+		integer i;
+		for( ; i<count(sensed); ++i ){
+			
+			vector pp = prPos(l2k(sensed, i));
+			float dist = llVecDist(gp, pp);
+			list ray = llCastRay(gp+<0,0,as.z*0.5>, pp, [RC_DATA_FLAGS, RC_GET_ROOT_KEY]);
+			prAngX(l2k(sensed,i), ang)
+			ang = llFabs(ang);
+			if( (!l2i(ray, -1) || l2k(ray, 0) == l2k(sensed,i)) && (ang < PI/4 || dist < 1) )
+				scales += (list)(ang+dist) + l2k(sensed, i);
+			
+		}
+		
+		scales = llListSort(scales, 2, TRUE);
+		targ = l2k(scales, 1);
+		targDesc = prDesc(l2k(scales, 1));
+		
+	}
+	
+	
+		
+	// Send description
+	list d = explode("$$",targDesc);
+	string dout = targDesc;
+	list_shift_each(d, val, 
+		list spl = explode("$",val);
+		if( l2s(spl, 0) == "D" ){
+			dout = l2s(spl, 1);
+			d = [];
+		}	
+	)
+	
+	onDesc(targ, dout);
+	
+	
 
-    else if(id == TIMER_RECENT_CLICK){
-        BFL = BFL&~BFL_RECENT_CLICK;
-    }
 }
 
 
 
-default
-{
-    state_entry()
-    {
+default{
+
+    state_entry(){
+		
+		#ifdef InteractConf$allowWhenSitting
+			BFL = BFL | BFL_ALLOW_SITTING;
+		#endif
+	
         onInit();
 		llSetMemoryLimit(llGetUsedMemory()*2);
-		multiTimer([TIMER_SEEK, "", 0.25, TRUE]);
-		if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
+		if( llGetAttached() )
+			llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
+		llSensorRepeat("","",ACTIVE|PASSIVE,3,PI,0.25);
+		//llSensor("","",ACTIVE|PASSIVE,3,PI);
+		
     }
+	
+	sensor( integer total ){
+		
+		integer i;
+		list near = [];
+		for( ; i<total; ++i ){
+			
+			key id = llDetectedKey(i);
+			if( startsWith(prDesc(id), "D$") )
+				near += id;				
+		}
+		
+		seek(near);
+		
+	}
+	
+	no_sensor(){
+		seek([]);
+	}
     
     timer(){multiTimer([]);}
     
@@ -356,6 +446,12 @@ default
 		}
 		
 		return;
+	}
+	else if( METHOD == InteractMethod$allowWhenSitting ){
+		if( l2i(PARAMS, 0) )
+			BFL = BFL|BFL_ALLOW_SITTING;
+		else
+			BFL = BFL&~BFL_ALLOW_SITTING;
 	}
 	
 	else if(METHOD == InteractMethod$onClick){

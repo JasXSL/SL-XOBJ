@@ -57,6 +57,8 @@
 #define InteractMethod$override 1			// (str)text, (int)flags - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
 	#define Interact$OF_AUTOREMOVE 0x1			// Auto removes the override if the object that called the override is not found
 #define InteractMethod$onClick 2			// (str)id, $list_actions - id is a unique identifier for your event used in removing, $list_actions is a string same as the Interact$TASK you'd expect. Only passing id unbinds
+#define InteractMethod$allowWhenSitting 3	// (bool)allow - Toggles whether interacts are allowed while sitting
+
 
 // #define InteractConf$usePrimSwim			// Define to use the primswim "exit water" label. onInteract receives "_PRIMSWIM_CLIMB_" from this
 // #define InteractConf$maxRate 0.5			// Seconds between allowed interact attempts

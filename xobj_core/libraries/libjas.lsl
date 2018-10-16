@@ -416,7 +416,7 @@ setLinkedFrame(integer link, vector total, integer frame, key texture, integer s
 }
 
 translateTo(vector to, rotation rota, float time, integer mode){
-    vector start = llGetPos();
+    vector start = llGetRootPosition();
     vector dist = to-start;
     integer totSteps = llFloor(time/0.2);
     if(totSteps<=0)totSteps = 0;
@@ -473,7 +473,7 @@ string vecComp(vector input, integer accuracy){
 }
 // Vec is the vector of the target to look at
 float Vector2Avatar(vector vec){
-    vec = vec-llGetPos();
+    vec = vec-llGetRootPosition();
     vector fwd = vec * <0.0, 0.0, -llSin(PI_BY_TWO * 0.5), llCos(PI_BY_TWO * 0.5)>;
     fwd.z = 0.0;
     fwd = llVecNorm(fwd);

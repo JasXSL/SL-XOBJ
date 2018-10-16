@@ -58,7 +58,7 @@ timerEvent(string id, string data){
         }
         llTriggerSound(randElem(snd), vol);
     }else if(id == TIMER_RECHECK){
-        list ray = llCastRay(llGetPos(), llGetPos()-<0,0,4>, [RC_REJECT_TYPES, RC_REJECT_AGENTS]);
+        list ray = llCastRay(llGetRootPosition(), llGetRootPosition()-<0,0,4>, [RC_REJECT_TYPES, RC_REJECT_AGENTS]);
         if(llList2Integer(ray, -1) <=0)CURRENT_PRIM = "";
         else{ 
             if(CURRENT_PRIM == llList2Key(ray, 0))return;

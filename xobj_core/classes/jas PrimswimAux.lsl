@@ -1,12 +1,10 @@
 /*
 	Refer to st Primswim's header file for setup instructions.
 */
-#define PrimswimAuxMethod$particleset 1		// (int)set, (vec)pos
-#define PrimswimAuxMethod$killById 2		// (str)id
+#define Primswim$partChan playerChan(llGetOwner())+0x1717 
 
+#define PrimswimAuxMethod$spawn 1
 
+#define PrimswimAux$spawn() runMethod((str)LINK_THIS, "jas PrimswimAux", PrimswimAuxMethod$spawn, [], TNN)
 
-
-#define PrimswimAux$particleset(set, pos) runMethod((string)LINK_THIS, "jas PrimswimAux", PrimswimAuxMethod$particleset, [set,pos], TNN)
-#define PrimswimAux$killById(id) runMethod((string)LINK_THIS, "jas PrimswimAux", PrimswimAuxMethod$killById, [id], TNN)
 

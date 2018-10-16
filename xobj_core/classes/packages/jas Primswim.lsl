@@ -15,6 +15,7 @@
 #include "../jas PrimswimAux.lsl"
 #include "../jas Interact.lsl"
 #include "../jas Soundspace.lsl"
+#include "../jas PrimswimParticles.lsl"
 
 
 string wl_preset;
@@ -22,6 +23,9 @@ string wl_set;
 
 vector climb_out_to;			// Position to climb out to
 rotation climb_out_rot;			// Rotation to climb out at
+
+key PH;							// Cache for particle helper
+integer PCHAN;
 
 // Timers
 float timerSpeed;
@@ -187,13 +191,22 @@ enterWater(){
     BFL=BFL&~BFL_FEET_SUBMERGED;
     setBuoyancy();
     float vel = llVecMag(llGetVel());
-    if(vel>8)llTriggerSound(PrimswimCfg$splashBig, 1.);
-    else if(vel>5)llTriggerSound(PrimswimCfg$splashMed, 1.);
-    else llTriggerSound(PrimswimCfg$splashSmall, 1);
+	int weight = 0;
+    if( vel>8 ){
+		llTriggerSound(PrimswimCfg$splashBig, 1.);
+		weight = 2;
+	}
+    else if( vel>5 ){
+		llTriggerSound(PrimswimCfg$splashMed, 1.);
+		weight = 1;
+	}
+    else 
+		llTriggerSound(PrimswimCfg$splashSmall, 1);
     
-    raiseEvent(PrimswimEvt$onWaterEnter, "");
+	vector gpos = llGetRootPosition();
+	gpos.z = deepest+0.05;
+    raiseEvent(PrimswimEvt$onWaterEnter, mkarr(([weight, gpos])));
 	debugUncommon("Entered water");
-
 
     //dif=llGetVel()*.25;
     prePush=llGetVel()*.1;
@@ -216,10 +229,7 @@ exitWater(){
     
     raiseEvent(PrimswimEvt$onWaterExit, "");
 	
-	#if PrimswimCfg$USE_PARTICAT==1
-    PrimswimAux$particleset(2,llGetPos());
-	#endif
-    
+
 	triggerRandomSound([PrimswimCfg$soundExit], .5, .75);
     preCallPos = ZERO_VECTOR;
     setBuoyancy();
@@ -230,7 +240,7 @@ exitWater(){
     wl_set = "";
 	
 	debugUncommon("Exited water");
-	raiseEvent(PrimswimEvt$atLedge, mkarr([FALSE]));
+	raiseEvent(PrimswimEvt$atLedge, 0);
 	multiTimer([TIMER_COUT_CHECK]);
 	
 }
@@ -295,253 +305,308 @@ timerEvent(string id, string data){
         integer i;
         deepest = 0;
 		
-        if(~BFL&BFL_CLIMBING){
-            for(i=0;i<llGetListLength(water) && llGetListLength(water);i++){
-                key wID = llList2Key(water,i);
-                
-                vector gpos = llGetPos();
-                float is = pointSubmerged(<gpos.x,gpos.y,gpos.z+ascale.z/2>);
-                if(is ==-1 || is == 0)is = waterZ(llGetPos(), wID, FALSE);
-                
-                if(is>deepest)deepest = is;
-                
-                // How far below the water the top of your head is
-                float depth = is-(gpos.z+ascale.z/2);
-                
-                // Check for bottom
-                list ray = llCastRay(gpos-<0,0,ascale.z/2-.1>,gpos-<0,0,ascale.z>, [RC_REJECT_TYPES,RC_REJECT_AGENTS]);
-                vector bottom;
-                if(llList2Integer(ray,-1)>0)bottom = llList2Vector(ray,1);
-                
-                vector pos = llGetCameraPos();
-                if(pointSubmerged(pos) != 0 && (~BFL&BFL_AT_SURFACE || ~ainfo&AGENT_MOUSELOOK)){
-                    if(~BFL&BFL_CAM_UNDER_WATER){
-                        toggleCam(TRUE);
-                    }
-                }else if(BFL&BFL_CAM_UNDER_WATER){
-                     toggleCam(FALSE);
-                }
-                
-                integer water_just_entered = FALSE;
-                integer atSurface = TRUE;
-                if(depth>0){
-                    atSurface = FALSE;
-                }
-				
-				
-				
-                if(is==-1){ // water removed
-                    water = llDeleteSubList(water,i,i);
-                    i--; 
-                }
-				else if(is==0){ 
-                    is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
-                    if(is>deepest)deepest=is;
-                }
-				else if(depth>SURFACE_DEPTH || atSurface){
+		for( ; i<llGetListLength(water) && llGetListLength(water) && ~BFL&BFL_CLIMBING; ++i ){
+		
+			key wID = llList2Key(water,i);
+			
+			vector gpos = llGetRootPosition();
+			float is = pointSubmerged(<gpos.x,gpos.y,gpos.z+ascale.z/2>);
+			if( is ==-1 || is == 0 )
+				is = waterZ(llGetRootPosition(), wID, FALSE);
+			
+			if( is > deepest )
+				deepest = is;
+			
+			// How far below the water the top of your head is
+			float depth = is-(gpos.z+ascale.z/2);
+			
+			// Check for bottom
+			list ray = llCastRay(gpos-<0,0,ascale.z/2-.1>,gpos-<0,0,ascale.z>, [RC_REJECT_TYPES,RC_REJECT_AGENTS]);
+			vector bottom;
+			if( llList2Integer(ray,-1) > 0 )
+				bottom = llList2Vector(ray,1);
+			
+			vector pos = llGetCameraPos();
+			if( pointSubmerged(pos) != 0 && (~BFL&BFL_AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
+			
+				if( ~BFL&BFL_CAM_UNDER_WATER )
+					toggleCam(TRUE);
 					
-                    if(i>0){ // INDEX THIS WATER
-					
-						water = [wID]+llDeleteSubList(water, i, i);
-						i=0;
-						
-                    }  
-					
-                    vector turb; vector tan;
-                    
-                    list dta = llGetObjectDetails(wID, [OBJECT_DESC, OBJECT_ROT, OBJECT_POS]);
-                    string desc = llList2String(dta,0);
-                    
-                    vector stream; 
-					float cyclone; 
-					float ssm; 
-					wl_set = "Nacon's nighty fog";
-                    
-					list split = llParseString2List(desc, ["$$"], []);
-                    list_shift_each(split, val, 
-					
-                        list s = llParseString2List(val, ["$"], []);
-                        string t = llList2String(s, 0);
-                        if(t == Interact$TASK_WATER){
-                            stream = (vector)llList2String(s,1);
-                            cyclone = llList2Float(s,2);
-                            ssm = llList2Float(s,3);
-                            if(llGetListLength(s)>4)wl_set = llList2String(s,4);
-                        }
-						
-                    )
-                    
-                    
-                    if(~ainfo&AGENT_SITTING){
-					
-                        if(stream)
-                            turb = stream*llList2Rot(dta,1);
-							
-                        if(cyclone){
-                            vector oPos = llList2Vector(dta,2);
-                            rotation oRot = llList2Rot(dta,1);
-                            vector dif = (gpos-oPos)/oRot;
-                            float dist = llVecDist(<oPos.x,oPos.y,0>,<gpos.x,gpos.y,0>);
-                            
-                            float atan = llAtan2(dif.y,dif.x);
-                            vector pre = <llCos(atan),llSin(atan),0>*oRot*dist;
-                            atan+=cyclone*5*DEG_TO_RAD;
-                            vector add = <llCos(atan),llSin(atan),0>*oRot*dist;
-                            tan = add-pre;
-                        }
-						
-                    }
-					
-                    vector dif; vector vel = llGetVel(); 
-                    if(~BFL&BFL_IN_WATER){ // Just entered water
-					
-                        enterWater();
-                        #if PrimswimCfg$USE_PARTICAT==1
-                        PrimswimAux$particleset(0,(<gpos.x,gpos.y,is-.5>));
-                        #endif
-						water_just_entered = TRUE;
-						
-                    }
-                    
-                    
+			}else if( BFL&BFL_CAM_UNDER_WATER )
+				 toggleCam(FALSE);
+			
+			
+			integer water_just_entered = FALSE;
+			integer atSurface = TRUE;
+			if( depth>0 )
+				atSurface = FALSE;
 
+			if( is == -1 ){ // water removed
 				
-                    if(CONTROL && !stopped && ~ainfo&AGENT_SITTING){
+				water = llDeleteSubList(water,i,i);
+				i--; 
+				
+			}
+			// We are not fully submerged. But might be standing in water
+			else if( is == 0 ){
+			
+				is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
+				if( is > deepest )
+					deepest=is;
+				
+			}
+			else if( depth>SURFACE_DEPTH || atSurface ){
+				
+				if( i > 0 ){ // INDEX THIS WATER
+				
+					water = [wID]+llDeleteSubList(water, i, i);
+					i=0;
 					
-                        vector fwd; vector left; vector up;
-                        if(CONTROL&(CONTROL_FWD|CONTROL_BACK))fwd = llRot2Fwd(llGetCameraRot());
-                        if(CONTROL&CONTROL_BACK)fwd=-fwd;
-                        if(CONTROL&(CONTROL_LEFT|CONTROL_RIGHT))left = llRot2Left(llGetCameraRot());
-                        if(CONTROL&CONTROL_RIGHT)left=-left;
-                        if(CONTROL&CONTROL_UP)up = <0,0,1>;
-                        else if(CONTROL&CONTROL_DOWN)up = <0,0,-1>;
-                        
-                        
-                        dif=llVecNorm(fwd+left+up);
-                        
-                        // At surface
-                        if(atSurface && dif.z>-.5)dif.z=0;
-                        dif = llVecNorm(dif);
-                        if(ainfo&AGENT_ALWAYS_RUN)dif*=1.5;
-                        // Used for soft slowdown
-                        prePush = dif;   
-                        pp = 1.;
-						
-                    }
-					else if(pp>0){
+				}  
+				
+				vector turb; vector tan;
+				
+				list dta = llGetObjectDetails(wID, [OBJECT_DESC, OBJECT_ROT, OBJECT_POS]);
+				string desc = llList2String(dta,0);
+				
+				vector stream; 
+				float cyclone; 
+				float ssm; 
+				wl_set = "Nacon's nighty fog";
+				
+				list split = llParseString2List(desc, ["$$"], []);
+				list_shift_each(split, val, 
+				
+					list s = llParseString2List(val, ["$"], []);
+					string t = llList2String(s, 0);
+					if(t == Interact$TASK_WATER){
+						stream = (vector)llList2String(s,1);
+						cyclone = llList2Float(s,2);
+						ssm = llList2Float(s,3);
+						if(llGetListLength(s)>4)wl_set = llList2String(s,4);
+					}
 					
-                        pp-=.1;
-                        if(pp>0)dif = prePush*(1-llSin(PI_BY_TWO+pp*PI_BY_TWO))*.5;
-                        if(water_just_entered)dif*=4;
+				)
+				
+				
+				if( ~ainfo&AGENT_SITTING ){
+				
+					if( stream )
+						turb = stream*llList2Rot(dta,1);
 						
-                    }
-                    
-                    
-                    if(~ainfo&AGENT_SITTING && !stopped && ((CONTROL&(CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_DOWN) || (CONTROL&CONTROL_UP&&~BFL&BFL_AT_SURFACE) || llVecMag(<dif.x,dif.y,0>)>.5))){ 
-                        if(~BFL&BFL_SWIMMING){
-                            BFL=BFL|BFL_SWIMMING;
-                            triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
-                            multiTimer([TIMER_SWIMSTROKE, "", 1., TRUE]);
-                        }
-                    }
-                    else if(BFL&BFL_SWIMMING){
-                        multiTimer([TIMER_SWIMSTROKE]);
-                        BFL=BFL&~BFL_SWIMMING;
-                    }
-                    
-                    if(ssm <= 0)
-						ssm = 1;
-                    
-                    vector SP = gpos;
+					if( cyclone ){
+						vector oPos = llList2Vector(dta,2);
+						rotation oRot = llList2Rot(dta,1);
+						vector dif = (gpos-oPos)/oRot;
+						float dist = llVecDist(<oPos.x,oPos.y,0>,<gpos.x,gpos.y,0>);
+						
+						float atan = llAtan2(dif.y,dif.x);
+						vector pre = <llCos(atan),llSin(atan),0>*oRot*dist;
+						atan+=cyclone*5*DEG_TO_RAD;
+						vector add = <llCos(atan),llSin(atan),0>*oRot*dist;
+						tan = add-pre;
+					}
+					
+				}
+				
+				vector dif; vector vel = llGetVel(); 
+				if( ~BFL&BFL_IN_WATER ){ // Just entered water
+				
+					enterWater();
+					water_just_entered = TRUE;
+					
+				}
+				
+				
 
-					float sprint = (( llGetAgentInfo(llGetOwner()) & (AGENT_ALWAYS_RUN|AGENT_WALKING) ) == (AGENT_ALWAYS_RUN|AGENT_WALKING));
-                    if(sprint == 0 && llGetAgentInfo(llGetOwner()) & AGENT_ALWAYS_RUN)
-						sprint = -0.6;
-					
-					if(preCallPos != ZERO_VECTOR)
-						SP = preCallPos;
+			
+				if( CONTROL && !stopped && ~ainfo&AGENT_SITTING ){
+				
+					vector fwd; vector left; vector up;
+					if( CONTROL&(CONTROL_FWD|CONTROL_BACK) )
+						fwd = llRot2Fwd(llGetCameraRot());
+					if( CONTROL&CONTROL_BACK )
+						fwd=-fwd;
+					if( CONTROL&(CONTROL_LEFT|CONTROL_RIGHT) )
+						left = llRot2Left(llGetCameraRot());
+					if( CONTROL&CONTROL_RIGHT )
+						left=-left;
 						
-                    dif = (dif*.2*ssm*SSM*(1+sprint*.5))+turb+tan;
-                    
-                    
-                    //SP = preCallPos;
-                    
-                    if(preCallPos != ZERO_VECTOR && llVecDist(gpos, SP)>2){
-                        SP = gpos;
-                    }
-                    //else debug((string)SP + " "+(string)llVecDist(SP, SP+dif)+" "+(string)(llVecDist(gpos,gpos+dif)+.5));
-                    SP+=dif;
-                    
-    
-                    integer SUB = TRUE;
-                     if(depth<=0 && !water_just_entered && dif.z>-.1 && atSurface){
-                        // Then set to swim at surface level
-                        if(bottom.z+ascale.z>depth+SURFACE_DEPTH){
-                            SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
-                            BFL = BFL|BFL_AT_SURFACE;
-                        }else{
-                            BFL = BFL&~BFL_AT_SURFACE;
-                        }
-                        SUB = FALSE;
-                    }
-					else 
+					if( CONTROL&CONTROL_UP )
+						up = <0,0,1>;
+					else if( CONTROL&CONTROL_DOWN )
+						up = <0,0,-1>;
+
+						dif=llVecNorm(fwd+left+up);
+					
+					// At surface
+					if( atSurface && dif.z > -.5 )
+						dif.z = 0;
+					
+					dif = llVecNorm(dif);
+					
+					if( ainfo&AGENT_ALWAYS_RUN )
+						dif*=1.5;
+						
+					// Used for soft slowdown
+					prePush = dif;   
+					pp = 1.;
+					
+				}
+				else if( pp > 0 ){
+				
+					pp-=.1;
+					if( pp>0 )
+						dif = prePush*(1-llSin(PI_BY_TWO+pp*PI_BY_TWO))*.5;
+					if( water_just_entered )
+						dif*=4;
+					
+				}
+				
+				
+				if(
+					~ainfo&AGENT_SITTING && 
+					!stopped && 
+					(
+						CONTROL&(CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_DOWN) || 
+						(CONTROL&CONTROL_UP&&~BFL&BFL_AT_SURFACE) || 
+						llVecMag(<dif.x,dif.y,0>) > .5
+					)
+				){ 
+				
+					if( ~BFL&BFL_SWIMMING ){
+						
+						BFL=BFL|BFL_SWIMMING;
+						triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
+						multiTimer([TIMER_SWIMSTROKE, "", 1., TRUE]);
+						
+					}
+					
+				}
+				else if( BFL&BFL_SWIMMING ){
+					
+					multiTimer([TIMER_SWIMSTROKE]);
+					BFL=BFL&~BFL_SWIMMING;
+					
+				}
+				
+				if( ssm <= 0 )
+					ssm = 1;
+				
+				vector SP = gpos;
+
+				float sprint = (( llGetAgentInfo(llGetOwner()) & (AGENT_ALWAYS_RUN|AGENT_WALKING) ) == (AGENT_ALWAYS_RUN|AGENT_WALKING));
+				if( sprint == 0 && llGetAgentInfo(llGetOwner()) & AGENT_ALWAYS_RUN )
+					sprint = -0.6;
+				
+				if( preCallPos != ZERO_VECTOR )
+					SP = preCallPos;
+					
+				dif = (dif*.2*ssm*SSM*(1+sprint*.5))+turb+tan;
+				
+				
+				//SP = preCallPos;
+				
+				if( preCallPos != ZERO_VECTOR && llVecDist(gpos, SP) > 2 )
+					SP = gpos;
+				
+				//else debug((string)SP + " "+(string)llVecDist(SP, SP+dif)+" "+(string)(llVecDist(gpos,gpos+dif)+.5));
+				SP+=dif;
+				
+
+				integer SUB = TRUE;
+				if( depth<=0 && !water_just_entered && dif.z>-.1 && atSurface ){
+				
+					// Then set to swim at surface level
+					if(bottom.z+ascale.z>depth+SURFACE_DEPTH){
+						SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
+						BFL = BFL|BFL_AT_SURFACE;
+					}
+					else
 						BFL = BFL&~BFL_AT_SURFACE;
-                    
-                    
-                    preCallPos = SP;
-                    
-                    float t = .5;
-                    if(water_just_entered)t=2;
-					if(!stopped)llMoveToTarget(SP, t);
-                    
-                    
-                    // HANDLES DIVING SOUNDS
-                    if(SUB){ // Entire body is submerged
-                        if(~BFL&BFL_FULLY_SUBMERGED){
-                            // Dive
-                            BFL=BFL|BFL_FULLY_SUBMERGED;
-                            Soundspace$dive(TRUE);
-                        }
-                    }else if(BFL&BFL_FULLY_SUBMERGED){
-                        // Submerge
-                        llTriggerSound(PrimswimCfg$soundSubmerge, .5);
-                        Soundspace$dive(FALSE);
-                        BFL=BFL&~BFL_FULLY_SUBMERGED;
-                    }
-                    
-                    updateAnimstate();
-                    multiTimer([id,"", timerSpeed, FALSE]);
-					// We are submerged, let's return
-                    return;
-                }
-            }
-        }
-        
-        if(deepest>0||BFL&BFL_IN_WATER){
-            if(~BFL&BFL_FEET_SUBMERGED){
+					
+					SUB = FALSE;
+					
+				}
+				else 
+					BFL = BFL&~BFL_AT_SURFACE;
+				
+				
+				preCallPos = SP;
+				
+				float t = .5;
+				if( water_just_entered )
+					t=2;
+				if( !stopped )
+					llMoveToTarget(SP, t);
+				
+				
+				// HANDLES DIVING SOUNDS
+				if( SUB ){ // Entire body is submerged
+					
+					if( ~BFL&BFL_FULLY_SUBMERGED ){
+						
+						// Dive
+						BFL=BFL|BFL_FULLY_SUBMERGED;
+						Soundspace$dive(TRUE);
+						
+					}
+					
+				}else if( BFL&BFL_FULLY_SUBMERGED ){
+				
+					// Emerge
+					llTriggerSound(PrimswimCfg$soundSubmerge, .5);
+					Soundspace$dive(FALSE);
+					BFL=BFL&~BFL_FULLY_SUBMERGED;
+					vector pos = gpos;
+					pos.z = deepest;
+					partCom(jasPrimswimParticles$emerge, [pos]);
+					
+				}
+				
+				updateAnimstate();
+				multiTimer([id,"", timerSpeed, FALSE]);
+				// We are submerged, let's return
+				return;
+				
+			}
+			
+		}
+            
+        if( deepest > 0 || BFL&BFL_IN_WATER ){
+            
+			if(~BFL&BFL_FEET_SUBMERGED){
+
                 BFL=BFL|BFL_FEET_SUBMERGED;
                 BFL=BFL|BFL_HAS_WET_FEET;
                 multiTimer([TIMER_FOOTSPLASH, "", FOOTSTEP_SPEED, TRUE]);
-                if(deepest>0)multiTimer([TIMER_WETFEET_FADE]);
+                if(deepest>0)
+					multiTimer([TIMER_WETFEET_FADE]);
+				raiseEvent(PrimswimEvt$feetWet, "1");
+				
             }
-        }else if(BFL&BFL_FEET_SUBMERGED){
+			
+        }
+		else if(BFL&BFL_FEET_SUBMERGED){
+		
             BFL=BFL&~BFL_FEET_SUBMERGED;
-            multiTimer([TIMER_WETFEET_FADE,"", 5, FALSE]);
+            multiTimer([TIMER_WETFEET_FADE,"", 30, FALSE]);
+			
         }
 		
 		// Couldn't find
-        if(BFL&BFL_IN_WATER && ~BFL&BFL_CLIMBING)exitWater();
+        if( BFL&BFL_IN_WATER && ~BFL&BFL_CLIMBING )
+			exitWater();
         updateAnimstate();
         multiTimer([id,"", timerSpeed, FALSE]);
     }
     
 	// Removes wet feet
-    else if(id == TIMER_WETFEET_FADE){
+    else if( id == TIMER_WETFEET_FADE ){
 	
-        BFL=BFL&~BFL_HAS_WET_FEET;
-		#if PrimswimCfg$USE_PARTICAT==1
-        PrimswimAux$killById("SPT");
-		#endif
+        BFL = BFL&~BFL_HAS_WET_FEET;
+		raiseEvent(PrimswimEvt$feetWet, "0");
+		multiTimer([TIMER_FOOTSPLASH]);
 		
     }
 	
@@ -560,7 +625,7 @@ timerEvent(string id, string data){
 			vector vrot = llRot2Euler(llGetRootRotation());
 			vector f = llRot2Fwd(llEuler2Rot(<0,0,vrot.z>));
 			
-			vector gpos = llGetPos();
+			vector gpos = llGetRootPosition();
 			
 			// Need at least 1m free above the user
 			vector avTop = gpos+<0,0,ascale.z/2*0.95>;
@@ -625,6 +690,7 @@ timerEvent(string id, string data){
 	}
     
     else if(id == TIMER_SPEEDCHECK){ // Dynamic timer speed
+	
         multiTimer([TIMER_SPEEDCHECK, "", 4, TRUE]);
         
         if(BFL&BFL_IN_WATER){
@@ -641,7 +707,7 @@ timerEvent(string id, string data){
         }
 		else{
 		
-            vector gpos = llGetPos();
+            vector gpos = llGetRootPosition();
             integer i; 
             for(i=0; i<llGetListLength(water); i++){
                 vector pos = llList2Vector(llGetObjectDetails(llList2Key(water,i), [OBJECT_POS]), 0);
@@ -672,29 +738,51 @@ timerEvent(string id, string data){
         triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
     }
     
-    else if(id == TIMER_FOOTSPLASH){
-        if((deepest<=0&&~BFL&BFL_HAS_WET_FEET) || BFL&BFL_IN_WATER){
-            multiTimer([TIMER_FOOTSPLASH]); // Remove footsplash
+    else if( id == TIMER_FOOTSPLASH ){
+	
+        if( ( deepest <=0 && ~BFL&BFL_HAS_WET_FEET ) || BFL&BFL_IN_WATER )
             return;
-        }
-        
-        // Splash sound
+
+		// Splash sound
         integer ainfo = llGetAgentInfo(llGetOwner());
-        vector gpos = llGetPos();
+        vector gpos = llGetRootPosition();
         float depth = deepest-(gpos.z-ascale.z/2);
-        if(ainfo&AGENT_WALKING){
+		
+		
+		
+        if( ainfo&AGENT_WALKING ){
+		
             // Trigger splash
-            
-            if(depth<.1){
-                PrimswimAux$particleset(1, (<gpos.x,gpos.y,gpos.z-ascale.z/2>));
+            if( depth<.1 ){
+
+				if( deepest <= 0 )
+					depth = 0;
+				vector pos = <gpos.x,gpos.y,gpos.z-ascale.z/2+depth>;
+				partCom(jasPrimswimParticles$onFeetWetSplash, [0, pos]);
                 triggerRandomSound(PrimswimCfg$soundFootstepsShallow, .75,1);
                 return;
+				
             }
-            else if(depth<.4)triggerRandomSound(PrimswimCfg$soundFootstepsMed, .75,1);
-            else triggerRandomSound(PrimswimCfg$soundFootstepsDeep, .75,1);
-            PrimswimAux$particleset(1, (<gpos.x,gpos.y,deepest>));
+            else if( depth<.4 )
+				triggerRandomSound(PrimswimCfg$soundFootstepsMed, .75,1);
+            else 
+				triggerRandomSound(PrimswimCfg$soundFootstepsDeep, .75,1);
+			
+			partCom(jasPrimswimParticles$onFeetWetSplash, [1, <gpos.x,gpos.y,deepest>]);
         }
+		
+		
+
+
     }
+	
+}
+
+partCom( string task, list data ){
+	if( llKey2Name(PH) == "" )
+		PrimswimAux$spawn();
+	else
+		llRegionSayTo(PH, PCHAN, mkarr((list)task+data));
 }
 
 triggerRandomSound(list sounds, float minVol, float maxVol){
@@ -737,6 +825,7 @@ default
 {
     state_entry(){
 	
+		PCHAN = Primswim$partChan;
 		llSetText("", ZERO_VECTOR, 0);
         ascale = llGetAgentSize(llGetOwner());
         llStopMoveToTarget();
@@ -749,8 +838,10 @@ default
 		timerSpeed = PrimswimCfg$minSpeed;
         multiTimer([TIMER_SWIM_CHECK,"", timerSpeed, FALSE]);
 			
-		if(llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT)llResetOtherScript("jas PrimswimAux");
-        if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
+		if( llGetInventoryType("jas PrimswimAux") == INVENTORY_SCRIPT )
+			llResetOtherScript("jas PrimswimAux");
+        if( llGetAttached() )
+			llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
 		memLim(1.5);
 		
     }
@@ -782,6 +873,9 @@ default
 		
 		else if(METHOD == PrimswimMethod$swimSpeedMultiplier)
 			SSM = l2f(PARAMS, 0);
+		
+		else if( METHOD == PrimswimMethod$particleHelper )
+			PH = method_arg(0);
 		
     }
 
