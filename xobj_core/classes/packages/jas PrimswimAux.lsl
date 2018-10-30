@@ -22,9 +22,6 @@ onEvt( string script, integer evt, list data){
 	else if( evt == PrimswimEvt$onWaterExit )
 		send(jasPrimswimParticles$onWaterExited, data);
 	
-	else if( evt == PrimswimEvt$feetWet )
-		send(jasPrimswimParticles$onFeetWetSplash, data);
-	
 }
 
 list QUEUE;

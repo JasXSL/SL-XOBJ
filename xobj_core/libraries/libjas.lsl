@@ -322,20 +322,18 @@ multiTimer( list da ){
 // Panda alternative minified multiTimer
 // use ptEvt(id);
 #define ptSet(id, timeout, repeating) \
-    _MT(id, (integer)(timeout*100)|(repeating<<31))
+    _MT(id, (integer)((timeout)*100)|(repeating<<31))
 #define ptRefresh() \
 	_MT("",0)
 #define ptUnset(id) \
 	_MT(id, 0)
-list _mt;
-_MT(string id, integer t)
-{
+list _mt;	// nextTick, id, timeout
+_MT(string id, integer t){
     float g = llGetTime();
-    if (!(id == ""))
-    {
+    if(!(id == "")){
         integer pos = llListFindList(_mt, (list)id);
-        float to = (float)(t & ~0x80000000) / 100;
-        float nx = to + g;
+        float to = (float)(t & ~0x80000000) / 100;		// Timeout
+        float nx = to + g;								// Next
         if ((~t) & ((integer)-0x80000000))
             to = 0;
         if (~pos)

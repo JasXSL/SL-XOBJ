@@ -535,10 +535,14 @@ default{
 		
 		if( task == jasPrimswimParticles$onWaterEntered ){
 		
+		
 			wetBody(FALSE);
-			llSetRegionPos((vector)l2s(data,1));
-			llSetRot((rotation)llList2Rot(data, 2));
-			llSleep(.1);
+			
+			vector pos = (vector)l2s(data, 1);
+			if( pos == ZERO_VECTOR )
+				return;
+			llSetRegionPos(pos);
+			llSetRot((rotation)l2s(data, 2));
 			waterEnterSplash(l2i(data, 0));
 			
 			
@@ -549,15 +553,21 @@ default{
 		
 		else if( task == jasPrimswimParticles$onFeetWetSplash ){
 			
-			llSetRegionPos((vector)l2s(data, 1));
+			vector pos = (vector)l2s(data, 1);
+			if( pos == ZERO_VECTOR )
+				return;
+			llSetRegionPos(pos);
 			footstep(l2i(data, 0));
 			
 		}
 		
 		else if( task == jasPrimswimParticles$emerge ){
 			
-			llSetRegionPos((vector)l2s(data, 0));
-			llSleep(.05);
+			vector pos = (vector)l2s(data, 0);
+			if( pos == ZERO_VECTOR )
+				return;
+			llSetRegionPos(pos);
+			llSetRot((rotation)l2s(data, 1));
 			emerge();
 			
 		}

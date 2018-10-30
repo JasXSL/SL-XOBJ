@@ -368,6 +368,7 @@ timerEvent(string id, string data){
 				
 				list dta = llGetObjectDetails(wID, [OBJECT_DESC, OBJECT_ROT, OBJECT_POS]);
 				string desc = llList2String(dta,0);
+				rotation oRot = llList2Rot(dta,1);
 				
 				vector stream; 
 				float cyclone; 
@@ -396,7 +397,7 @@ timerEvent(string id, string data){
 						
 					if( cyclone ){
 						vector oPos = llList2Vector(dta,2);
-						rotation oRot = llList2Rot(dta,1);
+						
 						vector dif = (gpos-oPos)/oRot;
 						float dist = llVecDist(<oPos.x,oPos.y,0>,<gpos.x,gpos.y,0>);
 						
@@ -560,7 +561,25 @@ timerEvent(string id, string data){
 					BFL=BFL&~BFL_FULLY_SUBMERGED;
 					vector pos = gpos;
 					pos.z = deepest;
-					partCom(jasPrimswimParticles$emerge, [pos]);
+					list ray = llCastRay(pos+<0,0,.1>, pos-<0,0,.2>, [
+						RC_REJECT_TYPES, RC_REJECT_AGENTS|RC_REJECT_PHYSICAL, 
+						RC_DATA_FLAGS, RC_GET_NORMAL|RC_GET_ROOT_KEY, 
+						RC_DETECT_PHANTOM,TRUE, 
+						RC_MAX_HITS,3
+					]);
+					integer ri;
+					rotation rot;
+					for( ;ri<l2i(ray,-1)*3; ri+=3 ){
+						if( l2k(ray, ri) == wID ){
+							vector norm = l2v(ray, ri+2);
+							vector axis = <1,0,0>;
+							rot = norm2rot(norm, axis);
+							pos += <0,0,.05>*rot;
+							ray = [];
+						}
+					}
+					
+					partCom(jasPrimswimParticles$emerge, [pos, rot]);
 					
 				}
 				
