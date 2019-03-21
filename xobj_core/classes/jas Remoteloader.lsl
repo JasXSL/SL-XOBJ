@@ -27,7 +27,7 @@ default
 }
 	
 	6. Drag the script into the same prim as you put st Remoteloader. Drag it in 5 times to create 5 copies of it.
-	7. Rename the _slave scripts into _slave1, _slave2, _slave3, _slave4, _slave5
+	7. Rename the _slave scripts into _slave0, _slave1, _slave2, _slave3, _slave4
 	8. These scripts will be used to speed up remoteloading, to circumvent the long delay caused by it.
 	9. Make sure jas Remoteloader is on drive
 	
@@ -59,6 +59,9 @@ default
 
 #define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
 #define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
+#define Remoteloader$autoLoadThis() \
+	{int _pin = (int)llFrand(MAXINT); llSetRemoteScriptAccessPin(_pin); \
+	runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, _pin, 1], TNN);}
 #define Remoteloader$loadInt(script, pin, startparam, sender) runMethod((string)LINK_ALL_OTHERS, "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam, sender], TNN)
 
 

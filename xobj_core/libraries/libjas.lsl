@@ -72,191 +72,246 @@ string jsonUnset(string json, list ident){
 	// Runs a math string
 	// If you do not need parentheses you can use #define PMATH_IGNORE_PARENTHESES to save space and time
 	// If you want to use a list of constants, use #define PMATH_CONSTS varName
-	float pandaMath( string I ){
+	// If you don't need multi argument functions, you can use #define PMATH_IGNORE_MULTI_ARG or PMATH_IGNORE_PARENTHESES as both will disable the feature
+	list pandaMath( string I ){
 		
 		list parse;
-		#ifndef PMATH_IGNORE_PARENTHESES
+		#ifndef PMATH_IGNORE_MULTI_ARG
+			list funcs = (list)"MIN"+"MAX";	// if any functions share ending, the longer ones need to go first
+		#endif
+		
+		integer i;
 		parse = llParseString2List(I, [], (list)"(" + ")");
-		if (1 < (parse != []))
-		{
+		if( 1 < (parse != []) ){
+		
 			integer n;
 			integer nIn = ((integer)-1);
-			integer i;
-			for (; i < (parse != []); ++i)
-			{
-				if (llList2String(parse, i) == "(")
-				{
+			for( i=0; i < (parse != []); ++i ){
+			
+				if( llList2String(parse, i) == "(" ){
+				
 					++n;
-					if (!~nIn)
+					if( !~nIn )
 						nIn = i;
+						
 				}
-				else if (llList2String(parse, i) == ")")
-				{
-					if (!--n)
-					{
-						parse = llListReplaceList(parse, (list)pandaMath((string)llList2List(parse, -~nIn, ~-i)), nIn, i);
-						i = ~-~-i;
-						nIn = ((integer)-1);
-					}
-				}
-			}
-			I = (string)parse;
-		}
-		#endif
-		// "" is needed for addition
-		list order = (list)"^" + "*,/" + "" + ">,<,==,&,|,<<,>>";
-		parse = llParseString2List(I, (list)"+", (list)"^" + "*" + "/" + "-" + "&" + "<<" + ">>" + "==");
-		#ifndef PMATH_CAPTURE_MATH_ERRORS
-		I = "";
-		#endif
-		
-		// Convert constants and functions
-		integer i;
-		for( ; i < count(parse); ++i ){
-
-			// Split by additional separators
-			string p = l2s(parse, i);
-			if( p != ">>" && p != "<<" ){
-				list l = llParseString2List(p, [], (list)"|"+">"+"<");
-				if( (l != []) > 1 )
-					parse = llListReplaceList(parse, l, i, i);
-			}
-			string s = llList2String(parse, i);
-			if ((!(s == "0")) & (float)s == ((float)0))
-			{
-				// Redeem functions and constants
-				list functions = (list)"~" + "!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN" + "SQRT" + "ABS";
-								
-				// Check constants
-				#ifdef PMATH_CONSTS
-				integer p = llListFindList(llList2ListStrided(PMATH_CONSTS, 0, -1, 2), (list)s);
-				if( ~p )
-					parse = llListReplaceList(parse, (list)llList2Float(PMATH_CONSTS, p*2+1), i, i);
-				// Check built in functions
-				else{
-				#endif				
-			
-					integer n;
-					for (; n < (functions != []); ++n){
-					
-						string f = llList2String(functions, n);
-						if( llGetSubString(s, 0, ~-llStringLength(f)) == f ){
-
-							float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
-							if (f == "CEIL")
-								v = llCeil(v);
-							else if (f == "RAND")
-								v = llFrand(v);
-							else if (f == "FLOOR")
-								v = (integer)v;
-							else if (f == "ROUND")
-								v = llRound(v);
-							else if (f == "!")
-								v = !((integer)v);
-							else if (f == "~")
-								v = ~(integer)v;
-							else if (f == "COS")
-								v = llCos(v);
-							else if (f == "SIN")
-								v = llSin(v);
-							else if( f == "SQRT" )
-								v = llSqrt(v);
-							else if( f == "ABS" && l2s(parse, -~i) == "-" ){
-								parse = llDeleteSubList(parse, i, -~i);
-								jump pmath_functionLoop;
-							}
-								
-							parse = llListReplaceList(parse, (list)v, i, i);
-							functions = [];
-							
-						}
-					}
+				else if( llList2String(parse, i) == ")" ){
 				
-				#ifdef PMATH_CONSTS
-				}
-				#endif
-			}
-			else
-				parse = llListReplaceList(parse, (list)((float)s), i, i);
-			
-			@pmath_functionLoop;
-		}
-		
-		
-		
-		// Handle minuses
-		for( i = 0; i<count(parse); ++i ){
-		
-			string s = l2s(parse, i);
-			if (s == "-")
-				parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
-				
-		}
-		
-		for( i = 0; i < (order != []); ++i ){
-		
-			list o = llParseString2List(llList2String(order, i), (list)",", []);
-			integer pointer;
-			for (; pointer < (parse != []); ++pointer){
-			
-				if( llGetListEntryType(parse, pointer) == TYPE_FLOAT && (o != [] || !pointer) )
-					jump pandaMath_continue;
-				
-				float a = llList2Float(parse, ~-pointer);
-				string v = llList2String(parse, pointer);
-				
-				// Handle addition
-				if( o == [] && llGetListEntryType(parse, ~-pointer) + llGetListEntryType(parse, pointer) == 4 ){
-
-					parse = llListReplaceList(parse, (list)(a+llList2Float(parse, pointer)), ~-pointer, pointer);
-					pointer = ~-pointer;
-					
-				}
-				else if( ~llListFindList(o, (list)v) ){
-				
-					float b = llList2Float(parse, -~pointer);
-					if (v == "*")
-						a = a * b;
-					else if(v == "/"){
-						#ifdef PMATH_CAPTURE_MATH_ERRORS
-						if( b == 0 )
-							qd("MATH ERROR Captured: Division by zero in "+I);
-						else
-						#endif 
-						a = a / b;
-					}
-					else if(v == "^"){
-						#ifdef PMATH_CAPTURE_MATH_ERRORS
-						if((b != (integer)b) && (a < 0.0))
-							qd("MATH ERROR Captured: Invalid base or exponent in pow: "+I);
-						else
-						#endif
-						a = llPow(a, b);
-					}
-					else if(v == "&")
-						a = (integer)a & (integer)b;
-					else if(v == ">")
-						a = a > b;
-					else if(v == "<")
-						a = a < b;
-					else if(v == "==")
-						a = a == b;
-					else if( v == "|" )
-						a = (integer)a|(integer)b;
-					else if( v == ">>" )
-						a = (integer)a>>(integer)b;
-					else if( v == "<<" )
-						a = (integer)a<<(integer)b;
+					if( !--n ){
 					
 						
-					parse = llListReplaceList(parse, (list)a, ~-pointer, -~pointer);
-					pointer = ~-~-pointer;
+						list bl = pandaMath((string)llList2List(parse, -~nIn, ~-i));
+						
+						#ifndef PMATH_IGNORE_MULTI_ARG
+						string e = l2s(parse, nIn-1);
+						// Look behind for a function, otherwise flatten
+						integer fn;
+						for( ; fn<count(funcs); ++fn ){
+							string func = l2s(funcs, fn);
+							if( llGetSubString(e, -llStringLength(func), -1) == func ){
+								if( func == "MAX" )
+									bl = (list)llListStatistics(LIST_STAT_MAX, bl);
+								else if( func == "MIN" )
+									bl = (list)llListStatistics(LIST_STAT_MIN, bl);
+								else if( func == "MIN" )
+									bl = (list)llListStatistics(LIST_STAT_MIN, bl);
+								// Delete the function name
+								parse = llListReplaceList(parse, (list)llDeleteSubString(e, -llStringLength(func), -1), nIn-1, nIn-1);
+								fn = 9001; // break
+							}
+						}
+						#endif
+						
+						parse = llListReplaceList(
+							parse, 
+							llList2List(bl, 0, 0),
+							nIn, i
+						);
+						i = ~-~-i;
+						nIn = ((integer)-1);
+						
+					}
+					
 				}
-				@pandaMath_continue;
+				
 			}
+			
+			I = (string)parse;
+			
 		}
+
+		//list blocks = llJson2List(I);
 		
-		return llList2Float(parse, 0);
+		// Parentheses done, deal with functions
+		// Deal with commas next
+		list blocks = llCSV2List(I);
+		
+		//list blocks = llParseString2List(I, [], funcs);
+		#ifndef PMATH_CAPTURE_MATH_ERRORS
+			I = "";
+		#endif
+		
+		integer block;
+		// Turn blocks into calculations
+		for( block = 0; block<count(blocks); ++block ){
+		
+			// "" is needed for addition
+			list order = (list)"^" + "*,/" + "" + ">,<,==,&,|,<<,>>";
+			parse = llParseString2List(l2s(blocks, block), (list)"+", (list)"^" + "*" + "/" + "-" + "&" + "<<" + ">>" + "==");
+
+			// Convert constants and functions
+			for( i=0; i < count(parse); ++i ){
+
+				// Split by additional separators
+				string p = l2s(parse, i);
+				if( p != ">>" && p != "<<" ){
+					list l = llParseString2List(p, [], (list)"|"+">"+"<");
+					if( (l != []) > 1 )
+						parse = llListReplaceList(parse, l, i, i);
+				}
+				
+				// Check if this is a function
+				string s = llList2String(parse, i);
+				
+				// Check if s is numeric
+				if( llGetSubString(s,0,0) != "0" && (float)s == 0 ){
+					// Redeem functions and constants
+					list functions = (list)"~" + "!" + "CEIL" + "RAND" + "FLOOR" + "ROUND" + "COS" + "SIN" + "SQRT" + "ABS";
+									
+					// Check constants
+					#ifdef PMATH_CONSTS
+					integer p = llListFindList(llList2ListStrided(PMATH_CONSTS, 0, -1, 2), (list)s);
+					if( ~p )
+						parse = llListReplaceList(parse, (list)llList2Float(PMATH_CONSTS, p*2+1), i, i);
+					// Check built in functions
+					else{
+					#endif				
+				
+						integer n;
+						for (; n < (functions != []); ++n){
+						
+							string f = llList2String(functions, n);
+							if( llGetSubString(s, 0, ~-llStringLength(f)) == f ){
+
+								float v = (float)llGetSubString(s, llStringLength(f), ((integer)-1));
+								if (f == "CEIL")
+									v = llCeil(v);
+								else if (f == "RAND")
+									v = llFrand(v);
+								else if (f == "FLOOR")
+									v = (integer)v;
+								else if (f == "ROUND")
+									v = llRound(v);
+								else if (f == "!")
+									v = !((integer)v);
+								else if (f == "~")
+									v = ~(integer)v;
+								else if (f == "COS")
+									v = llCos(v);
+								else if (f == "SIN")
+									v = llSin(v);
+								else if( f == "SQRT" )
+									v = llSqrt(v);
+								else if( f == "ABS" && l2s(parse, -~i) == "-" ){
+									parse = llDeleteSubList(parse, i, -~i);
+									jump pmath_functionLoop;
+								}
+
+									
+								parse = llListReplaceList(parse, (list)v, i, i);
+								functions = [];
+								
+							}
+						}
+					
+					#ifdef PMATH_CONSTS
+					}
+					#endif
+				}
+				else
+					parse = llListReplaceList(parse, (list)((float)s), i, i);
+				
+				@pmath_functionLoop;
+			}
+			
+			
+			
+			// Handle minuses
+			for( i = 0; i<count(parse); ++i ){
+			
+				string s = l2s(parse, i);
+				if (s == "-")
+					parse = llListReplaceList(parse, (list)((float)(s + llList2String(parse, -~i))), i, -~i);
+					
+			}
+			
+			for( i = 0; i < (order != []); ++i ){
+			
+				list o = llParseString2List(llList2String(order, i), (list)",", []);
+				integer pointer;
+				for (; pointer < (parse != []); ++pointer){
+				
+					if( llGetListEntryType(parse, pointer) == TYPE_FLOAT && (o != [] || !pointer) )
+						jump pandaMath_continue;
+					
+					float a = llList2Float(parse, ~-pointer);
+					string v = llList2String(parse, pointer);
+					
+					// Handle addition
+					if( o == [] && llGetListEntryType(parse, ~-pointer) + llGetListEntryType(parse, pointer) == 4 ){
+
+						parse = llListReplaceList(parse, (list)(a+llList2Float(parse, pointer)), ~-pointer, pointer);
+						pointer = ~-pointer;
+						
+					}
+					else if( ~llListFindList(o, (list)v) ){
+					
+						float b = llList2Float(parse, -~pointer);
+						if (v == "*")
+							a = a * b;
+						else if(v == "/"){
+							#ifdef PMATH_CAPTURE_MATH_ERRORS
+							if( b == 0 )
+								qd("MATH ERROR Captured: Division by zero in "+I);
+							else
+							#endif 
+							a = a / b;
+						}
+						else if(v == "^"){
+							#ifdef PMATH_CAPTURE_MATH_ERRORS
+							if((b != (integer)b) && (a < 0.0))
+								qd("MATH ERROR Captured: Invalid base or exponent in pow: "+I);
+							else
+							#endif
+							a = llPow(a, b);
+						}
+						else if(v == "&")
+							a = (integer)a & (integer)b;
+						else if(v == ">")
+							a = a > b;
+						else if(v == "<")
+							a = a < b;
+						else if(v == "==")
+							a = a == b;
+						else if( v == "|" )
+							a = (integer)a|(integer)b;
+						else if( v == ">>" )
+							a = (integer)a>>(integer)b;
+						else if( v == "<<" )
+							a = (integer)a<<(integer)b;
+						
+							
+						parse = llListReplaceList(parse, (list)a, ~-pointer, -~pointer);
+						pointer = ~-~-pointer;
+					}
+					@pandaMath_continue;
+				}
+			}
+		
+			blocks = llListReplaceList(blocks, parse, block, block);
+		}
+	
+		return blocks;
 	}
 
 // USAGE

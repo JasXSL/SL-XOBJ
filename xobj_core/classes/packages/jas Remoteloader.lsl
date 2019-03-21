@@ -18,20 +18,26 @@ list queue;				// [(key)id, (str)script, (int)pin, (int)startparam]
 
 
 next(){
-	if(BFL&BFL_QUE || queue == []){
-		if(queue == []){
+
+	if( BFL&BFL_QUE || queue == [] ){
+		
+		if( queue == [] )
 			multiTimer(["C", "", 4, FALSE]);	// Load finish timer
-		}
+		
 		return;
 	}
+	
 	integer i;
-	for(i=0; i<=RemoteloaderConf$slaves && queue != []; i++){
+	for( i=0; i<=RemoteloaderConf$slaves && queue != []; i++ ){
+	
 		// Oldest slave is still cooling down, wait
 		if(llList2Float(slaves, slave)+3.1 >= llGetTime()){
+		
 			BFL = BFL|BFL_QUE;
 			multiTimer(["A", "", llCeil(llList2Float(slaves, slave)+3-llGetTime()), FALSE]);
 			multiTimer(["C"]);		// Clear load finish timer
 			return;
+			
 		}
 	
 		//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
@@ -41,6 +47,7 @@ next(){
 		slave++;
 		if(slave>=RemoteloaderConf$slaves) slave = 0;
 		multiTimer(["C", "", 4, FALSE]);	// load finish timer
+		
 	}
 }
 
@@ -93,50 +100,48 @@ default
     timer(){multiTimer([]);}
 
     #include "xobj_core/_LM.lsl"
-        /*
-            Included in all these calls:
-            METHOD - (int)method
-            INDEX - (int)obj_index
-            PARAMS - (var)parameters
-            SENDER_SCRIPT - (var)parameters
-            CB - The callback you specified when you sent a task
-        */
-
-        if(nr == METHOD_CALLBACK){ 
+        
+        if( nr == METHOD_CALLBACK ) 
             return;
-        }
+        
             
-        if(METHOD == RemoteloaderMethod$load){
+        if( METHOD == RemoteloaderMethod$load ){
+		
 			list dta = PARAMS;
-			if(id == "")id = llList2String(dta, -1);		// Lets you override the ID to send to
+			if( id == "" )
+				id = llList2String(dta, -1);		// Lets you override the ID to send to
 			
 			string s = llList2String(dta, 0);
 			list scripts = [s];
-			if(llJsonValueType(s, []) == JSON_ARRAY){		// Load multiple
+			if( llJsonValueType(s, []) == JSON_ARRAY )		// Load multiple
 				scripts = llJson2List(s);
-			}
 			
 			list_shift_each(scripts, val,
 				queue+= ([id, val])+llList2List(dta, 1, 2);
 			)
 			next();
+			
         }
-        else if(METHOD == RemoteloaderMethod$asset){
+		
+        else if( METHOD == RemoteloaderMethod$asset )
             llGiveInventory(id, method_arg(0));
-        }else if(METHOD == RemoteloaderMethod$attach){
+			
+		else if( METHOD == RemoteloaderMethod$attach ){
+		
             //llOwnerSay("Rezzing: "+method_arg(0));
             llRezAtRoot(method_arg(0), llGetRootPosition(), ZERO_VECTOR, ZERO_ROTATION, 1);
             if(CB != ""){
                 delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
 				return;
 			}
+			
         }
-		else if(METHOD == RemoteloaderMethod$detach){
+		else if( METHOD == RemoteloaderMethod$detach )
 			runOmniMethod("jas Attached", AttachedMethod$remove, [method_arg(0)], TNN);
-		}
-        else if(METHOD == RemoteloaderMethod$rez){
+		
+        else if( METHOD == RemoteloaderMethod$rez )
 			llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));
-        }
+        
         
 
     #define LM_BOTTOM  

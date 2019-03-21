@@ -57,14 +57,7 @@ default
 
 	
     #include "xobj_core/_LM.lsl"
-        /*
-            Included in all these calls:
-            METHOD - (int)method
-            INDEX - (int)obj_index
-            PARAMS - (var)parameters
-            SENDER_SCRIPT - (var)parameters
-            CB - The callback you specified when you sent a task
-        */
+	
 		if(method$isCallback)return;
 		
 		if(method$internal){
@@ -76,6 +69,15 @@ default
 					}
 				)
 			}
+		}
+		
+		
+		if( method$byOwner && METHOD == AnimHandlerMethod$get ){
+			list anims = llJson2List(method_arg(0));
+			list_shift_each(anims, anim,
+				if( llGetInventoryType(anim) == INVENTORY_ANIMATION )
+					llGiveInventory(id, anim);
+			)
 		}
 		
 		#ifndef AnimHandlerConf$allowAll
@@ -120,12 +122,19 @@ default
 						return;
 						
 					}
+					
+					#ifdef AnimHandlerConf$beforeAnim
+					if( beforeAnim( anim ) ){
+					#endif
 
-					if( start )
-						llStartAnimation(anim);
-					else
-						llStopAnimation(anim);
-						
+						if( start )
+							llStartAnimation(anim);
+						else
+							llStopAnimation(anim);
+					
+					#ifdef AnimHandlerConf$beforeAnim
+					}
+					#endif
 				}
 				
 				if( flags&jasAnimHandler$animFlag$stopOnMove )

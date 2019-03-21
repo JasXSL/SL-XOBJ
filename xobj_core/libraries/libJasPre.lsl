@@ -21,6 +21,7 @@
 #define Infinity 340282356779733642748073463979561713664.00000000
 #define NaN ((float)"nan")
 #define ONE_VECTOR <1.0,1.0,1.0>
+#define MAXINT 0x7FFFFFFF
 
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)
@@ -72,7 +73,7 @@
 	// Ex: list l = ["a", "a", "b"]; remByVal(l, "a"); llList2CSV(l) => ["b"]
 
 // Quickly split a string into a list
-	#define explode(delim, input) llParseString2List(input, [delim], [])
+	#define explode(delim, input) llParseStringKeepNulls(input, [delim], [])
 
 // Quickly set a value of an array
 	#define set(arr, pos, val) arr = llListReplaceList(arr, [val], pos, pos)
@@ -206,6 +207,7 @@ list bitArrToList(integer n, integer bytesize){
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(llVecNorm(fwd * llGetRot()), llVecNorm(llList2Vector(odata, 0)-llGetRootPosition())));} 
 //#define prAngle(object, var, fwd) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS]); var = llRot2Angle(llRotBetween(fwd * llGetRot(), llList2Vector(odata, 0)-llGetRootPosition()));} 
 // Check if prim is in front of me
+#define prAngleOn(object, var, rotOffset) vector temp = (prPos(object)-llGetRootPosition())/llGetRootRotation()*rotOffset; var = llAtan2(temp.y,temp.x)
 #define prAngle(object, var, rotOffset) float var; {vector temp = (prPos(object)-llGetRootPosition())/llGetRootRotation()*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define prAngX(object, var) prAngle(object, var, ZERO_ROTATION)
 #define prAngZ(object, var) prAngle(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
