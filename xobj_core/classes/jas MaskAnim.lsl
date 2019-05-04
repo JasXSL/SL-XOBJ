@@ -37,7 +37,6 @@
 //#define MaskAnimConf$animStartEvent
 //#define MaskAnimConf$remoteloadOnRez
 
-								
 #define MaskAnimEvt$frame MeshAnimEvt$frame	// Raised when a non-integer frame is discovered
 #define MaskAnimEvt$agentsInRange MeshAnimEvt$agentsInRange		// Player is within LOD range, start animating
 #define MaskAnimEvt$agentsLost MeshAnimEvt$agentsLost		// Out of bounds, the animator will stop

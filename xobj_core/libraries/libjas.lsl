@@ -1,3 +1,5 @@
+#ifndef _libjas
+#define _libjas
 
 string dateformat(integer utime){
     string output;
@@ -30,6 +32,7 @@ string dateformat(integer utime){
     }
     return output;
 }
+
 
 
 //Searches for HEADER in INPUT and returns the value
@@ -605,3 +608,5 @@ string bits2nybbles(integer bits){
     while (bits = (0xfffFFFF & (bits >> 4)));
     return nybbles;
 }
+
+#endif

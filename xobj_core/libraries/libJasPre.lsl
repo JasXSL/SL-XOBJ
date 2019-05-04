@@ -1,3 +1,5 @@
+#ifndef _libJasPre
+#define _libJasPre
 // This here is the JasX preprocessor shortcut library
 // They're basically just ways of using the preprocessor to let you do more in less code
 
@@ -181,7 +183,7 @@ list bitArrToList(integer n, integer bytesize){
 
 // Shortcut for llJsonGetValue
 #define jVal(obj, index) llJsonGetValue(obj, index)
-#define j(obj, var) llJsonGetValue(obj, [var])
+#define j(obj, var) llJsonGetValue(obj, (list)var)
 #define js(obj, index, val) llJsonSetValue(obj, [index], (str)val)
 
 // Quickly set memory limit to a multiplier of current memory used
@@ -230,6 +232,7 @@ list bitArrToList(integer n, integer bytesize){
 #define norm2rot(normal, axis) llAxes2Rot(llVecNorm(normal % axis) % normal, llVecNorm(normal % axis), normal)
 
 
+#define xLookAt(pos) llRotLookAt(llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())), 1, 1);
 
 
 // Vectors
@@ -241,4 +244,4 @@ list bitArrToList(integer n, integer bytesize){
 
 
 
-
+#endif

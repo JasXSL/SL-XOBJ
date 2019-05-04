@@ -27,6 +27,10 @@ if(method$isCallback){
 You can use LM_PRE to inject code at the top of link_message
 
 
+Macros
+#define LM_PRE - Put at the top of link_message
+#define LM_ON_METHOD(METHOD, PARAMS, id, SENDER_SCRIPT, CB)
+
 */
 
 #ifndef LM_BOTTOM
@@ -224,6 +228,10 @@ link_message(integer link, integer nr, string s, key id){
 		string SENDER_SCRIPT = llList2String(_s_DATA, 2);
 		CB = llList2String(_s_DATA, 3);
 		_s_DATA = [];
+		
+		#ifdef LM_ON_METHOD
+		LM_ON_METHOD(METHOD, PARAMS, id, SENDER_SCRIPT, CB);
+		#endif
 		
 #else
 		// Bottom goes here

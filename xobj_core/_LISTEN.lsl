@@ -35,10 +35,16 @@ listen(integer chan, string name, key id, string message){
 		#if ALLOW_USER_DEBUG != 2
 		if(llGetOwnerKey(id) != llGetOwner())return;
 		#endif
-        if(llGetSubString(message, 0, 5) == "debug "){ // script, method, param1, param2...
+        if(llGetSubString(message, 0, 5) == "debug " || llGetSubString(message, 0, 6) == "debugj "){ // script, method, param1, param2...
 			list split = llCSV2List(llGetSubString(message, 6, -1));
-            list op = [llList2Integer(split,1), llList2Json(JSON_ARRAY, llDeleteSubList(split, 0, 1)), ""];
-            llMessageLinked(LINK_SET, RUN_METHOD, llList2String(split,0)+llList2Json(JSON_ARRAY, op), id);
+			int task = l2i(split, 1);
+			string script = l2s(split, 0);
+			split = llDeleteSubList(split, 0, 1);
+            if( llGetSubString(message, 0, 6) == "debugj " )
+				split = llJson2List(implode(",", split));
+			list op = [task, llList2Json(JSON_ARRAY, split), ""];
+			
+            llMessageLinked(LINK_SET, RUN_METHOD, script+llList2Json(JSON_ARRAY, op), id);
         }
         return;
     }
