@@ -144,7 +144,20 @@ stopPathing( int success ){
 	if( PATHING_SENDER == "" )
 		return;
 		
-	qd("Sending callback to ("+(str)PATHING_SENDER+") "+llKey2Name(PATHING_SENDER)+" script "+PATHING_SENDER_SCRIPT);
+	if( Supportcube$PTCFlag$WARP_ON_FAIL && !success && llAvatarOnSitTarget() == llGetOwner() ){
+		// Warp 
+		llSetKeyframedMotion([], (list)KFM_COMMAND+(list)KFM_CMD_STOP);
+		llSleep(.1);
+		vector pos = PATHING_TARG;
+		list ray = llCastRay(pos, pos-<0,0,5>, (list)RC_REJECT_TYPES + (RC_REJECT_AGENTS|RC_REJECT_PHYSICAL));
+		if( l2i(ray, -1) == 1 ){
+			vector as = llGetAgentSize(llGetOwner());
+			pos = l2v(ray, 1)+<0,0,as.z/2>;
+			llSetRegionPos(pos);
+			llSleep(.1);
+		}
+		success = TRUE;
+	}
 	sendCallback(PATHING_SENDER, PATHING_SENDER_SCRIPT, SupportcubeMethod$execute, mkarr((list)
 		Supportcube$tPathToCoordinates +
 		success
@@ -243,7 +256,6 @@ timerEvent(string id, string data){
 		vector drop = <0,0,-2>-ascale;	// We can drop 2m beneath our feet
 		list ray = llCastRay(mPos, mPos+drop, raySettings);
 		if( l2i(ray, -1) != 1 ){
-			qd("Failed to acquire current pos");
 			return stopPathing(false);
 		}		
 		float moveDist = 0.5*PATHING_SPEED;
@@ -256,7 +268,6 @@ timerEvent(string id, string data){
 		// X/Y coordinates only here
 		vector move = llVecNorm(<PATHING_TARG.x, PATHING_TARG.y, 0>-<mPos.x, mPos.y, 0>);
 		if( dist < moveDist ){
-			qd("Destination reached!");
 			return stopPathing(true);	// At target
 		}
 		else
@@ -266,13 +277,11 @@ timerEvent(string id, string data){
 		// See if there's an obstacle
 		ray = llCastRay(mPos, mPos+move, raySettings);
 		if( l2i(ray, -1) != 0 ){
-			qd("Found an obstacle");
 			return stopPathing(false);
 		}
 		// See if there's ground
 		ray = llCastRay(mPos+move, mPos+move+drop, raySettings);
 		if( l2i(ray, -1) != 1 ){
-			qd("There was no ground cap'n");
 			return stopPathing(false);
 		}
 		// Got the ground, set an offset
