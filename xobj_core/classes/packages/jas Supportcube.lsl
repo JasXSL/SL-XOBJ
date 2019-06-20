@@ -127,6 +127,15 @@ runTask(){
 					AnimHandler$targAnim(llGetOwner(), PATHING_ANIM, TRUE);
 				PATHING_SENDER = sender;
 				PATHING_SENDER_SCRIPT = sender_script;
+				
+				if( l2k(params, 7) )
+					PATHING_SENDER = l2k(params, 7);
+				if( l2s(params, 8) )
+					PATHING_SENDER_SCRIPT = l2s(params, 8);
+				
+				qd("SENDER = "+llKey2Name(PATHING_SENDER));
+				qd("SCRIPT = "+PATHING_SENDER_SCRIPT);
+				
 				PATHING_CALLBACK = l2s(params, 4);
 				PATHING_SPEED = l2f(params, 5);
 				if( PATHING_SPEED <= 0 )
@@ -294,7 +303,7 @@ timerEvent(string id, string data){
 		// mPos is now where we need to path to
 		llSetKeyframedMotion((list)
 			(mPos-llGetPos())+
-			r/llGetRot()+
+			NormRot(r/llGetRot())+
 			0.3,
 			[]
 		);
