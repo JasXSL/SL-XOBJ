@@ -25,6 +25,7 @@
 
 
 
+// Tasks that support callbacks callback with : METHOD = SupportcubeMethod$execute, cb_data : [task, arg1, arg2...], and supplied callback string
 #define Supportcube$tSetPos 1			// [(vec)pos]
 #define Supportcube$tSetRot 2			// [(rot)rotation]
 #define Supportcube$tForceSit 3			// [(bool)prevent_unsit, (bool)wait_for_sit]
@@ -36,6 +37,9 @@
 //#define Supportcube$tTranslateStop 8	// 
 #define Supportcube$tKFM 9				// (arr)coordinates, (arr)command - Same data as llSetKeyframedMotion
 #define Supportcube$tKFMEnd 10			// void - Calls KFM_CMD_STOP and clears the buffer, making sure global position updates will be instant
+#define Supportcube$tPathToCoordinates 11	// [(vec)start_pos, (rot)start_rot, (vec)end_pos, (str)anim, (str)callback, (float)speed=1, (int)flags] - Runs asynchronously. Use <0,0,0> to turn off. Tries to walk the player towards a location. Only X/Y are used.
+	#define Supportcube$PTCFlag$STOP_ON_UNSIT 0x1
+	#define Supportcube$PTCFlag$UNSIT_AT_END 0x2
 
 
 #define SupportcubeOverride$tKFMEnd 5			// Tunneled through override - (arr)data, (arr)conf

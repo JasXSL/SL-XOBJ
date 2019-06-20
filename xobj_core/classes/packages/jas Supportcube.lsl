@@ -8,12 +8,19 @@ integer BFL;
 #define TIMER_NEXT "a"
 #define TIMER_DIE "b"
 #define TIMER_CHECK "c"
+#define TIMER_PATH "d"
 
 // Cache of tasks [(obj)task, (obj)task...]
-// Tasks consist of {t:(int)task, p:(arr)params}
+// Tasks consist of {t:(int)task, p:(arr)params, s:(key)sender, ss:(str)sender_script}
 list tasks = [];
 
-
+vector PATHING_TARG;
+str PATHING_ANIM;
+str PATHING_CALLBACK;
+key PATHING_SENDER;
+float PATHING_SPEED;
+int PATHING_FLAGS;
+string PATHING_SENDER_SCRIPT;
 
 endKFM(){
 	if(~BFL&BFL_KFM_ACTIVE)
@@ -32,9 +39,10 @@ runTask(){
         string task = llList2String(tasks,0);
         tasks = llDeleteSubList(tasks,0,0); 
 		
-        integer t = (integer)jVal(task, ["t"]);
-        list params = llJson2List(jVal(task, ["p"]));
-        
+        integer t = (integer)j(task, "t");
+        list params = llJson2List(j(task, "p"));
+        key sender = j(task, "s");
+		str sender_script = j(task, "ss");
 		// Change region position of supportcube. This will end any active KFMs
         if(t == Supportcube$tSetPos){
 			endKFM();
@@ -95,23 +103,69 @@ runTask(){
         }
 		
 		else if(t == Supportcube$tKFMEnd){
+			stopPathing(FALSE);
 			endKFM();
 		}
 		
 		else if(t == Supportcube$tKFM){
-			
+			stopPathing(FALSE);
 			list dta = llJson2List(l2s(params,0));
 			list conf = llJson2List(l2s(params,1));
 			KFM(dta, conf);
 			
 		}
+		
+		else if( t == Supportcube$tPathToCoordinates ){
+			
+			stopPathing(false);
+			vector startPos = (vector)l2s(params, 0);
+			rotation startRot= (rotation)l2s(params, 1);
+			PATHING_TARG = (vector)l2s(params, 2);
+			if( startPos != ZERO_VECTOR ){
+				PATHING_ANIM = l2s(params, 3);
+				if( PATHING_ANIM )
+					AnimHandler$targAnim(llGetOwner(), PATHING_ANIM, TRUE);
+				PATHING_SENDER = sender;
+				PATHING_SENDER_SCRIPT = sender_script;
+				PATHING_CALLBACK = l2s(params, 4);
+				PATHING_SPEED = l2f(params, 5);
+				if( PATHING_SPEED <= 0 )
+					PATHING_SPEED = 1.0;
+				PATHING_FLAGS = l2i(params, 6);
+				multiTimer([TIMER_PATH, 0, 0.25, TRUE]);
+				llSetRegionPos(startPos);
+				llSetRot(startRot);
+			}
+		}
     }
-} 
+}
 
-rotation NormRot(rotation Q)
-{
+stopPathing( int success ){
+	if( PATHING_SENDER == "" )
+		return;
+		
+	qd("Sending callback to ("+(str)PATHING_SENDER+") "+llKey2Name(PATHING_SENDER)+" script "+PATHING_SENDER_SCRIPT);
+	sendCallback(PATHING_SENDER, PATHING_SENDER_SCRIPT, SupportcubeMethod$execute, mkarr((list)
+		Supportcube$tPathToCoordinates +
+		success
+	), PATHING_CALLBACK);
+	PATHING_SENDER = "";
+	if( PATHING_FLAGS & Supportcube$PTCFlag$UNSIT_AT_END ){
+		llOwnerSay("@unsit=y");
+        if(llAvatarOnSitTarget() == llGetOwner())
+			llUnSit(llGetOwner());
+	}
+	if( PATHING_ANIM )
+		AnimHandler$targAnim(llGetOwner(), PATHING_ANIM, FALSE);
+	PATHING_FLAGS = 0;
+	multiTimer([TIMER_PATH]);
+	llSetKeyframedMotion([], (list)KFM_COMMAND+(list)KFM_CMD_STOP);
+	llSleep(.1);
+	
+}
+
+rotation NormRot(rotation Q){
     float MagQ = llSqrt(Q.x*Q.x + Q.y*Q.y +Q.z*Q.z + Q.s*Q.s);
- 
     return
         <Q.x/MagQ, Q.y/MagQ, Q.z/MagQ, Q.s/MagQ>;
 }
@@ -179,6 +233,64 @@ timerEvent(string id, string data){
 		runTask();
 		
 	}
+	
+	else if( id == TIMER_PATH ){
+	
+		list raySettings = (list)RC_REJECT_TYPES+(RC_REJECT_AGENTS|RC_REJECT_PHYSICAL);
+		vector mPos = llGetPos();
+		vector ascale = llGetAgentSize(llGetOwner());
+		ascale = <0,0,ascale.z/2>;
+		vector drop = <0,0,-2>-ascale;	// We can drop 2m beneath our feet
+		list ray = llCastRay(mPos, mPos+drop, raySettings);
+		if( l2i(ray, -1) != 1 ){
+			qd("Failed to acquire current pos");
+			return stopPathing(false);
+		}		
+		float moveDist = 0.5*PATHING_SPEED;
+		
+		
+		// This is our technical current position now
+		mPos = l2v(ray, 1)+ascale;
+		float dist = llVecDist(<mPos.x, mPos.y, 0>, <PATHING_TARG.x, PATHING_TARG.y, 0>);
+		
+		// X/Y coordinates only here
+		vector move = llVecNorm(<PATHING_TARG.x, PATHING_TARG.y, 0>-<mPos.x, mPos.y, 0>);
+		if( dist < moveDist ){
+			qd("Destination reached!");
+			return stopPathing(true);	// At target
+		}
+		else
+			move *= moveDist;
+		// Move is now an offset in X Y coordinates of where we need to go this step
+		
+		// See if there's an obstacle
+		ray = llCastRay(mPos, mPos+move, raySettings);
+		if( l2i(ray, -1) != 0 ){
+			qd("Found an obstacle");
+			return stopPathing(false);
+		}
+		// See if there's ground
+		ray = llCastRay(mPos+move, mPos+move+drop, raySettings);
+		if( l2i(ray, -1) != 1 ){
+			qd("There was no ground cap'n");
+			return stopPathing(false);
+		}
+		// Got the ground, set an offset
+		mPos = mPos+move;
+		vector v = l2v(ray, 1);
+		mPos.z = v.z+ascale.z;
+		vector rotLookAt = mPos-llGetPos();
+		rotation r = llRotBetween(<1,0,0>, llVecNorm(<rotLookAt.x, rotLookAt.y, 0>));
+
+		// mPos is now where we need to path to
+		llSetKeyframedMotion((list)
+			(mPos-llGetPos())+
+			r/llGetRot()+
+			0.3,
+			[]
+		);
+		
+	}
 		
 }
 
@@ -217,8 +329,8 @@ kill(){
 	
 }
 
-default
-{ 
+default{
+ 
     #ifdef SupportcubeCfg$listenOverride
 	#define LISTEN_LIMIT_FREETEXT \
 		if(chan == SupportcubeCfg$listenOverride && llGetOwnerKey(id) == llGetOwner()){ \
@@ -276,6 +388,9 @@ default
 			// Unsits or other person seated
 			else{
 				
+				if( llAvatarOnSitTarget() == NULL_KEY && PATHING_FLAGS & Supportcube$PTCFlag$STOP_ON_UNSIT )
+					stopPathing(FALSE);
+				
 				// Make smaller
 				llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.5,.5,.5>]);
 				
@@ -310,16 +425,15 @@ default
     
     
     #include "xobj_core/_LM.lsl" 
-        /*
-            Included in all these calls:
-            METHOD - (int)method
-            PARAMS - (var)parameters
-            SENDER_SCRIPT - (var)parameters
-            CB - The callback you specified when you sent a task
-        */
         if(nr == METHOD_CALLBACK)return;
         if(method$byOwner){
             if(METHOD == SupportcubeMethod$execute){
+				integer i;
+				for(; i<count(PARAMS); ++i ){
+					str json = llJsonSetValue(l2s(PARAMS, i), (list)"s", id);
+					json = llJsonSetValue(json, (list)"ss", SENDER_SCRIPT);
+					PARAMS = llListReplaceList(PARAMS, (list)json, i, i);
+				}
                 tasks+=PARAMS;
                 runTask();
             }
