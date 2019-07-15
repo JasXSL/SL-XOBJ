@@ -37,7 +37,7 @@
 */
 
 // Constants
-#define db3$tableMaxlength 2111
+#define db3$tableMaxlength 2095
 
 // Accepts a list of tables to add to the database
 #define db3$addTables(tables) llMessageLinked(LINK_ROOT, DB3_ADD, llList2Json(JSON_ARRAY, [llGetScriptName(), mkarr(tables)]), "")
@@ -96,12 +96,12 @@ string db3(list input){
 						PRIM_MEDIA_HOME_URL, 
 						"https://"+llGetSubString(data,0,1015), 
 						PRIM_MEDIA_CURRENT_URL, 
-						"https://"+llGetSubString(data,1016,2040), 
+						"https://"+llGetSubString(data,1016,2032), 
 						PRIM_MEDIA_WHITELIST, 
-						llGetSubString(data, 2041, 2105), 
+						llGetSubString(data, 2033, 2095), 
 						PRIM_MEDIA_PERMS_INTERACT, PRIM_MEDIA_PERM_NONE, PRIM_MEDIA_PERMS_CONTROL, PRIM_MEDIA_PERM_NONE
 					]);
-					
+
 					return "1";
 				}
 			}
