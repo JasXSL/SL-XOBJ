@@ -3,7 +3,7 @@
 
 // DEfaults
 #ifndef onAnim
-	#define onAnim 
+	#define onAnim( a, b )
 #endif
 
 #define TIMER_CHECK_ATTACH "a"
