@@ -22,7 +22,7 @@
 		llHTTPRequest(jasVibHub$server+ \
 			"?id="+llEscapeURL(id)+ \
 			"&type=vib"+ \
-			"&data="+llEscapeURL(program), [], "")
+			"&data="+llEscapeURL("["+program+"]"), [], "")
 	// Executes multiple programs on different ports
 	#define jasVibHub$program$executeMany( id, programs ) \
 		jasVibHub$program$execute(id, mkarr(programs))
