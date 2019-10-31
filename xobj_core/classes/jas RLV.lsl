@@ -187,7 +187,7 @@
 #define RLV$turnTowards(pos) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$turnTowards, [pos], TNN)
 #define RLV$targSitOn(targ, uuid, prevent_unsit) runMethod(targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$targUnsit(targ, override) runMethod(targ, "jas RLV", RLVMethod$unsit, [override], TNN)
-#define RLV$setCamera(targ, pos, rot) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [pos, rot], TNN)
+#define RLV$setCamera(targ, pos, rot) runMethod((string)targ, "jas RLV", RLVMethod$staticCamera, [pos, rot], TNN)
 #define RLV$clearCamera(targ) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [], TNN)
 #define RLV$setWindlight(targ, settings) runMethod(targ, "jas RLV", RLVMethod$setWindlight, [settings], TNN)
 

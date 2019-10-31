@@ -370,17 +370,21 @@ default
             CB - The callback you specified when you sent a task
         */ 
         if(nr == RUN_METHOD){
+		
             if(METHOD == MeshAnimMethod$startAnim){
 				debugUncommon("Start anim: "+method_arg(0));
 				startAnim(method_arg(0), (integer)method_arg(1));
 			}
+			
             else if(METHOD == MeshAnimMethod$stopAnim){ 
                 stopAnim(method_arg(0));
             } 
+			
 			else if(METHOD == MeshAnimMethod$resume){
 				BFL = BFL&~BFL_STOPPED;
 				refreshAnims();
 			}
+			
             else if(METHOD == MeshAnimMethod$stopAll)stopAll() ;     
 			else if(METHOD == MeshAnimMethod$emulateFrameEvent)raiseEvent(MeshAnimEvt$frame, method_arg(0));
 			else if(METHOD == MeshAnimMethod$rem){

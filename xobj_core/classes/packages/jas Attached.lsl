@@ -182,14 +182,20 @@ default
 			llSleep(.25);
             llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEMP_ON_REZ, TRUE]);
 			#ifndef Attached$useExtUpdate
-            integer pin = floor(llFrand(0xFFFFFFF));
-			llSetRemoteScriptAccessPin(pin);
-			
-				#ifdef Attached$remoteloadCommand
-				Attached$remoteloadCommand;
-				#else
-				runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
-				#endif
+			#ifdef Attached$remoteLoadConditions
+			if( Attached$remoteLoadConditions() ){
+			#endif
+				integer pin = floor(llFrand(0xFFFFFFF));
+				llSetRemoteScriptAccessPin(pin);
+				
+					#ifdef Attached$remoteloadCommand
+					Attached$remoteloadCommand;
+					#else
+					runMethod(llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, pin, 2], TNN);
+					#endif
+			#ifdef Attached$remoteLoadConditions
+			}
+			#endif
 			#endif
 		}	 
     }

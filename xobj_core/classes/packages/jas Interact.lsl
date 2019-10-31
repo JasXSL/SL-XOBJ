@@ -407,7 +407,7 @@ default{
 		for( ; i<total; ++i ){
 			
 			key id = llDetectedKey(i);
-			if( startsWith(prDesc(id), "D$") )
+			if( startsWith(prDesc(id), "D$") && !l2i(llGetObjectDetails(id, (list)OBJECT_PHANTOM), 0) )
 				near += id;				
 		}
 		

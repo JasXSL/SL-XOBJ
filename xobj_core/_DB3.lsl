@@ -37,7 +37,7 @@
 */
 
 // Constants
-#define db3$tableMaxlength 2095
+#define db3$tableMaxlength 2000
 
 // Accepts a list of tables to add to the database
 #define db3$addTables(tables) llMessageLinked(LINK_ROOT, DB3_ADD, llList2Json(JSON_ARRAY, [llGetScriptName(), mkarr(tables)]), "")

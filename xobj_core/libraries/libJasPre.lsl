@@ -169,7 +169,6 @@ list bitArrToList(integer n, integer bytesize){
 	
 
 	
-	
 
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)
@@ -241,7 +240,8 @@ list bitArrToList(integer n, integer bytesize){
 #define int2vec(input) <((input>>21)&255), ((input>>13)&255), (input&8191)>
 #define vecFloor(input) <floor(input.x), floor(input.y), floor(input.z)>
 #define vec2int(input) ((integer)input.x<<21)|((integer)input.y<<13)|(integer)input.z
-
+// Reflects a direction based on a surface normal. Normal must be normalized
+#define reflect(dir, norm) (llVecNorm(dir) - norm*(2*(llVecNorm(dir)*norm)))*llVecMag(dir)
 
 
 #endif

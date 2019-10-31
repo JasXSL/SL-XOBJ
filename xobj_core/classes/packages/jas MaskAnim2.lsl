@@ -468,38 +468,40 @@ default
     
 
     #include "xobj_core/_LM.lsl"
-        /*
-            Included in all these calls:
-            METHOD - (int)method
-            INDEX - (int)obj_index 
-            PARAMS - (var)parameters
-            SENDER_SCRIPT - (var)parameters   
-            CB - The callback you specified when you sent a task
-        */ 
-        if(method$isCallback)return;
+        if( method$isCallback )
+			return;
 		
 		
-		if(METHOD == MaskAnimMethod$forceInRange){
+		if( METHOD == MaskAnimMethod$forceInRange ){
+		
 			if((int)method_arg(0)){
 				BFL = BFL|BFL_AGENTS_IN_RANGE_OVERRIDE;
 			}else{
 				BFL = BFL&~BFL_AGENTS_IN_RANGE_OVERRIDE;
 				sens(BFL&BFL_AGENTS_IN_RANGE);
 			}
+			
 		}
+		
         else if(METHOD == MaskAnimMethod$start){
+		
 			debugUncommon("Start anim: "+method_arg(0));
-			if((integer)method_arg(2))BFL = BFL&~BFL_STOPPED;
+			if( (integer)method_arg(2) )
+				BFL = BFL&~BFL_STOPPED;
 			startAnim(method_arg(0), (integer)method_arg(1));
+			
 		}
+		
         else if(METHOD == MaskAnimMethod$stop){ 
             stopAnim(method_arg(0));
-        } 
+        }
+		
 		else if(METHOD == MaskAnimMethod$resume){
 			BFL = BFL&~BFL_STOPPED;
 			llSetTimerEvent(0);
 			refreshAnims(TRUE);
 		}
+		
         else if(METHOD == MaskAnimMethod$pause)stopAll() ;     
 		else if(METHOD == MaskAnimMethod$emulateFrameEvent)raiseEvent(MaskAnimEvt$frame, method_arg(0));
 		else if(METHOD == MaskAnimMethod$rem)remAnim(method_arg(0));
