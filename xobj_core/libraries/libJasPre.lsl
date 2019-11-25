@@ -150,6 +150,14 @@ list bitArrToList(integer n, integer bytesize){
 	#define startsWith(input, check) (llGetSubString(input, 0, strlen(check)-1) == check)
 	// Returns the input characters after begins string length
 	#define strAfter(input, begins) llGetSubString(input, strlen(begins), -1)
+
+
+
+// INVENTORY //
+	#define stopAllObjectAnimations() {list l = llGetObjectAnimationNames(); integer i; for(;i<count(l);++i)llStopObjectAnimation(l2s(l,i));}
+	#define invAnim(index) llGetInventoryName(INVENTORY_ANIMATION, index)
+	#define invObj(index) llGetInventoryName(INVENTORY_OBJECT, index)
+
 	
 	
 	
