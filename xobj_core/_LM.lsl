@@ -30,6 +30,7 @@ You can use LM_PRE to inject code at the top of link_message
 Macros
 #define LM_PRE - Put at the top of link_message
 #define LM_ON_METHOD(METHOD, PARAMS, id, SENDER_SCRIPT, CB)
+#define LM_NO_CALLBACKS - Disables the callback to free up memory
 
 */
 
@@ -234,15 +235,21 @@ link_message(integer link, integer nr, string s, key id){
 		#endif
 		
 #else
+		#ifndef LM_NO_CALLBACKS
 		// Bottom goes here
-		if(isset(CB) && !(method$isCallback)){
+		if( isset(CB) && !(method$isCallback) ){
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB)
 		}
+		#endif
 	}else if(nr == RESET_ALL && s != llGetScriptName()){
 		llResetScript();
 	}
+	#ifdef USE_WATCHDOG
+	else if( nr == WATCHDOG_PING && link == llGetLinkNumber() )
+		llMessageLinked(LINK_THIS, WATCHDOG_PONG, cls$name, "");
+	#endif
 	#ifdef USE_EVENTS
-	else if(nr == EVT_RAISED){
+	else if( nr == EVT_RAISED ){
 		list dta = llJson2List(s);
 		onEvt(llList2String(dta,0), (int)((str)id), llJson2List(llList2String(dta,1)));
 	}

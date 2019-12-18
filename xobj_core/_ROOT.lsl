@@ -48,6 +48,7 @@
 	#define USE_SHARED (DEPRECATED) (list)scripts <- Add to top of a script that should be reading or setting shared vars. Ex: #define USE_SHARED [cls$name, "#ROOT"] or #define USE_SHARED ["*"]
 	#define OVERRIDE_TOKEN <- Should be set if you want to define getToken as a preprocessor definition in your _core.lsl file
 	#define SCRIPT_ALIASES [] <- Alias names the script can be run as. Array of names. Like if you have a script named "got LevelLite" and you want it to also be callable with "got Level", then define this as ["got Level"]
+	#define USE_WATCHDOG <- Enables the ping command
 	
 */
 
@@ -102,8 +103,10 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define DB2_UPDATE -6			// str = (arr)data
 #define DB2_DELETE -7			// str = (str)script
 #define DB2_REFRESHME -8		// refreshes db2 on the script and sends a callback
-
 #define DB3_ADD -5				// (str)sender_script, (arr)tableNames - Adds a table to DB3 - Sends stdMethod$setShared as a callback to the script on completion, params containing an array of tables added
+#define WATCHDOG_PING -10		// Pings all scripts
+#define WATCHDOG_PONG -11		// str = (string)script
+
 
 
 // Standard methods
