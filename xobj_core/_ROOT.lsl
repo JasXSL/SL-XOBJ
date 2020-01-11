@@ -93,6 +93,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define evt$BUTTON_HELD_SEC -7		// [(int)level, (float)sec] - After a button has been held for x time
 #define evt$TOUCH_HELD_SEC -8	// [(int)prim, (key)id, (int)sec] - After a click event has been held for x seconds
 
+
 // nr Task definitions
 // These are put into the nr field of llMessageLinked. Do NOT use negative integers if you're going to send your own link messages manually.
 #define RUN_METHOD -1			// Basically what the runMethod() function does, use that
@@ -104,6 +105,7 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define DB2_DELETE -7			// str = (str)script
 #define DB2_REFRESHME -8		// refreshes db2 on the script and sends a callback
 #define DB3_ADD -5				// (str)sender_script, (arr)tableNames - Adds a table to DB3 - Sends stdMethod$setShared as a callback to the script on completion, params containing an array of tables added
+#define DB3_TABLES_ADDED -6		// (arr)tables
 #define WATCHDOG_PING -10		// Pings all scripts
 #define WATCHDOG_PONG -11		// str = (string)script
 

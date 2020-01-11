@@ -20,7 +20,18 @@
 //#define AnimHandlerConf$beforeAnim( str anim ) - Use a function or expression that returns true/false. If false, it prevents the anim
 // Events are not captured by default so you can use #define USE_EVENTS and onEvt like normal
 
-#define AnimHandlerMethod$anim 0			// (str)|(arr)anim, (int)start, (float)replicate_dly, (float)duration, (int)flags - Anim can be an array of multiple animations to start/stop. It can also be an array of sub-arrays and one will be picked at random
+#define AnimHandlerMethod$anim 0			// (str)|(arr)anim, (int)start, (float)replicate_dly, (float)duration, (int)flags
+											// Anim can be an array of multiple animations to start/stop. 
+											// It can also be an array of sub-arrays and one will be picked at random
+											// Animations can also be JSON objects:
+											/*
+												a:(str)anim
+												d:(float)duration
+												s:(int)start
+												f:(int)flags
+												p:(float)start_delay
+											*/
+											
 	#define jasAnimHandler$animFlag$stopOnMove 0x1			// Stops the animation when the avatar moves
 	#define jasAnimHandler$animFlag$randomize 0x2			// Picks one random element from anim instead of playing all
 	

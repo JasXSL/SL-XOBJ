@@ -193,11 +193,15 @@ link_message(integer link, integer nr, string s, key id){
 			@_db4_add_continue;
 		}
 	}
-	
+	llMessageLinked(LINK_SET, DB3_TABLES_ADDED, mkarr(_to_create), "");
 	sendCallback(id, sender, stdMethod$setShared, mkarr(_to_create), "");
 	}
 	#endif
 #endif
+	#ifdef db3$use_cache
+	else if( nr == DB3_TABLES_ADDED )
+		db3_cache();
+	#endif
 	
 	// Run method
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
