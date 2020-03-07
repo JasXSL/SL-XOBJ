@@ -31,9 +31,11 @@ Macros
 #define LM_PRE - Put at the top of link_message
 #define LM_ON_METHOD(METHOD, PARAMS, id, SENDER_SCRIPT, CB)
 #define LM_NO_CALLBACKS - Disables the callback to free up memory
+#define LM_NO_METHODS - Disables methods to save memory
 
 */
 
+// LM_TOP
 #ifndef LM_BOTTOM
 // Top goes here
 link_message(integer link, integer nr, string s, key id){
@@ -141,69 +143,75 @@ link_message(integer link, integer nr, string s, key id){
 	#endif
 #else
 // DB2 legacy block end, DB3 start
-	#ifdef SCRIPT_IS_ROOT
-	else if(nr == DB3_ADD){
-	// index all existing tables
-	string sender = j(s, 0);
-	list _to_create = llJson2List(j(s,1));
-	list _index_tables;		// Names of tables
-	list _index_db;			// [(int)db_nr, (int)prim, (int)occupied_faces]
-	integer _i; integer nr;
-	for(nr = 1; nr<=llGetNumberOfPrims(); nr++){
-		string name = llGetLinkName(nr);
-		if(llGetSubString(name, 0, 1) == "DB"){
-			_index_db += [(int)llGetSubString(name, 2, -1), nr];
-			integer _occupied; // Bitwise combination
-			for(_i = 0; _i <llGetLinkNumberOfSides(nr); _i++){
-				string _data = llList2String(llGetLinkMedia(nr, _i, [PRIM_MEDIA_HOME_URL]),0); // Only need home URL since names are limited
-				string name = llGetSubString(_data, 8, llSubStringIndex(_data, "|")-1);
-				// Occupied face
-				if(name != "" && llListFindList(_index_tables, [name]) == -1){ 
-					_index_tables += name;
-					_occupied = _occupied | (int)llPow(2, _i);
-				}
-			}
-			_index_db += _occupied;
-		}
-	}
-	
-	_index_db = llListSort(_index_db, 3, TRUE);
-	for(_i = 0; _i<count(_to_create); _i++){
-		string _tbl = llGetSubString(llList2String(_to_create, _i),0,29);
-		if(llListFindList(_index_tables,[_tbl]) == -1){
-			// We need to add a new table
-			integer _x;
-			// Cycle over DB prims
-			for(_x = 0; _x<count(_index_db); _x+=3){
-				integer _occupied = llList2Integer(_index_db, _x+2);
-				integer _prim = llList2Integer(_index_db, _x+1);
-				integer _y;
-				for(_y = 0; _y<llGetLinkNumberOfSides(_prim); _y++){
-					integer _n = (int)llPow(2, _y);
-					if(~_occupied & _n){
-						llSetLinkMedia(_prim, _y, [PRIM_MEDIA_HOME_URL, "https://"+_tbl+"|[]"]);
-						_index_db = llListReplaceList(_index_db, [_occupied|_n], _x+2, _x+2);
-						// Continue adding tables
-						jump _db4_add_continue;
+	#ifdef USE_DB3
+		#ifdef SCRIPT_IS_ROOT
+		else if(nr == DB3_ADD){
+		// index all existing tables
+		string sender = j(s, 0);
+		list _to_create = llJson2List(j(s,1));
+		list _index_tables;		// Names of tables
+		list _index_db;			// [(int)db_nr, (int)prim, (int)occupied_faces]
+		integer _i; integer nr;
+		for(nr = 1; nr<=llGetNumberOfPrims(); nr++){
+			string name = llGetLinkName(nr);
+			if(llGetSubString(name, 0, 1) == "DB"){
+				_index_db += [(int)llGetSubString(name, 2, -1), nr];
+				integer _occupied; // Bitwise combination
+				for(_i = 0; _i <llGetLinkNumberOfSides(nr); _i++){
+					string _data = llList2String(llGetLinkMedia(nr, _i, [PRIM_MEDIA_HOME_URL]),0); // Only need home URL since names are limited
+					string name = llGetSubString(_data, 8, llSubStringIndex(_data, "|")-1);
+					// Occupied face
+					if(name != "" && llListFindList(_index_tables, [name]) == -1){ 
+						_index_tables += name;
+						_occupied = _occupied | (int)llPow(2, _i);
 					}
 				}
+				_index_db += _occupied;
 			}
-			llOwnerSay("FATAL ERROR: Not enough DB sides for DB3.");
-			return;
-			@_db4_add_continue;
 		}
-	}
-	llMessageLinked(LINK_SET, DB3_TABLES_ADDED, mkarr(_to_create), "");
-	sendCallback(id, sender, stdMethod$setShared, mkarr(_to_create), "");
-	}
+		
+		_index_db = llListSort(_index_db, 3, TRUE);
+		for(_i = 0; _i<count(_to_create); _i++){
+			string _tbl = llGetSubString(llList2String(_to_create, _i),0,29);
+			if(llListFindList(_index_tables,[_tbl]) == -1){
+				// We need to add a new table
+				integer _x;
+				// Cycle over DB prims
+				for(_x = 0; _x<count(_index_db); _x+=3){
+					integer _occupied = llList2Integer(_index_db, _x+2);
+					integer _prim = llList2Integer(_index_db, _x+1);
+					integer _y;
+					for(_y = 0; _y<llGetLinkNumberOfSides(_prim); _y++){
+						integer _n = (int)llPow(2, _y);
+						if(~_occupied & _n){
+							llSetLinkMedia(_prim, _y, [PRIM_MEDIA_HOME_URL, "https://"+_tbl+"|[]"]);
+							_index_db = llListReplaceList(_index_db, [_occupied|_n], _x+2, _x+2);
+							// Continue adding tables
+							jump _db4_add_continue;
+						}
+					}
+				}
+				llOwnerSay("FATAL ERROR: Not enough DB sides for DB3.");
+				return;
+				@_db4_add_continue;
+			}
+		}
+		llMessageLinked(LINK_SET, DB3_TABLES_ADDED, mkarr(_to_create), "");
+		sendCallback(id, sender, stdMethod$setShared, mkarr(_to_create), "");
+		}
+		#endif
 	#endif
 #endif
+#ifdef USE_DB3
 	#ifdef db3$use_cache
 	else if( nr == DB3_TABLES_ADDED )
 		db3_cache();
 	#endif
-	
+#endif
+
+
 	// Run method
+	#ifndef LM_NO_METHODS
 	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
 		list CB_DATA;
 		string CB = JSON_NULL;
@@ -237,15 +245,22 @@ link_message(integer link, integer nr, string s, key id){
 		#ifdef LM_ON_METHOD
 		LM_ON_METHOD(METHOD, PARAMS, id, SENDER_SCRIPT, CB);
 		#endif
+	#endif
 		
+// LM_BOTTOM
 #else
+
+	#ifndef LM_NO_METHODS
 		#ifndef LM_NO_CALLBACKS
 		// Bottom goes here
 		if( isset(CB) && !(method$isCallback) ){
 			sendCallback(id, SENDER_SCRIPT, METHOD, llList2Json(JSON_ARRAY, CB_DATA), CB)
 		}
 		#endif
-	}else if(nr == RESET_ALL && s != llGetScriptName()){
+	}
+	#endif
+	
+	else if(nr == RESET_ALL && s != llGetScriptName()){
 		llResetScript();
 	}
 	#ifdef USE_WATCHDOG

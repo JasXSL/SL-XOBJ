@@ -11,7 +11,7 @@
 #define DEBUG_UNCOMMON 30
 #define DEBUG_COMMON 40
 
-
+#define USE_DB3 	// use undef if you do not want to use this
 
 #ifndef DEBUG
 	#define qd(text) _dbg(text)
