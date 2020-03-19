@@ -3,7 +3,6 @@
 #include "xobj_core/classes/jas Attached.lsl"
 #include "xobj_core/classes/jas RLV.lsl"
 
-#define outputSprint() llSetLinkPrimitiveParamsFast(sprintPrim, [PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot])
 
 #ifdef RLVcfg$USER_EVENTS
 	#define USE_EVENTS
@@ -19,6 +18,7 @@ list KEEP_ATTACHED = []; // (str)itemName, (key)id
 
 integer CHAN_VERSION;
 #define CHAN_FOV (CHAN_VERSION+1)
+
 
 #if RLVcfg$USE_SPRINT==1
 float sprint = RLVcfg$limitSprint;
@@ -129,25 +129,50 @@ public_remAttached(string item){
 #endif
 
 
+outputSprint(){
+	llSetLinkPrimitiveParamsFast(sprintPrim, [
+		PRIM_TEXTURE, RLVcfg$sprintFace, sprintTexture, <1,.5,0>, <0,-.25+(1-sprint/RLVcfg$limitSprint)*.5,0>, RLVcfg$sprintFaceRot
+	]);
+}
+
+startSprint(){
+	
+	if( BFL&BFL_SPRINT_STARTED )
+		return;
+		
+	multiTimer([TIMER_SPRINT_START_REGEN]);
+	BFL = BFL|BFL_SPRINT_STARTED;
+		
+	// Show the sprint bar and stop fading
+	multiTimer([TIMER_SPRINT_FADE]);
+	#ifdef RLVcfg$sprintFadeOut
+		#ifdef RLVCfg$sprintPrimConf
+			llSetLinkPrimitiveParams(sprintPrim, RLVCfg$sprintPrimConf);
+		#endif
+		llSetLinkAlpha(sprintPrim, 1, RLVcfg$sprintFace); 
+	#endif
+
+	
+	
+}
+
 #if RLVcfg$USE_SPRINT==1
 damageSprint(float amount){
+
 	sprint-=llFabs(amount);
-    if(sprint<=0){
+    if( sprint<=0 ){
+	
 		sprint = 0;
-        
 		if(~BFL&BFL_RUN_LOCKED){
 			BFL = BFL|BFL_RUN_LOCKED;
 			llOwnerSay("@alwaysrun=n,temprun=n");
 		}
+		
     }
 	
-	if(~BFL&BFL_SPRINT_STARTED){
-		multiTimer([TIMER_SPRINT_START_REGEN]);
-		BFL = BFL|BFL_SPRINT_STARTED;
-	}
-	
-	
+	startSprint();
 	outputSprint();
+	
 }
 #endif
 
@@ -155,28 +180,27 @@ damageSprint(float amount){
 timerEvent(string id, string data){
 #if RLVcfg$USE_SPRINT==1
     if(id == TIMER_SPRINT_CHECK){ 
+	
         integer pstatus = llGetAgentInfo(llGetOwner());
-        if(pstatus&AGENT_ALWAYS_RUN && pstatus&AGENT_WALKING){
-            if(sprint==RLVcfg$limitSprint){
-                multiTimer([TIMER_SPRINT_FADE]);
-				#ifdef RLVcfg$sprintFadeOut
-					#ifdef RLVCfg$sprintPrimConf
-						llSetLinkPrimitiveParams(sprintPrim, RLVCfg$sprintPrimConf);
-					#endif
-					llSetLinkAlpha(sprintPrim, 1, RLVcfg$sprintFace); 
-				#endif
-            }
-            if(~BFL&BFL_SPRINTING)multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
+        if( pstatus&AGENT_ALWAYS_RUN && pstatus&AGENT_WALKING ){
+		
+			startSprint();
+			if( ~BFL&BFL_SPRINTING )
+				multiTimer([TIMER_SPRINT_QUICK, "", .1, TRUE]);
             BFL=BFL|BFL_SPRINTING;
+			
         }
         else{
+		
             if(BFL&BFL_SPRINT_STARTED){
                 multiTimer([TIMER_SPRINT_QUICK]);
                 multiTimer([TIMER_SPRINT_START_REGEN, "", RLVCfg$sprintGracePeriod, FALSE]);
 				BFL = BFL&~BFL_SPRINT_STARTED;
             }
             BFL = BFL&~BFL_SPRINTING;
+			
         }
+		
     }
 	
 	else if(id == TIMER_SPRINT_QUICK){
@@ -247,17 +271,6 @@ timerEvent(string id, string data){
 
 default {
 
-    object_rez(key id){
-	
-        if( llKey2Name(id) == "SupportCube" ){
-            
-			supportcube = id;
-			raiseEvent(RLVevt$supportcubeSpawn, (string)id);
-			
-        }
-		
-    }
-    
     attach(key id){
         
 		if( id != llGetOwner() ){
@@ -276,8 +289,10 @@ default {
     state_entry(){
 	
         CHAN_VERSION = llAbs(playerChan(llGetOwner())+133);
-        llListen(CHAN_VERSION, "", llGetOwner(), "");
+        
+		llListen(CHAN_VERSION, "", llGetOwner(), "");
 		llListen(CHAN_FOV, "", llGetOwner(), "");
+		llListen(SUPPORTCUBE_INIT_CHAN, "SupportCube", "", "");
 		
         if( llGetAttached() )
 			llOwnerSay("@versionnum="+(string)CHAN_VERSION);
@@ -319,6 +334,12 @@ default {
 			if( ACTIVE_FOV > 0 )
 				llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
 			
+		}
+		else if( chan == SUPPORTCUBE_INIT_CHAN && llGetOwnerKey(id) == llGetOwner() ){
+
+			supportcube = id;
+			raiseEvent(RLVevt$supportcubeSpawn, (string)id);
+		
 		}
 		
     }

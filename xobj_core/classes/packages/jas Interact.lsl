@@ -36,12 +36,15 @@ onEvt(string script, integer evt, list data){
 	#ifdef USE_EVENT_OVERRIDE
 	evt(script, evt, data);
 	#endif
-    if(script == "#ROOT"){
-		if(evt == evt$BUTTON_RELEASE && llList2Integer(data,0)&(CONTROL_UP
-		#ifdef InteractConf$ALLOW_ML_LCLICK
-		| CONTROL_ML_LBUTTON
-		#endif
-		)
+    if( script == "#ROOT" ){
+	
+		if(
+			evt == evt$BUTTON_RELEASE && 
+			llList2Integer(data,0)&(CONTROL_UP
+			#ifdef InteractConf$ALLOW_ML_LCLICK
+				| CONTROL_ML_LBUTTON
+			#endif
+			)
 		){
 			if( BFL&BFL_RECENT_CLICK )
 				return;
@@ -91,12 +94,13 @@ onEvt(string script, integer evt, list data){
 			
 			list actions = llParseString2List(targDesc, ["$$"], []);
 			
-			if(
-				!llGetListLength(actions)
-				#ifdef InteractConf$usePrimSwim
-				&& ~BFL&BFL_PRIMSWIM_LEDGE
-				#endif
-			){
+			#ifdef InteractConf$usePrimSwim
+			// Add a dummy action if at ledge
+			if( BFL&BFL_PRIMSWIM_LEDGE )
+				actions = ["CUSTOM"];
+			#endif
+			
+			if( !llGetListLength(actions) ){
 				return 
 				#ifdef InteractConf$soundOnFail
 					llPlaySound(InteractConf$soundOnFail, .25)
@@ -112,18 +116,23 @@ onEvt(string script, integer evt, list data){
 				string task = llList2String(split, 0); 
 				integer success = TRUE;
 				
+				
 				if(task == Interact$TASK_TELEPORT){
 					vector to = (vector)llList2String(split,1); 
 					to+=prPos(targ);
 					RLV$cubeTask(SupportcubeBuildTeleport(to));
 					raiseEvent(InteractEvt$TP, "");
 				} 
-				else if(task == Interact$TASK_PLAY_SOUND || task == Interact$TASK_TRIGGER_SOUND){
+				else if( task == Interact$TASK_PLAY_SOUND || task == Interact$TASK_TRIGGER_SOUND ){
+					
 					key sound = llList2String(split,1);
 					float vol = llList2Float(split,2);
-					if(vol<=0)vol = 1;
-					if(task == Interact$TASK_TRIGGER_SOUND)llTriggerSound(sound, vol);
-					else llPlaySound(sound, vol);
+					if( vol <= 0 )vol = 1;
+					if( task == Interact$TASK_TRIGGER_SOUND )
+						llTriggerSound(sound, vol);
+					else 
+						llPlaySound(sound, vol);
+						
 				}
 				else if(task == Interact$TASK_SITON){
 					RLV$sitOn(targ, FALSE); 
@@ -141,28 +150,28 @@ onEvt(string script, integer evt, list data){
 						llList2String(split,9), // onStart
 						llList2String(split,10) // onEnd
 					);
-				}
-				else{ 
+				}		
+				else
 					success = onInteract(targ, task, llList2List(split,1,-1));
-				}
+				
 				
 				// Custom should always be a success
 				success += (task == "CUSTOM");
 				successes+= (success>0);
 				
 			}
-			
+
 			// Raise interact event
 			#ifdef InteractConf$raiseEvent
 				raiseEvent(InteractEvt$onInteract, targ );
 			#endif
 			
 			#ifdef InteractConf$soundOnFail
-			if(!successes)
+			if( !successes )
 				llPlaySound(InteractConf$soundOnFail, .25);
 			#endif
 			#ifdef InteractConf$soundOnSuccess
-			if(successes)
+			if( successes )
 				llPlaySound(InteractConf$soundOnSuccess, .25);
 			#endif
 			
@@ -172,10 +181,15 @@ onEvt(string script, integer evt, list data){
 			if(btn == CONTROL_UP)held = llList2Integer(data, 1);
 		}else if(evt == evt$BUTTON_PRESS && llList2Integer(data,0)&CONTROL_UP)held = 0;
     }
+	
 	#ifdef InteractConf$usePrimSwim
-	else if(script == "jas Primswim" && evt == PrimswimEvt$atLedge){
-		if(llList2Integer(data,0))BFL = BFL|BFL_PRIMSWIM_LEDGE;
-		else BFL = BFL&~BFL_PRIMSWIM_LEDGE;
+	else if( script == "jas Primswim" && evt == PrimswimEvt$atLedge ){
+	
+		if( llList2Integer(data,0) )
+			BFL = BFL|BFL_PRIMSWIM_LEDGE;
+		else 
+			BFL = BFL&~BFL_PRIMSWIM_LEDGE;
+			
 	}
 	#endif
 	
@@ -331,7 +345,7 @@ seek( list sensed ){
 	if( !count(sensed) && targ == "" ){
 		
 		#ifdef PrimswimEvt$atLedge
-		if(BFL&BFL_PRIMSWIM_LEDGE)
+		if( BFL&BFL_PRIMSWIM_LEDGE )
 			targ = "_PRIMSWIM_CLIMB_";
 		#endif
 	

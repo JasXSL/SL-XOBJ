@@ -126,8 +126,8 @@ timerEvent(string id, string data){
         if(llGetAttached()){
             multiTimer([id]);
         }else{
-            
             llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+			multiTimer([id, "", 25, FALSE]);	// Can't do it too often
         }
     }
 	#ifdef Attached$removeIfSpawnerNotFound
@@ -174,9 +174,10 @@ kill(){
     if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
 }
 
-default
-{ 
+default{
+ 
     on_rez(integer start){
+
 		llSetStatus(STATUS_PHANTOM, TRUE);
         if(start == 1){
 			llSleep(.25);
@@ -200,13 +201,16 @@ default
 		}	 
     }
     
-    state_entry()
-    {
+    state_entry(){
+	
 		#ifdef SCRIPT_IS_ROOT
 			initiateListen();
 		#endif
 		llSetStatus(STATUS_PHANTOM, TRUE);
         memLim(1.5);
+		
+		// Version checking. attaches set at v1 or later will send the message on rez
+		llRegionSayTo(mySpawner(), jasAttached$INI_CHAN, "INI");
 		
 		if(llGetStartParameter() == 2){
             llOwnerSay("@acceptpermission=add");
@@ -222,7 +226,8 @@ default
 		
 		#ifdef Attached$automateMeshAnim
 		localConfCacheAnims()
-		if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+		if( llGetAttached() )
+			llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 		links_each(nr, name, 
             if(name == "SPLAT"){
                 P_SPLAT = nr;

@@ -360,12 +360,17 @@ default{
     #include "xobj_core/_LISTEN.lsl" 
     
     on_rez(integer mew){
-        if(mew)llSetAlpha(0, ALL_SIDES);
+	
+        if( mew )
+			llSetAlpha(0, ALL_SIDES);
         llSetObjectDesc((string)mew);
+		llRegionSayTo(mySpawner(), SUPPORTCUBE_INIT_CHAN, "INIT");
         llResetScript(); 
+		
     }
     
     state_entry(){
+	
 		llSetStatus(STATUS_PHANTOM, TRUE);
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
 		debugCommon("Running killall");
@@ -380,6 +385,7 @@ default{
 		#ifdef SupportcubeCfg$listenOverride
 		llListen(SupportcubeCfg$listenOverride, "", "", "");
 		#endif
+		
     }
     
     timer(){multiTimer([]);}

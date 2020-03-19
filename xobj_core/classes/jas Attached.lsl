@@ -43,4 +43,6 @@
 #define Attached$removeThis() runMethod((string)LINK_SET, "jas Attached", AttachedMethod$remove, [], TNN)
 #define Attached$removeTarg(targ) runMethod(targ, "jas Attached", AttachedMethod$remove, ["*"], TNN)
 
+#define jasAttached$INI_CHAN 7177135
+
 onAttach(){}

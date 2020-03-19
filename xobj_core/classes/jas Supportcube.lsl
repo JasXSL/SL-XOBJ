@@ -13,6 +13,8 @@
 	
 */
 
+#define SUPPORTCUBE_INIT_CHAN 17733			// Chat channel that initializes
+
 #define SupportcubeMethod$execute 1			// (arr)task_objs_in_order
 // Obj: {"t":(int)type, "p":[params]}
 #define SupportcubeMethod$killall 2			// NULL - kills support cubes

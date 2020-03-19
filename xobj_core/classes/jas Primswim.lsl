@@ -59,9 +59,14 @@
 	
 */
 
+
+
 #define PrimswimMethod$airpockets 1				// airpocket1, airpocket2...
 #define PrimswimMethod$swimSpeedMultiplier 2	// (float)speed | Allows you to swim faster or slower. 1 is default, higher is faster.
 #define PrimswimMethod$particleHelper 3			// (key)helper
+
+// Use jas Interact instead of buttons to climb out. Makes it play nicer with jas Interact
+#define PrimSwimCfg$useJasInteract
 
 // Includes
 #ifndef PrimswimCfg$USE_WINDLIGHT

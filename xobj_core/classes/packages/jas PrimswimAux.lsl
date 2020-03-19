@@ -45,8 +45,8 @@ spawnHelper(){
 
 }
 
-default
-{     
+default{
+     
     state_entry(){
 	
 		CACHE_CHAN = Primswim$partChan;

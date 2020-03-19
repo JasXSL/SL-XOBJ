@@ -212,7 +212,7 @@ enterWater(){
     prePush=llGetVel()*.1;
     pp=.75;
 	
-	multiTimer([TIMER_COUT_CHECK, "", 1, TRUE]);
+	multiTimer([TIMER_COUT_CHECK, "", .5, TRUE]);
 	
 }
 
@@ -630,7 +630,7 @@ timerEvent(string id, string data){
     }
 	
 	// See if you can climb out
-	else if(id == TIMER_COUT_CHECK){
+	else if( id == TIMER_COUT_CHECK ){
 	
 		// Checks if you're at an edge and can climb out
 		if(
@@ -667,7 +667,7 @@ timerEvent(string id, string data){
 				if( l2i(up, -1) == 0 ){
 
 					// We just reached a ledge
-					if(climb_out_to == ZERO_VECTOR)
+					if( climb_out_to == ZERO_VECTOR )
 						raiseEvent(PrimswimEvt$atLedge, "1");
 					
 					// Base climb out pos and rot
@@ -702,7 +702,7 @@ timerEvent(string id, string data){
 		}
 		
 		// No longer at ledge
-		if(climb_out_to != ZERO_VECTOR)
+		if( climb_out_to != ZERO_VECTOR )
 			raiseEvent(PrimswimEvt$atLedge, "");
 		climb_out_to = ZERO_VECTOR;
 		
@@ -751,7 +751,8 @@ timerEvent(string id, string data){
         
     }
     
-    else if(id == TIMER_CLIMB_CD)BFL = BFL&~BFL_CLIMBING;
+    else if( id == TIMER_CLIMB_CD )
+		BFL = BFL&~BFL_CLIMBING;
     
     else if(id == TIMER_SWIMSTROKE){
         triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
@@ -809,7 +810,9 @@ triggerRandomSound(list sounds, float minVol, float maxVol){
 }
 
 integer climbOut(){
-	if(climb_out_to == ZERO_VECTOR || BFL&BFL_CLIMBING)return FALSE;
+
+	if( climb_out_to == ZERO_VECTOR || BFL&BFL_CLIMBING )
+		return FALSE;
 	list tasks = [
 		SupportcubeBuildTask(Supportcube$tSetPos, [climb_out_to]),
         SupportcubeBuildTask(Supportcube$tSetRot, [climb_out_rot]),
@@ -821,27 +824,46 @@ integer climbOut(){
                 
     RLV$cubeTask(tasks);
     BFL = BFL|BFL_CLIMBING;
+	
+	climb_out_to = ZERO_VECTOR;
+	raiseEvent(PrimswimEvt$atLedge, "0");
     multiTimer([TIMER_CLIMB_CD, "", 1, FALSE]);
 	return TRUE;
+	
 }
 
-onEvt(string script, integer evt, list data){
+onEvt( string script, integer evt, list data ){
+
 	#ifdef USE_CUSTOM_EVENTS
 	onCustomEvt(script, evt, data);
 	#endif
 	integer d = llList2Integer(data,0);
-    if(script == "#ROOT"){
-        if(evt == evt$BUTTON_PRESS){
+    if( script == "#ROOT" ){
+	
+        if( evt == evt$BUTTON_PRESS ){
+		
             CONTROL = CONTROL|d;
-            if(d&CONTROL_UP)climbOut();
+			#ifndef PrimSwimCfg$useJasInteract
+			if( CONTROL&CONTROL_UP )
+				climbOut();
+			#endif
+				
         }
-        else if(evt == evt$BUTTON_RELEASE)CONTROL = CONTROL&~d;
+        else if( evt == evt$BUTTON_RELEASE )
+			CONTROL = CONTROL&~d;
+			
     }
+	
+	#ifdef PrimSwimCfg$useJasInteract
+	if( script == "jas Interact" && evt == InteractEvt$onInteract && l2s(data, 0) == "_PRIMSWIM_CLIMB_" )
+		climbOut();
+	#endif
+	
 }
 
 
-default
-{
+default{
+
     state_entry(){
 	
 		PCHAN = Primswim$partChan;
