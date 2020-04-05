@@ -226,6 +226,8 @@ list bitArrToList(integer n, integer bytesize){
 #define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
 
 
+#define pointBetween(a, b, distance) \
+        (a+llVecNorm(b-a)*distance)
 
 // Check if I am in front of prim if VAR > PI_BY_TWO
 #define myAngle(object, var) float var; {list odata =llGetObjectDetails(object, [OBJECT_POS, OBJECT_ROT]); vector vrot = llRot2Euler(llList2Rot(odata, 1)); rotation bet = llRotBetween(llVecNorm(<1,0,0> * llEuler2Rot(<0,0,vrot.z>)), llVecNorm(llGetRootPosition()-llList2Vector(odata, 0))); var = llRot2Angle(bet);} 
