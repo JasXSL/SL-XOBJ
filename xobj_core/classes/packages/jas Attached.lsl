@@ -126,7 +126,8 @@ timerEvent(string id, string data){
         if(llGetAttached()){
             multiTimer([id]);
         }else{
-            llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+            //
+			RLV$reqAttach();
 			multiTimer([id, "", 25, FALSE]);	// Can't do it too often
         }
     }
@@ -171,13 +172,15 @@ kill(){
 #endif
 	llDie();
 	DIE = TRUE;
-    if(llGetAttached())llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+    if( llGetAttached() )
+		llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
 }
 
 default{
  
     on_rez(integer start){
 
+	
 		llSetStatus(STATUS_PHANTOM, TRUE);
         if(start == 1){
 			llSleep(.25);
@@ -203,9 +206,6 @@ default{
     
     state_entry(){
 	
-		#ifdef SCRIPT_IS_ROOT
-			initiateListen();
-		#endif
 		llSetStatus(STATUS_PHANTOM, TRUE);
         memLim(1.5);
 		
@@ -228,6 +228,7 @@ default{
 		localConfCacheAnims()
 		if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+			
 		links_each(nr, name, 
             if(name == "SPLAT"){
                 P_SPLAT = nr;
@@ -239,6 +240,9 @@ default{
 		multiTimer(["SC", "", 5, TRUE]);
 		#endif
 		
+		llListen(RLVcfg$ATC_CHAN, "", "", "GET");
+		
+		
     }
 	#ifdef Attached$automateMeshAnim
 	attach(key id){
@@ -248,15 +252,21 @@ default{
 	}
 	#endif 
 	
-	#ifdef SCRIPT_IS_ROOT
-		#include "xobj_core/_LISTEN.lsl"
-    #endif
+	listen( integer ch, string name, key id, string message ){
+		idOwnerCheck
+		
+		if( llGetAttached() )
+			return;
+			
+		llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
+	
+	}
 	
     run_time_permissions(integer perm){
         
-		if(perm & PERMISSION_ATTACH){
+		if( perm & PERMISSION_ATTACH ){
 
-			if(DIE)
+			if( DIE )
 				llDetachFromAvatar();
             else 
 				llAttachToAvatarTemp(0);

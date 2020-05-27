@@ -37,6 +37,9 @@
 // #define RLVcfg$USER_EVENTS <- Ex: #define RLVcfg$USER_EVENTS onUsrEvt to raise the onUserEvt function when an event is received
 // #define RLVcfg$NO_RESTRICT <- Makes all RLV methods public. Otherwise they are limited to owner
 
+#define RLVcfg$ATC_CHAN 0xBA7
+#define RLV$reqAttach() llRegionSayTo(llGetOwner(), RLVcfg$ATC_CHAN, "GET")	 // Asks if you can request an attach. Calls back "GET" on the same channel if successful.
+
 // Use the sprint limit system
 #ifndef RLVcfg$USE_SPRINT
 	#define RLVcfg$USE_SPRINT 1

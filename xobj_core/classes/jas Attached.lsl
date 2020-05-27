@@ -1,6 +1,7 @@
 /*
 	Dependencies
 		- st Remoteloader
+		- jas RLV
 	
 	This is a script that lets an object temp attach to you. It also serves as a #ROOT script.
 	Setup:

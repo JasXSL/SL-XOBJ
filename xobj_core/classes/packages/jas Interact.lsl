@@ -267,7 +267,7 @@ fetchFromCamera(){
 			
 			list ray = llCastRay(start, start+fwd, []);
 
-			if( llList2Integer(ray,-1) > 0 && llVecDist(llGetRootPosition(), l2v(ray, 1)) < 2 ){
+			if( llList2Integer(ray,-1) > 0 && llVecDist(llGetRootPosition(), l2v(ray, 1)) < 2.5 ){
 				
 				key k = llList2Key(ray,0);
 				
@@ -320,6 +320,8 @@ fetchFromCamera(){
 }
 
 seek( list sensed ){
+	
+	
 
 	// override is set, use the override text instead
 	if( OVERRIDE ){
@@ -338,9 +340,13 @@ seek( list sensed ){
 
 	}
 	
-	// Scan camera
+	sensed += additionalAllow;	// Add additionalAllow to sensed
+	
+	// Try raycast in camera direction first
 	fetchFromCamera();
 	
+	
+
 	// Fail
 	if( !count(sensed) && targ == "" ){
 		
@@ -350,7 +356,7 @@ seek( list sensed ){
 		#endif
 	
 	}
-	// No camera available but we sensed some
+	// No camera available but sensor picked up some
 	else if( count(sensed) && targ == "" ){
 	
 		// ALGORITHMS!
@@ -365,7 +371,7 @@ seek( list sensed ){
 			list ray = llCastRay(gp+<0,0,as.z*0.5>, pp, [RC_DATA_FLAGS, RC_GET_ROOT_KEY]);
 			prAngX(l2k(sensed,i), ang)
 			ang = llFabs(ang);
-			if( (!l2i(ray, -1) || l2k(ray, 0) == l2k(sensed,i)) && (ang < PI/4 || dist < 1) )
+			if( (!l2i(ray, -1) || l2k(ray, 0) == l2k(sensed,i)) && (ang < PI/4 || dist < 1) && dist < 2 )
 				scales += (list)(ang+dist) + l2k(sensed, i);
 			
 		}
@@ -373,6 +379,8 @@ seek( list sensed ){
 		scales = llListSort(scales, 2, TRUE);
 		targ = l2k(scales, 1);
 		targDesc = prDesc(l2k(scales, 1));
+		if( ~llListFindList(additionalAllow, (list)((string)targ)) )
+			targDesc = "CUSTOM";
 		
 	}
 	
@@ -409,7 +417,7 @@ default{
 		llSetMemoryLimit(llGetUsedMemory()*2);
 		if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
-		llSensorRepeat("","",ACTIVE|PASSIVE,3,PI,0.25);
+		llSensorRepeat("","",ACTIVE|PASSIVE,2.5,PI,0.25);
 		//llSensor("","",ACTIVE|PASSIVE,3,PI);
 		
     }

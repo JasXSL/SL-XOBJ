@@ -48,6 +48,9 @@ integer BFL;
 #define TIMER_SPRINT_FADE "d"
 #define TIMER_ATTACHED_CHECK "e"
 #define TIMER_INIT_DLY "f"
+#define TIMER_RESET_ATTACH_REQS "g"
+
+int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 
 key supportcube;
 list cubetasks;
@@ -66,6 +69,7 @@ cubeTask(list tasks){
         
     }
 }
+
 
 #if RLVcfg$USE_KEEPATTACH==1
 integer findAttached(string item){
@@ -163,9 +167,11 @@ damageSprint(float amount){
     if( sprint<=0 ){
 	
 		sprint = 0;
-		if(~BFL&BFL_RUN_LOCKED){
+		if( ~BFL&BFL_RUN_LOCKED ){
+		
 			BFL = BFL|BFL_RUN_LOCKED;
 			llOwnerSay("@alwaysrun=n,temprun=n");
+			
 		}
 		
     }
@@ -204,17 +210,22 @@ timerEvent(string id, string data){
     }
 	
 	else if(id == TIMER_SPRINT_QUICK){
-        if(BFL&BFL_SPRINTING){
+	
+        if( BFL&BFL_SPRINTING ){
+		
             damageSprint(.1*sprintFadeModifier);
 			return;
+			
         }
         
-		if(BFL&BFL_RUN_LOCKED){
+		if( BFL&BFL_RUN_LOCKED && sprint > 0 ){
+		
 			llOwnerSay("@alwaysrun=y,temprun=y");
 			BFL = BFL&~BFL_RUN_LOCKED;
+			
 		}
 		
-		sprint+=.025*sprintRegenModifier;
+		sprint += .025*sprintRegenModifier;
 		if(sprint>=RLVcfg$limitSprint){
 			multiTimer([id]);
 			#ifdef RLVcfg$sprintFadeOut
@@ -222,7 +233,7 @@ timerEvent(string id, string data){
 			#endif
 		}
 	
-        if( sprint<0 )
+        if( sprint < 0 )
 			sprint = 0;
         else if( sprint > RLVcfg$limitSprint )
 			sprint = RLVcfg$limitSprint;
@@ -255,6 +266,10 @@ timerEvent(string id, string data){
         })
     }
 #endif
+
+	if( id == TIMER_RESET_ATTACH_REQS )
+		ATC_REQ = 5;
+
 	if(id == TIMER_INIT_DLY){
         llOwnerSay("@alwaysrun=y,temprun=y");
 		llOwnerSay("@"+RLVcfg$initDly);
@@ -293,6 +308,7 @@ default {
 		llListen(CHAN_VERSION, "", llGetOwner(), "");
 		llListen(CHAN_FOV, "", llGetOwner(), "");
 		llListen(SUPPORTCUBE_INIT_CHAN, "SupportCube", "", "");
+		llListen(RLVcfg$ATC_CHAN, "", "", "GET");
 		
         if( llGetAttached() )
 			llOwnerSay("@versionnum="+(string)CHAN_VERSION);
@@ -340,6 +356,17 @@ default {
 			supportcube = id;
 			raiseEvent(RLVevt$supportcubeSpawn, (string)id);
 		
+		}
+		else if( chan == RLVcfg$ATC_CHAN ){
+		
+			if( ATC_REQ ){
+			
+				--ATC_REQ;
+				llRegionSayTo(id, chan, message);
+				multiTimer([TIMER_RESET_ATTACH_REQS, 0, 10, FALSE]);
+				
+			}
+			
 		}
 		
     }
@@ -546,18 +573,23 @@ default {
 		#endif
             
         #if RLVcfg$USE_SPRINT==1
-        if(METHOD == RLVMethod$sprintFadeModifier)sprintFadeModifier = (float)method_arg(0);
-        else if(METHOD == RLVMethod$sprintRegenModifier)sprintRegenModifier = (float)method_arg(0);
+        if( METHOD == RLVMethod$sprintFadeModifier )
+			sprintFadeModifier = (float)method_arg(0);
+        else if( METHOD == RLVMethod$sprintRegenModifier )
+			sprintRegenModifier = (float)method_arg(0);
         else if(METHOD == RLVMethod$addSprint){
+		
 			float a = (float)method_arg(0);
-			if(a<0){
+			if( a < 0 ){
 				damageSprint(a*RLVcfg$limitSprint);
 				return;
 			}
 				
 			sprint+=a*RLVcfg$limitSprint;
-			if(sprint>RLVcfg$limitSprint)sprint = RLVcfg$limitSprint;
+			if( sprint > RLVcfg$limitSprint )
+				sprint = RLVcfg$limitSprint;
 			outputSprint();
+			
 		}
         #endif
 		
