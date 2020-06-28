@@ -5,7 +5,7 @@ toggleAnim( string anim, integer on, float dur, int flags, float pre ){
 	if( llGetInventoryType(anim) != INVENTORY_ANIMATION && anim != "sit" ){
 		
 		#ifndef AnimHandlerConf$suppressErrors
-		qd("Error: Anim not found: "+method_arg(0));
+		qd("Error: Anim not found: "+anim);
 		#endif
 		return;
 		
@@ -137,12 +137,12 @@ default{
             if( METHOD == AnimHandlerMethod$anim ){
 			
 				if( ~llGetPermissions()&PERMISSION_TRIGGER_ANIMATION ){
+				
+					#ifndef AnimHandlerConf$suppressErrors
+					qd("Error: Anim permissions lacking, reattach  your HUD.");
+					#endif
+					return;
 					
-						#ifndef AnimHandlerConf$suppressErrors
-						qd("Error: Anim permissions lacking, reattach  your HUD.");
-						#endif
-						return;
-						
 				}
 			
                 list anims = (list)method_arg(0);

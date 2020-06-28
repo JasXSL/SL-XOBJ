@@ -66,7 +66,7 @@ integer BF_COMBAT;
 #define BFC_ATTACK_LINEDUP 2
 
 
-// Checks if the object the script is in is intersecting id
+// Checks if the object the script is in is intersecting id and returns the surface Z coordinate at that location
 float waterZ(vector userPos, key id, integer inverse){
         vector vPos = userPos;
         
@@ -231,7 +231,6 @@ exitWater(){
 	
 
 	triggerRandomSound([PrimswimCfg$soundExit], .5, .75);
-    preCallPos = ZERO_VECTOR;
     setBuoyancy();
     // Diving soundspace
     Soundspace$dive(FALSE);
@@ -286,7 +285,6 @@ list water;
 list airpockets;
 float deepest;
 vector prePush;
-vector preCallPos; // What post was last TIMER_SWIM_CHECK
 float pp;
 
 timerEvent(string id, string data){
@@ -304,21 +302,27 @@ timerEvent(string id, string data){
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;
         deepest = 0;
+		list RC_DEFAULT = (list)RC_REJECT_TYPES + (RC_REJECT_AGENTS|RC_REJECT_PHYSICAL);
 		
 		for( ; i<llGetListLength(water) && llGetListLength(water) && ~BFL&BFL_CLIMBING; ++i ){
 		
 			key wID = llList2Key(water,i);
 			
 			vector gpos = llGetRootPosition();
-			float is = pointSubmerged(<gpos.x,gpos.y,gpos.z+ascale.z/2>);
+			
+			float is = pointSubmerged(<gpos.x,gpos.y,gpos.z+ascale.z/2>); // Checks if feet are submerged, or if there's an airbubble.
+
+			// Point is not an air bubble
 			if( is ==-1 || is == 0 )
-				is = waterZ(llGetRootPosition(), wID, FALSE);
+				is = waterZ(llGetRootPosition(), wID, FALSE);	// Get the water surface Z position at this location
 			
 			if( is > deepest )
 				deepest = is;
 			
-			// How far below the water the top of your head is
+			// How far below the water the top of your head is. If negative, it means your head is out of the water.
 			float depth = is-(gpos.z+ascale.z/2);
+			
+			
 			
 			// Check for bottom
 			list ray = llCastRay(gpos-<0,0,ascale.z/2-.1>,gpos-<0,0,ascale.z>, [RC_REJECT_TYPES,RC_REJECT_AGENTS]);
@@ -326,6 +330,7 @@ timerEvent(string id, string data){
 			if( llList2Integer(ray,-1) > 0 )
 				bottom = llList2Vector(ray,1);
 			
+			// Handle camera
 			vector pos = llGetCameraPos();
 			if( pointSubmerged(pos) != 0 && (~BFL&BFL_AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
 			
@@ -338,24 +343,27 @@ timerEvent(string id, string data){
 			
 			integer water_just_entered = FALSE;
 			integer atSurface = TRUE;
-			if( depth>0 )
+			// Head is above the surface
+			if( depth > 0 )
 				atSurface = FALSE;
 
-			if( is == -1 ){ // water removed
+			// The water has been deleted, object no longer found
+			if( is == -1 ){
 				
 				water = llDeleteSubList(water,i,i);
 				i--; 
 				
 			}
 			// We are not fully submerged. But might be standing in water
-			else if( is == 0 ){
+			else if( depth < SURFACE_DEPTH ){
 			
 				is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
 				if( is > deepest )
 					deepest=is;
 				
 			}
-			else if( depth>SURFACE_DEPTH || atSurface ){
+			// We are fully submerged
+			else if( depth > SURFACE_DEPTH || atSurface ){
 				
 				if( i > 0 ){ // INDEX THIS WATER
 				
@@ -418,9 +426,8 @@ timerEvent(string id, string data){
 					
 				}
 				
-				
 
-			
+				// Calculate direction
 				if( CONTROL && !stopped && ~ainfo&AGENT_SITTING ){
 				
 					vector fwd; vector left; vector up;
@@ -454,6 +461,7 @@ timerEvent(string id, string data){
 					pp = 1.;
 					
 				}
+				// Calculate pre-push. Not sure waht this is
 				else if( pp > 0 ){
 				
 					pp-=.1;
@@ -465,6 +473,7 @@ timerEvent(string id, string data){
 				}
 				
 				
+				// Swim sound
 				if(
 					~ainfo&AGENT_SITTING && 
 					!stopped && 
@@ -499,48 +508,82 @@ timerEvent(string id, string data){
 				float sprint = (( llGetAgentInfo(llGetOwner()) & (AGENT_ALWAYS_RUN|AGENT_WALKING) ) == (AGENT_ALWAYS_RUN|AGENT_WALKING));
 				if( sprint == 0 && llGetAgentInfo(llGetOwner()) & AGENT_ALWAYS_RUN )
 					sprint = -0.6;
-				
-				if( preCallPos != ZERO_VECTOR )
-					SP = preCallPos;
-					
-				dif = (dif*.2*ssm*SSM*(1+sprint*.5))+turb+tan;
-				
-				
-				//SP = preCallPos;
-				
-				if( preCallPos != ZERO_VECTOR && llVecDist(gpos, SP) > 2 )
-					SP = gpos;
+
 				
 				//else debug((string)SP + " "+(string)llVecDist(SP, SP+dif)+" "+(string)(llVecDist(gpos,gpos+dif)+.5));
-				SP+=dif;
 				
+				float mag = llVecMag(dif); // Calculate the magnitude before messing with it
 
+				// Surface detect
 				integer SUB = TRUE;
-				if( depth<=0 && !water_just_entered && dif.z>-.1 && atSurface ){
+				// Unless pivoting heavily down, set SP.z to the surface
+				if( depth <= 0 && !water_just_entered && dif.z>-.1 && atSurface ){
 				
 					// Then set to swim at surface level
-					if(bottom.z+ascale.z>depth+SURFACE_DEPTH){
-						SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
-						BFL = BFL|BFL_AT_SURFACE;
-					}
-					else
-						BFL = BFL&~BFL_AT_SURFACE;
+					if( bottom.z+ascale.z > depth+SURFACE_DEPTH ){
 					
+						SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
+						dif.z = 0;
+						BFL = BFL|BFL_AT_SURFACE;
+						
+					}
+					else{
+						BFL = BFL&~BFL_AT_SURFACE;
+					}
 					SUB = FALSE;
 					
 				}
-				else 
+				else {
+				
 					BFL = BFL&~BFL_AT_SURFACE;
+					
+					
+				}
+				
+				integer B;	// We're bottoming out at our current position, so only use XY
+				// Check if we're at the bottom, in that case only move on XY
+				ray = llCastRay(gpos, gpos-<0,0,ascale.z*.75>, RC_DEFAULT);
+				if( l2i(ray, -1) == 1 && dif.z < 0 ){
+					B = true;
+					dif.z = 0;
+				}
+				
+				vector a = dif;
+				float b = a.z;
+				a.z = 0;
+				
+				// XY and Z have different speeds
+				dif = (llVecNorm(dif)*ssm*SSM*(1+sprint*.5))*.75;
+				dif += turb+tan;
 				
 				
-				preCallPos = SP;
+				SP+=dif*mag;
 				
+				
+				// XY checking isn't needed because we're moving relative to our current position
+				
+				// BOttoming out is calculated from the position we want to go to, not where we're at
+				ray = llCastRay(SP, SP-<0,0,ascale.z*.6>, RC_DEFAULT);
+				if( l2i(ray, -1) == 1 ){
+				
+					// We are at the bottom
+					vector v = l2v(ray, 1);
+					SP.z = v.z+ascale.z*.6;
+					dif.z = 0;
+					
+				}
+			
+				
+				//llSetText((str)B+"\n"+(str)SP+"\n"+(str)dif+"\n"+(str)llGetTime(), <1,1,1>, 1);
+				
+								
 				float t = .5;
 				if( water_just_entered )
 					t=2;
-				if( !stopped )
+					
+				if( !stopped ){
 					llMoveToTarget(SP, t);
-				
+				}
 				
 				// HANDLES DIVING SOUNDS
 				if( SUB ){ // Entire body is submerged
@@ -553,7 +596,8 @@ timerEvent(string id, string data){
 						
 					}
 					
-				}else if( BFL&BFL_FULLY_SUBMERGED ){
+				}
+				else if( BFL&BFL_FULLY_SUBMERGED ){
 				
 					// Emerge
 					llTriggerSound(PrimswimCfg$soundSubmerge, .5);
@@ -590,6 +634,8 @@ timerEvent(string id, string data){
 				
 			}
 			
+			
+			
 		}
             
         if( deepest > 0 || BFL&BFL_IN_WATER ){
@@ -616,8 +662,10 @@ timerEvent(string id, string data){
 		// Couldn't find
         if( BFL&BFL_IN_WATER && ~BFL&BFL_CLIMBING )
 			exitWater();
+			
         updateAnimstate();
         multiTimer([id,"", timerSpeed, FALSE]);
+		
     }
     
 	// Removes wet feet
