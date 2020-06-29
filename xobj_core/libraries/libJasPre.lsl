@@ -241,7 +241,9 @@ list bitArrToList(integer n, integer bytesize){
 #define norm2rot(normal, axis) llAxes2Rot(llVecNorm(normal % axis) % normal, llVecNorm(normal % axis), normal)
 
 
-#define xLookAt(pos) llRotLookAt(llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())), 1, 1);
+#define xLookAt(pos) llRotLookAt(llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())), 1, 1)
+#define xLookAtLinked(link, pos) llSetLinkPrimitiveParamsFast(link, (list)PRIM_ROTATION + llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())))
+
 
 
 // Vectors

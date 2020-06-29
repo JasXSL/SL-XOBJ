@@ -302,8 +302,9 @@ timerEvent(string id, string data){
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;
         deepest = 0;
+		#ifndef RC_DEFAULT
 		list RC_DEFAULT = (list)RC_REJECT_TYPES + (RC_REJECT_AGENTS|RC_REJECT_PHYSICAL);
-		
+		#endif
 		for( ; i<llGetListLength(water) && llGetListLength(water) && ~BFL&BFL_CLIMBING; ++i ){
 		
 			key wID = llList2Key(water,i);
