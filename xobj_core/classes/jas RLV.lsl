@@ -1,7 +1,7 @@
 /*
 	
 	Dependencies:
-		- st Supportcube
+		- jas Supportcube
 	
 	The RLV script will let you do various things, and lets you turn on/off tasks before you compile
 	To fully utilize the RLV script, you obviously need RLV enabled in your viewer.

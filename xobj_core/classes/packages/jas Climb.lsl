@@ -80,10 +80,10 @@ dismount(integer atoffset){
 
     
     if(anim_active != ""){
-        AnimHandler$anim(anim_active,FALSE,0,0);
+        AnimHandler$anim(anim_active,FALSE,0,0,0);
     }
     if(anim_active_down != ""){
-        AnimHandler$anim(anim_active_down,FALSE,0,0);
+        AnimHandler$anim(anim_active_down,FALSE,0,0,0);
     }
     
     string anm = anim_dismount_bottom;
@@ -96,7 +96,7 @@ dismount(integer atoffset){
             anm = anim_dismount_top;
         }
         if(isset(anm)){
-            AnimHandler$anim(anm,TRUE,0,0);
+            AnimHandler$anim(anm,TRUE,0,0,0);
         }
         setCubePos(offset);
     }
@@ -104,7 +104,7 @@ dismount(integer atoffset){
     float to = .1;
     if(isset(anm))to = 1;
     if(anim_passive != ""){
-        AnimHandler$anim(anim_passive, FALSE, 0,0);
+        AnimHandler$anim(anim_passive, FALSE, 0,0,0);
     }
     
     multiTimer([TIMER_DISMOUNTING, "", to, FALSE]);
@@ -135,7 +135,7 @@ mount(){
 	// Wait a little while to initiate
     multiTimer([TIMER_MOVE, "", 1, FALSE]);
     
-    if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0,0);
+    if(isset(anim_passive))AnimHandler$anim(anim_passive,TRUE,0,0,0);
     multiTimer([TIMER_INI, 0, 3, FALSE]);
     BFL = BFL|BF_CLIMB_INI;
     BFL = BFL|BFL_CLIMBING;
@@ -188,7 +188,7 @@ timerEvent(string id, string data){
                 string a = anim_active;
                     
                 if(~BFL&BFL_DIR_UP)a = anim_active_down;
-                if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0);
+                if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0,0);
                 anim_active_cur = a;
             }
                 
@@ -210,7 +210,7 @@ timerEvent(string id, string data){
 		
             BFL = BFL&~BFL_CLIMBING_ANIM;
             if(anim_active_cur != ""){
-                AnimHandler$anim(anim_active_cur,FALSE,0,0);
+                AnimHandler$anim(anim_active_cur,FALSE,0,0,0);
                 anim_active_cur = "";
             }
 			
@@ -268,8 +268,8 @@ onEvt(string script, integer evt, list data){
     }
     else if(script == "#ROOT"){
         integer n = llList2Integer(data,0);
-        integer up = CONTROL_FWD|CONTROL_RIGHT|CONTROL_UP;
-        integer dn = CONTROL_BACK|CONTROL_LEFT|CONTROL_DOWN;
+        integer up = CONTROL_FWD|CONTROL_RIGHT|CONTROL_UP|CONTROL_ROT_RIGHT;
+        integer dn = CONTROL_BACK|CONTROL_LEFT|CONTROL_DOWN|CONTROL_ROT_LEFT;
             
         if(evt == evt$BUTTON_RELEASE){
             if(n&(up|dn)){

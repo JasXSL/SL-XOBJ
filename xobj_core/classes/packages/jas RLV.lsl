@@ -52,6 +52,7 @@ integer BFL;
 
 int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 
+float lastCube;	// Time last tried rezz
 key supportcube;
 list cubetasks;
 cubeTask(list tasks){
@@ -62,8 +63,9 @@ cubeTask(list tasks){
 			debugUncommon("Running cube tasks on "+(string)playerChan(llGetOwner()));
             runMethod((string)supportcube, "jas Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
             cubetasks = [];
-        }else{
+        }else if( llGetTime()-lastCube > 1.0 ){
 			debugUncommon("Spawning cube");
+			lastCube = llGetTime();
             llRezAtRoot("SupportCube", llGetRootPosition()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
         }
         
@@ -291,8 +293,10 @@ default {
 		if( id != llGetOwner() ){
 		
 			string out = "@"+RLVcfg$onRemove;
+			#if RLVcfg$USE_FOV == 1
 			if( CACHE_FOV > 0 )
 				out += ",setcam_fov:"+(str)CACHE_FOV+"=force";
+			#endif
 			llOwnerSay(out);
 			
 		}
@@ -328,6 +332,9 @@ default {
 		if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_CONTROL_CAMERA);
 		#endif
+		
+		
+		
 		memLim(1.5);
 		
     }
@@ -344,17 +351,22 @@ default {
             #endif
 			
         }
+		#if RLVcfg$USE_FOV == 1
 		else if( chan == CHAN_FOV ){
+			
 			
 			CACHE_FOV = (float)message;
 			if( ACTIVE_FOV > 0 )
 				llOwnerSay("@setcam_fov:"+(str)ACTIVE_FOV+"=force");
 			
 		}
+		#endif
 		else if( chan == SUPPORTCUBE_INIT_CHAN && llGetOwnerKey(id) == llGetOwner() ){
 
 			supportcube = id;
 			raiseEvent(RLVevt$supportcubeSpawn, (string)id);
+			debugUncommon("Supportcube detected");
+			cubeTask([]);
 		
 		}
 		else if( chan == RLVcfg$ATC_CHAN ){

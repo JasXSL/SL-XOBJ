@@ -1,4 +1,5 @@
 #include "xobj_core/classes/jas RLV.lsl"
+#include "xobj_core/classes/jas AnimHandler.lsl"
 
 
 integer BFL;
@@ -35,7 +36,10 @@ endKFM(){
 // This function cycles all received commands
 runTask(){  
 
+	debugCommon("Waiting tasks: "+mkarr(tasks));
+
     while(llGetListLength(tasks)){
+	
         string task = llList2String(tasks,0);
         tasks = llDeleteSubList(tasks,0,0); 
 		
@@ -43,6 +47,9 @@ runTask(){
         list params = llJson2List(j(task, "p"));
         key sender = j(task, "s");
 		str sender_script = j(task, "ss");
+		
+		debugCommon("Running task: "+(str)t);
+		
 		// Change region position of supportcube. This will end any active KFMs
         if(t == Supportcube$tSetPos){
 			endKFM();
@@ -373,7 +380,7 @@ default{
 	
 		llSetStatus(STATUS_PHANTOM, TRUE);
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
-		debugCommon("Running killall");
+		debugRare("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);
         if((float)llGetObjectDesc()){
 			debugUncommon("Setting death timer");
@@ -383,7 +390,17 @@ default{
 		multiTimer([TIMER_CHECK, "", 10, TRUE]);
         initiateListen();
 		#ifdef SupportcubeCfg$listenOverride
+		debugRare("Listening on channel: "+(str)SupportcubeCfg$listenOverride);
 		llListen(SupportcubeCfg$listenOverride, "", "", "");
+		#endif
+		
+		#ifdef DEBUG
+		if( llGetScriptName() != "jas Supportcube" )
+			llOwnerSay("!! Script needs to be named 'jas Supportcube' (lowercase c), rename it retard");
+		if( llGetObjectName() != "SupportCube" ){
+			llOwnerSay("!! Object needs to be named 'SupportCube'. I'll fix this for you.");
+			llSetObjectName("SupportCube");
+		}
 		#endif
 		
     }
@@ -395,6 +412,8 @@ default{
         if(change&CHANGED_LINK){
             
 			key ast = llAvatarOnSitTarget();
+			
+			llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.5,.5,.5>]);
 			
 			// Owner seated
 			if( ast == llGetOwner() ){
@@ -414,9 +433,6 @@ default{
 				
 				if( llAvatarOnSitTarget() == NULL_KEY && PATHING_FLAGS & Supportcube$PTCFlag$STOP_ON_UNSIT )
 					stopPathing(FALSE);
-				
-				// Make smaller
-				llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_SIZE, <.5,.5,.5>]);
 				
 				if(ast != llGetOwner() && ast != NULL_KEY)
 					llUnSit(ast);
@@ -447,10 +463,16 @@ default{
     } 
       
     
+	#define LM_PRE \
+		debugCommon("LM received: "+(str)nr+" :: "+s+" from "+llKey2Name(id));
     
     #include "xobj_core/_LM.lsl" 
-        if(nr == METHOD_CALLBACK)return;
-        if(method$byOwner){
+	
+		
+	
+        if( nr == METHOD_CALLBACK )
+			return;
+        if( method$byOwner ){
             if(METHOD == SupportcubeMethod$execute){
 				integer i;
 				for(; i<count(PARAMS); ++i ){

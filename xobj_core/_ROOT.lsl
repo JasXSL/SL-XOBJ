@@ -125,9 +125,9 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 // Initiates the standard listen event, put it in state_entry of #ROOT script
 #ifndef ALLOW_USER_DEBUG
-	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", "");
+	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", ""); debugRare("Listening on playerChan: "+(str)playerChan(llGetOwner()))
 #else
-	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", ""); llListen(0, "", "", "");
+	#define initiateListen() llListen(playerChan(llGetOwner()), "", "", ""); llListen(0, "", "", ""); debugRare("Listening on 0 and playerChan: "+(str)playerChan(llGetOwner()))
 #endif
 
 

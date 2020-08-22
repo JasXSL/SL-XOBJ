@@ -10,7 +10,7 @@
 	Note that if you want to make your own obj description params, prefix them with your logo. Like jsAN for jas animation.
 	
 	Install instructions:
-	1. Create a script, name it exactly st Interact
+	1. Create a script, name it exactly jas Interact
 	2. Include your _core.lsl file
 	3. Define any config overrides you want
 	4. Create a new function: integer onInteract(key obj, string task, list params){} - Return TRUE if successful
