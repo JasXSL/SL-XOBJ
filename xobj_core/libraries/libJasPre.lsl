@@ -209,6 +209,8 @@ list bitArrToList(integer n, integer bytesize){
 #define prRoot(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_ROOT]),0)
 #define prAttachPoint(prim) llList2Integer(llGetObjectDetails(prim, [OBJECT_ATTACHED_POINT]), 0)
 #define prSpawner(prim) llList2Key(llGetObjectDetails(prim, [OBJECT_REZZER_KEY]), 0)
+#define prPhantom(prim) llList2Integer(llGetObjectDetails(prim, [OBJECT_PHANTOM]), 0)
+
 
 // Returns prim that spawned this
 #define mySpawner() llList2Key(llGetObjectDetails(llGetKey(), [OBJECT_REZZER_KEY]), 0)
@@ -224,6 +226,9 @@ list bitArrToList(integer n, integer bytesize){
 #define myAng(object, var, rotOffset) float var; {vector temp = (llGetRootPosition()-prPos(object))/prRot(object)*rotOffset; var = llAtan2(temp.y,temp.x);}
 #define myAngX(object, var) myAng(object, var, ZERO_ROTATION)
 #define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
+
+// Checks if position A is in front of pos Bp rot Br and assigns the value to var C
+#define posAngX( A, Bp, Br, C ) {vector temp = (A-Bp)/Br; C = llAtan2(temp.y,temp.x);}
 
 
 #define pointBetween(a, b, distance) \

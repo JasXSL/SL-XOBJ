@@ -378,32 +378,58 @@ list _T;	// (float)timeout, id, data, looptime, repeating
 multiTimer( list da ){
     
 	integer i;
+	// If there's an add or remove, remove existing regardless
     if( da ){
 	
+		// Find the 
         integer pos = llListFindList(llList2ListStrided(llDeleteSubList(_T,0,0), 0, -1, 5), llList2List(da,0,0));
-        if( ~pos )
-			_T = llDeleteSubList(_T, pos*5, pos*5+4);
+        if( ~pos ){
+			_T = llDeleteSubList(_T, pos*5, pos*5+4);	// Remove existing
+		}
+		// Entries are 4, add
         if( count(da) == 4 )
 			_T = _T + (list)(llGetTime() + llList2Float(da,2)) + da;
 
     }
 	
-	for( i=0; i<count(_T); i = i+5 ){
+	float next = -3.402823466E+38;	// min value
 	
-        if( !(llGetTime() < llList2Float(_T,i)) ){
+	// Iterate over active events
+	for( ; i<count(_T); i = i+5 ){
+	
+		
+		int del;
+		float offs = llGetTime()-llList2Float(_T,i);	// When next to trigger
+		// less than 0 means this shouldn't trigger yet, above 0 is lag
+        if( offs >= 0 && !count(da) ){	// Triggering on add/remove can cause recursion issues, best do it asynchronously
             
-			string t = llList2String(_T, -~i);
-            string d = llList2String(_T,-~-~i);
+			string t = llList2String(_T, -~i);	// id
+            string d = llList2String(_T,-~-~i);	// data
 
-            if( llList2Integer(_T,i+4) )
-				_T = llListReplaceList(_T, (list)(llGetTime()+llList2Float(_T,i+3)), i, i);
-            else 
+			// looping
+            if( llList2Integer(_T,i+4) ){
+				offs = llList2Float(_T,i+3)-offs;	// -offs Adjusts for lag
+				_T = llListReplaceList(_T, (list)(llGetTime()+offs), i, i);
+				offs = -offs;	// Updates so we know how far in the future it should trigger
+			}
+            // Not looping, remove
+			else{
 				_T= llDeleteSubList(_T, i, i+4);
-				
+				del = TRUE;
+				i -= 5;	// Go back since we removed it
+			}
+			
+			// Trigger the timer event
             timerEvent(t, d);
-            i = i+((integer)-5);
+			// Go back since we removed it
+           
 			
         }
+		
+		// The more negative offs is, the further in the future it is.
+		if( offs > next && !del )
+			next = offs;
+
     }
 	
 	
@@ -411,12 +437,11 @@ multiTimer( list da ){
 		llSetTimerEvent(0); 
 		return;
 	}
-    _T= llListSort(_T, 5, TRUE);
-    float t = llList2Float(_T,0) + -llGetTime();
-    if( t < .01 )
-		t=.01;
-	
-    llSetTimerEvent(t);
+
+	if( next > -0.01 )
+		next = -0.01;
+
+    llSetTimerEvent(llFabs(next));
 	
 }
 

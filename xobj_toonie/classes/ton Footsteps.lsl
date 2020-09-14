@@ -118,7 +118,12 @@ init(){
 		(key)"d88e6d5b-9e62-d6d6-47de-708e0f3aa2d0",
 		(key)"6ccbab84-66bb-b929-7e42-2b7c3bc3c303",
 		(key)"26aded65-4df0-9751-1177-f655d7f06b15",
-		(key)"0b69ae8b-f3f2-376c-9b08-364e0acfc921"
+		(key)"0b69ae8b-f3f2-376c-9b08-364e0acfc921",
+		"MTR",	// Swim mattress
+		(key)"e037874e-db50-e4f2-8bca-8e24d24aa602",
+		(key)"393191af-41dc-8b9c-5c96-bda9a47ccaa2",
+		(key)"f1927a9b-0890-cbb8-44ea-dce2c7545b28",
+		(key)"1b087621-fbcd-3281-488f-1a9d8016831b"
 	];
 	
 	COLS = [
