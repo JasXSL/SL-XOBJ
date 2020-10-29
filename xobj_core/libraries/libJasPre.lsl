@@ -157,8 +157,12 @@ list bitArrToList(integer n, integer bytesize){
 	#define stopAllObjectAnimations() {list l = llGetObjectAnimationNames(); integer i; for(;i<count(l);++i)llStopObjectAnimation(l2s(l,i));}
 	#define invAnim(index) llGetInventoryName(INVENTORY_ANIMATION, index)
 	#define invObj(index) llGetInventoryName(INVENTORY_OBJECT, index)
-
 	
+	
+// ANIMESH //
+	#define restartObjectAnimation(animation) \
+		llStopObjectAnimation(animation);\
+		llStartObjectAnimation(animation)
 	
 	
 // NUMBER //

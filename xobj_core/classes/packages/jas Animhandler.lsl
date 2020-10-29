@@ -17,10 +17,8 @@ toggleAnim( string anim, integer on, float dur, int flags, float pre ){
 	#endif
 	
 	
-	
-	
-	if( on && flags&jasAnimHandler$animFlag$stopOnMove )
-		multiTimer(["m_"+anim, "", 0.25, TRUE]);
+	if( on && flags&(jasAnimHandler$animFlag$stopOnMove|jasAnimHandler$animFlag$stopOnUnsit) )
+		multiTimer(["m_"+anim, flags, 0.25, TRUE]);
 	else
 		multiTimer(["m_"+anim]);
 		
@@ -33,11 +31,13 @@ toggleAnim( string anim, integer on, float dur, int flags, float pre ){
 		multiTimer(["p_"+anim, mkarr((list)anim+on+dur+flags), pre, FALSE]);
 	}
 	else{
+	
 		multiTimer(["p_"+anim]);
 		if( on )
 			llStartAnimation(anim);
 		else
 			llStopAnimation(anim);
+			
 	}
 
 }
@@ -50,12 +50,14 @@ timerEvent( string id, string data ){
 	// move
 	if( pre == "m_" ){
 		
-		if( llGetAgentInfo(llGetOwner()) & AGENT_WALKING ){
-		
-			list anims = llJson2List(llGetSubString(id, 2, -1));
-			list_shift_each( anims, anim, 
-				llStopAnimation(anim);
-			)
+		integer f = (int)data;
+		integer ai = llGetAgentInfo(llGetOwner());
+		if( 
+			(f & jasAnimHandler$animFlag$stopOnUnsit && ~ai & AGENT_SITTING) ||
+			(f & jasAnimHandler$animFlag$stopOnMove && ai & AGENT_WALKING) 
+		){
+			
+			toggleAnim( llGetSubString(id, 2, -1), FALSE, 0, 0, 0 );
 		
 		}
 		

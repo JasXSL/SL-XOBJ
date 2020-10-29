@@ -34,6 +34,7 @@
 											
 	#define jasAnimHandler$animFlag$stopOnMove 0x1			// Stops the animation when the avatar moves
 	#define jasAnimHandler$animFlag$randomize 0x2			// Picks one random element from anim instead of playing all
+	#define jasAnimHandler$animFlag$stopOnUnsit 0x4			// Stops the animation if the avatar isn't sitting
 	
 #define AnimHandlerMethod$remInventory 1	// [(arr)anims]
 #define AnimHandlerMethod$sound 2			// [(key)sound, (float)vol, (int)type, (float)duration] - sending a non-key sound stops. Type of 0 is trigger, 1 is play and 2 is loop. If duration is > 0 then it will llStopSound after that time.. Requires AnimHandlerConf$useAudio defined
