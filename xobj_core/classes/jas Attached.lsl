@@ -40,10 +40,16 @@
 // #define Attached$onStateEntry - Adds some code to state entry
 
 #define AttachedMethod$remove 0			// NULL
+#define AttachedMethod$raiseCustomEvent 1	
+
+
+#define AttachedEvt$custom 0			// (key)sender, (var)args... - Raised by raiseCustomEvent
 
 #define Attached$remove(attachmentName) runOmniMethod("jas Attached", AttachedMethod$remove, [attachmentName], TNN)
 #define Attached$removeThis() runMethod((string)LINK_SET, "jas Attached", AttachedMethod$remove, [], TNN)
 #define Attached$removeTarg(targ) runMethod(targ, "jas Attached", AttachedMethod$remove, ["*"], TNN)
+#define Attached$raiseCustomEvent(targ, args) runMethod(targ, "jas Attached", AttachedMethod$raiseCustomEvent, (list)args, TNN)
+
 
 #define jasAttached$INI_CHAN 7177135
 

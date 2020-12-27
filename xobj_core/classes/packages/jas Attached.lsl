@@ -317,6 +317,9 @@ default{
 				kill();
 		
 		}
+		
+		if( METHOD == AttachedMethod$raiseCustomEvent )
+			raiseEvent(AttachedEvt$custom, mkarr((list)id + PARAMS));
     
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 
