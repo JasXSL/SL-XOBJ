@@ -478,6 +478,8 @@ default {
 		if(METHOD == RLVMethod$windlightPreset){
 		
 			// Workaround for exisiting content broken by LL
+			// in GoT, the level auto updates any presets to UUIDs on rez.
+			// But some quests may be trying to set UUIDs by script, so the preset map here may still be needed.
 			list map = RLV$presetMap;
 			
 			string wl = llToLower(method_arg(0));
