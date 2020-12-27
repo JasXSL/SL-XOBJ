@@ -13,9 +13,10 @@
 	
 */
 
-
-
+// Special cases that removes the listener event if you need to set it up yourself
+#ifndef LISTEN_IGNORE_EVENT
 listen(integer chan, string name, key id, string message){
+#endif
 	//debugCommon("COM received:\n"+message);
 	
 	#ifdef LISTEN_LIMIT_FREETEXT
@@ -66,4 +67,6 @@ listen(integer chan, string name, key id, string message){
 	//integer targ = LINK_SET;
 	llMessageLinked(LINK_SET, (integer)llGetSubString(message, 0,llSubStringIndex(message, ":")-1), llGetSubString(message, llSubStringIndex(message, ":")+1, -1), id);
 	//qd("Sent com");
+#ifndef LISTEN_IGNORE_EVENT
 }
+#endif

@@ -375,6 +375,9 @@ list _T;	// (float)timeout, id, data, looptime, repeating
 	timeout = script time when to trigger event
 	id = 
 */
+#define multiTimerRemoveAll() \
+	_T = []; llSetTimerEvent(0)
+
 multiTimer( list da ){
     
 	integer i;

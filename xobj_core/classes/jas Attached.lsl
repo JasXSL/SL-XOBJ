@@ -37,6 +37,7 @@
 // #define Attached$useOverride; - Uses listen override
 // #define Attached$removeIfSpawnerNotFound - Detaches if the object that spawned it is not found in the sim
 // #define Attached$remoteLoadConditions() - If you want to make remote load check a function. Must return true/false
+// #define Attached$onStateEntry - Adds some code to state entry
 
 #define AttachedMethod$remove 0			// NULL
 

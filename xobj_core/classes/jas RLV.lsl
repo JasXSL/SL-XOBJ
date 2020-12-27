@@ -205,4 +205,14 @@
 
 #define RLV$reset() runMethod((str)LINK_ROOT, "jas RLV", RLVMethod$reset, [], TNN)
 
+// These are existing presets that have been removed in EEP
+#define RLV$presetMap (list) \
+	"[tor] night - nocturne" + "81903a0f-c102-bd2c-aad0-e16e92ad841b" + \
+	"[tor] night - wuxia" + "0069ce6b-82a5-e3c5-69da-7f018fecd692" + \
+	"nacon's natural sunset: c" + "63549109-961a-c8d7-a533-80515b58e822" \
+	
+
+
+
+
 

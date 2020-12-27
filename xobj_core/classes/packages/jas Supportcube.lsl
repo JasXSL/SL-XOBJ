@@ -476,9 +476,11 @@ default{
             if(METHOD == SupportcubeMethod$execute){
 				integer i;
 				for(; i<count(PARAMS); ++i ){
+				
 					str json = llJsonSetValue(l2s(PARAMS, i), (list)"s", id);
 					json = llJsonSetValue(json, (list)"ss", SENDER_SCRIPT);
 					PARAMS = llListReplaceList(PARAMS, (list)json, i, i);
+					
 				}
                 tasks+=PARAMS;
                 runTask();

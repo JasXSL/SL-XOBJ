@@ -1,6 +1,7 @@
 // Preprocessor shortcuts
 #include "xobj_core/classes/jas Remoteloader.lsl" 
 
+
 // DEfaults
 #ifndef onAnim
 	#define onAnim( a, b )
@@ -182,7 +183,8 @@ default{
 
 	
 		llSetStatus(STATUS_PHANTOM, TRUE);
-        if(start == 1){
+        if( start == 1 ){
+		
 			llSleep(.25);
             llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEMP_ON_REZ, TRUE]);
 			#ifndef Attached$useExtUpdate
@@ -201,7 +203,9 @@ default{
 			}
 			#endif
 			#endif
+			
 		}	 
+		
     }
     
     state_entry(){
@@ -242,6 +246,10 @@ default{
 		
 		llListen(RLVcfg$ATC_CHAN, "", "", "GET");
 		
+		#ifdef Attached$onStateEntry
+			Attached$onStateEntry
+		#endif
+		
 		
     }
 	#ifdef Attached$automateMeshAnim
@@ -252,15 +260,25 @@ default{
 	}
 	#endif 
 	
-	listen( integer ch, string name, key id, string message ){
-		idOwnerCheck
-		
-		if( llGetAttached() )
-			return;
-			
-		llRequestPermissions(llGetOwner(), PERMISSION_ATTACH);
 	
+	#define LISTEN_IGNORE_EVENT
+	listen(integer chan, string name, key id, string message){
+
+		if( chan == RLVcfg$ATC_CHAN){
+			idOwnerCheck
+			
+			if( llGetAttached() )
+				return;
+		
+			llRequestPermissions(llGetOwner(), PERMISSION_ATTACH); \
+			return;
+		}
+		
+	#ifdef SCRIPT_IS_ROOT
+	#include "xobj_core/_LISTEN.lsl"
+	#endif
 	}
+
 	
     run_time_permissions(integer perm){
         

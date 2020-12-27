@@ -334,9 +334,6 @@ default {
 		#endif
 		
 		
-		
-		memLim(1.5);
-		
     }
     
     listen( integer chan, string name, key id, string message ){
@@ -409,7 +406,7 @@ default {
     }
 	
 	if(method$internal && METHOD == RLVMethod$reset){
-		llOwnerSay("@setenv_preset:midday=force");
+		llOwnerSay("@setenv_daytime:-1=force");
 		llResetScript();
 	}
     
@@ -480,8 +477,17 @@ default {
 		#if RLVcfg$USE_WINDLIGHT==1
 		if(METHOD == RLVMethod$windlightPreset){
 		
+			// Workaround for exisiting content broken by LL
+			list map = RLV$presetMap;
+			
+			string wl = llToLower(method_arg(0));
+			
+			integer pos = llListFindList(map, (list)wl);
+			if( ~pos )
+				wl = l2s(map, pos+1);
+		
 			integer override = (int)method_arg(1);
-			string wl = method_arg(0);
+			
 			if(override)
 				WINDLIGHT_OVERRIDE = wl;
 			else 
@@ -492,7 +498,13 @@ default {
 			
 			if(WINDLIGHT_OVERRIDE == "" || override){
 				
-				llOwnerSay("@setenv_preset:"+wl+"=force");
+				if( wl == "" )
+					llOwnerSay("@setenv_daytime:-1=force");
+				else if( (key)wl )
+					llOwnerSay("@setenv_asset:"+wl+"=force");
+				else
+					llOwnerSay("@setenv_preset:"+wl+"=force");
+					
 				raiseEvent(RLVevt$windlight_override, SENDER_SCRIPT);
 			
 			}
@@ -501,7 +513,10 @@ default {
         else if(METHOD == RLVMethod$resetWindlight){
 		
 			WINDLIGHT_OVERRIDE = "";
-            llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
+			if( WINDLIGHT )
+				llOwnerSay("@setenv_daytime:-1=force");
+            else
+				llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
 			raiseEvent(RLVevt$windlight_reset, SENDER_SCRIPT);
 			
 		}

@@ -20,7 +20,6 @@ integer BFL;
 #define TIMER_RECENT_CLICK "c"
 
 integer pInteract;
-
 string targDesc;
 key targ;
 key real_key;						// If ROOT is used, then this is the sublink. You can use this global in onInteract
