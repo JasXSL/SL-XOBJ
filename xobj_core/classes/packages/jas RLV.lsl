@@ -475,7 +475,7 @@ default {
 		}
 
 		#if RLVcfg$USE_WINDLIGHT==1
-		if(METHOD == RLVMethod$windlightPreset){
+		if( METHOD == RLVMethod$windlightPreset ){
 		
 			// Workaround for exisiting content broken by LL
 			// in GoT, the level auto updates any presets to UUIDs on rez.
@@ -484,9 +484,9 @@ default {
 			
 			string wl = llToLower(method_arg(0));
 			
-			integer pos = llListFindList(map, (list)wl);
+			integer pos = llListFindList(llList2ListStrided(map, 0, -1, 2), (list)wl);
 			if( ~pos )
-				wl = l2s(map, pos+1);
+				wl = l2s(map, pos*2+1);
 		
 			integer override = (int)method_arg(1);
 			
