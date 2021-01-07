@@ -490,15 +490,15 @@ default {
 		
 			integer override = (int)method_arg(1);
 			
-			if(override)
+			if( override )
 				WINDLIGHT_OVERRIDE = wl;
 			else 
 				WINDLIGHT = wl;
 			
-			if(WINDLIGHT_OVERRIDE == "NULL")
+			if( WINDLIGHT_OVERRIDE == "NULL" )
 				return;
 			
-			if(WINDLIGHT_OVERRIDE == "" || override){
+			if( WINDLIGHT_OVERRIDE == "" || override ){
 				
 				if( wl == "" )
 					llOwnerSay("@setenv_daytime:-1=force");
@@ -512,13 +512,13 @@ default {
 			}
 			
         }
-        else if(METHOD == RLVMethod$resetWindlight){
+        else if( METHOD == RLVMethod$resetWindlight ){
 		
 			WINDLIGHT_OVERRIDE = "";
 			if( WINDLIGHT )
-				llOwnerSay("@setenv_daytime:-1=force");
-            else
 				llOwnerSay("@setenv_preset:"+WINDLIGHT+"=force");
+            else
+				llOwnerSay("@setenv_daytime:-1=force");
 			raiseEvent(RLVevt$windlight_reset, SENDER_SCRIPT);
 			
 		}
