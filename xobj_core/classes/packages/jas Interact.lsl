@@ -264,7 +264,16 @@ fetchFromCamera(){
 				//start = llGetRootPosition()+<0,0,ascale.z*.25>;
 			}
 			
-			list ray = llCastRay(start, start+fwd, []);
+			list ray = llCastRay(start, start+fwd, [RC_MAX_HITS, 2]);
+			
+			// Prevent hitting owner
+			if( l2k(ray, 0) == llGetOwner() ){
+				
+				ray = llDeleteSubList(ray, 0, 1);
+				if( l2i(ray, -1) == 1 )
+					ray = (list)0;
+					
+			}
 
 			if( llList2Integer(ray,-1) > 0 && llVecDist(llGetRootPosition(), l2v(ray, 1)) < 2.5 ){
 				

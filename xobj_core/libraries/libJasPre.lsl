@@ -231,6 +231,10 @@ list bitArrToList(integer n, integer bytesize){
 #define myAngX(object, var) myAng(object, var, ZERO_ROTATION)
 #define myAngZ(object, var) myAng(object, var, llEuler2Rot(<0,PI_BY_TWO,0>))
 
+// Checks if obj is in front of targ using positive X from targ rotation
+#define angInFrontOfObj( obj, targ, var ) \
+	float var; {vector temp = (prPos(obj)-prPos(targ))/prRot(targ); var = llAtan2(temp.y,temp.x);}
+
 // Checks if position A is in front of pos Bp rot Br and assigns the value to var C
 #define posAngX( A, Bp, Br, C ) {vector temp = (A-Bp)/Br; C = llAtan2(temp.y,temp.x);}
 
