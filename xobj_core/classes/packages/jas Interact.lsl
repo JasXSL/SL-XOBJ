@@ -188,7 +188,6 @@ onEvt(string script, integer evt, list data){
 			BFL = BFL|BFL_PRIMSWIM_LEDGE;
 		else 
 			BFL = BFL&~BFL_PRIMSWIM_LEDGE;
-			
 	}
 	#endif
 	
@@ -353,19 +352,9 @@ seek( list sensed ){
 	// Try raycast in camera direction first
 	fetchFromCamera();
 	
-	
 
-	// Fail
-	if( !count(sensed) && targ == "" ){
-		
-		#ifdef PrimswimEvt$atLedge
-		if( BFL&BFL_PRIMSWIM_LEDGE )
-			targ = "_PRIMSWIM_CLIMB_";
-		#endif
-	
-	}
 	// No camera available but sensor picked up some
-	else if( count(sensed) && targ == "" ){
+	if( count(sensed) && targ == "" ){
 	
 		// ALGORITHMS!
 		list scales;
@@ -391,7 +380,12 @@ seek( list sensed ){
 			targDesc = "CUSTOM";
 		
 	}
-	
+	// Nothing passed filter
+	#ifdef PrimswimEvt$atLedge
+	if( targ == "" && BFL&BFL_PRIMSWIM_LEDGE ){
+		targ = "_PRIMSWIM_CLIMB_";
+	}
+	#endif
 	
 		
 	// Send description
