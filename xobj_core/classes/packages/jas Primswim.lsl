@@ -703,22 +703,30 @@ timerEvent(string id, string data){
 			// Checks if the position above your head is clear
 			list up = llCastRay(avTop, avTop+<0,0,headOffset>, [RC_REJECT_TYPES, rejecttypes]);
 			// Checks if there is a platform within 0.5m in front of the user
-			list fwd = llCastRay(avTop+<0,0,headOffset>, avTop+f*headOffset-<0,0,headOffset>, [RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL]);
+			list fwd = llCastRay(
+				avTop+<0,0,headOffset>, 
+				avTop+f*headOffset-<0,0,headOffset>, 
+				[
+					RC_REJECT_TYPES, rejecttypes, RC_DATA_FLAGS, RC_GET_NORMAL
+				]
+			);
 			vector normal = l2v(fwd, 2);
-			vector landing = l2v(fwd, 1);
+			vector landing = l2v(fwd, 1)+<0,0,.1>;	// Floor plus a little bit just in case
+
+			
 
 			// So far so good
 			if( l2i(up, -1) == 0 && l2i(fwd, -1) == 1 && normal.z > 0.9 ){
 				
 				// Check if there is enough space to fit the avatar
 				up = llCastRay(landing, landing+<0,0,ascale.z>, [RC_REJECT_TYPES, rejecttypes]);
-				
+
 				if( l2i(up, -1) == 0 ){
 
 					// We just reached a ledge
-					if( climb_out_to == ZERO_VECTOR )
+					if( climb_out_to == ZERO_VECTOR ){
 						raiseEvent(PrimswimEvt$atLedge, "1");
-					
+					}
 					// Base climb out pos and rot
 					climb_out_to = landing;
 					climb_out_rot = llEuler2Rot(<0,0,vrot.z>);
@@ -749,6 +757,7 @@ timerEvent(string id, string data){
 			}
 			
 		}
+
 		
 		// No longer at ledge
 		if( climb_out_to != ZERO_VECTOR )
