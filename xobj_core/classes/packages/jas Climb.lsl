@@ -11,8 +11,9 @@
 init(){
     llSetMemoryLimit(llCeil(llGetUsedMemory()*1.5));
 }
-float CLIMBSPEED = .65;  // M/S
 
+// Set when climbing to ClimbCfg$defaultSpeed
+float CLIMBSPEED;
 
 integer BFL;
 #define BFL_MOVING 1
@@ -68,16 +69,17 @@ translateCubePos(vector pos){
 	llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tKFM, p, rot, 0.5]));
 }
 
-dismount(integer atoffset){
-    if(BFL&BFL_DISMOUNTING)return;
+dismount( integer atoffset ){
+    
+	if( BFL&BFL_DISMOUNTING )
+		return;
+		
     BFL = BFL|BFL_DISMOUNTING;
     multiTimer([TIMER_MOVE]);
     BFL = BFL&~BF_CLIMB_INI;
     BFL = BFL&~BFL_CLIMBING_ANIM;
     BFL = BFL&~BFL_CLIMBING;
     anim_active_cur = "";
-    
-
     
     if(anim_active != ""){
         AnimHandler$anim(anim_active,FALSE,0,0,0);
@@ -102,7 +104,8 @@ dismount(integer atoffset){
     }
     
     float to = .1;
-    if(isset(anm))to = 1;
+    if( isset(anm) )
+		to = 1;
     if(anim_passive != ""){
         AnimHandler$anim(anim_passive, FALSE, 0,0,0);
     }
@@ -187,7 +190,8 @@ timerEvent(string id, string data){
                 BFL = BFL|BFL_CLIMBING_ANIM;
                 string a = anim_active;
                     
-                if(~BFL&BFL_DIR_UP)a = anim_active_down;
+                if( ~BFL&BFL_DIR_UP )
+					a = anim_active_down;
                 if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0,0);
                 anim_active_cur = a;
             }
@@ -346,7 +350,8 @@ default
             anim_passive = tr(method_arg(2));
             anim_active = tr(method_arg(3));
             anim_active_down = tr(method_arg(4));
-            if(anim_active_down == "")anim_active_down = anim_active;
+            if( anim_active_down == "" )
+				anim_active_down = anim_active;
             anim_dismount_top = tr(method_arg(5));
             anim_dismount_bottom = tr(method_arg(6));
             nodes = llCSV2List(tr(method_arg(7)));
@@ -361,10 +366,16 @@ default
             ladder_root_pos = llList2Vector(dta,0);
             ladder_root_rot = llList2Rot(dta, 1);
             integer i;
-            if(llGetListLength(nodes) == 2)nodes = llList2List(nodes,0,0)+nodes+llList2List(nodes,-1,-1);
-            for(i=0; i<llGetListLength(nodes); i++)nodes = llListReplaceList(nodes, [(vector)llList2String(nodes,i)], i, i);
+            if( llGetListLength(nodes) == 2 )
+				nodes = llList2List(nodes,0,0)+nodes+llList2List(nodes,-1,-1);
+            for( ; i<llGetListLength(nodes); ++i )
+				nodes = llListReplaceList(nodes, [(vector)llList2String(nodes,i)], i, i);
+			
 			
             if(llGetListLength(nodes) == 4){
+				#ifdef ClimbCfg$onClimbStart 
+				ClimbCfg$onClimbStart();
+				#endif
 				mount();
 			}
 			#ifdef DEBUG

@@ -728,7 +728,7 @@ timerEvent(string id, string data){
 						raiseEvent(PrimswimEvt$atLedge, "1");
 					}
 					// Base climb out pos and rot
-					climb_out_to = landing;
+					climb_out_to = landing-<0,0,.1>;	// Remove offset above
 					climb_out_rot = llEuler2Rot(<0,0,vrot.z>);
 					
 					// Find the edge rotation if possible, using 5cm as a buffer
@@ -741,7 +741,7 @@ timerEvent(string id, string data){
 						normal = l2v(fwd, 2);
 						climb_out_to = 
 							// Edge position
-							l2v(fwd, 1)+<0,0,0.05>+
+							l2v(fwd, 1)+
 							// Plus 0.25m
 							llVecNorm(l2v(fwd, 1)-<gpos.x, gpos.y, landing.z-0.05>)*0.25
 						;

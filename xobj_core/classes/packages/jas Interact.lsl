@@ -24,6 +24,7 @@ string targDesc;
 key targ;
 key real_key;						// If ROOT is used, then this is the sublink. You can use this global in onInteract
 integer held;
+vector rayPos;						// Position of last ray hit
 
 list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB, (int)flags]
 list ON_INTERACT = [];				// (str)id, (str)datastring - Stuff to be run on interact
@@ -51,13 +52,17 @@ onEvt(string script, integer evt, list data){
 			if( !preInteract(targ) )
 				return;
 			
-			while(ON_INTERACT){
+			while( ON_INTERACT ){
+			
 				list split = llParseString2List(llList2String(ON_INTERACT, 1), ["$$"], []);
 				ON_INTERACT = llDeleteSubList(ON_INTERACT, 0, 1);
 				list_shift_each(split, val,
+				
 					list spl = explode("$", val);
-					onInteract("", l2s(spl,0), llDeleteSubList(spl, 0, 0));
+					onInteract("", l2s(spl,0), llDeleteSubList(spl, 0, 0), rayPos);
+					
 				)
+				
 			}
 			
 			#ifndef InteractConf$ignoreUnsit
@@ -84,7 +89,7 @@ onEvt(string script, integer evt, list data){
 			
 			if(OVERRIDE){
 				
-				onInteract("", llList2String(OVERRIDE, 0), []);						// Always run this before
+				onInteract("", llList2String(OVERRIDE, 0), [], ZERO_VECTOR);						// Always run this before
 				sendCallback(llList2Key(OVERRIDE, 1), llList2String(OVERRIDE, 2), InteractMethod$override, mkarr([llList2String(OVERRIDE, 0)]), llList2String(OVERRIDE, 3));
 				return;
 			}
@@ -151,7 +156,7 @@ onEvt(string script, integer evt, list data){
 					);
 				}		
 				else
-					success = onInteract(targ, task, llList2List(split,1,-1));
+					success = onInteract(targ, task, llList2List(split,1,-1), rayPos);
 				
 				
 				// Custom should always be a success
@@ -299,8 +304,11 @@ fetchFromCamera(){
 					td = prDesc(k);
 				}
 				#endif
+				
+				rayPos = l2v(ray, 1);
 
-				if(prRoot(llGetOwner()) != prRoot(k)){
+				// Target changed
+				if( prRoot(llGetOwner()) != prRoot(k) ){
 
 					list descparse = llParseString2List(td, ["$$"], []);
 	
@@ -308,10 +316,12 @@ fetchFromCamera(){
 					
 						list parse = llParseString2List(val, ["$"], []);
 						if(llList2String(parse,0) == Interact$TASK_DESC){
+						
 							targDesc = td;
 							targ = k;
 							real_key = real;
 							return;
+							
 						}
 						
 					})
@@ -431,8 +441,15 @@ default{
 		for( ; i<total; ++i ){
 			
 			key id = llDetectedKey(i);
-			if( startsWith(prDesc(id), "D$") && !l2i(llGetObjectDetails(id, (list)OBJECT_PHANTOM), 0) )
-				near += id;				
+			string desc = prDesc(id);
+			if( llGetSubString(desc, 0,1) == "D$" && !l2i(llGetObjectDetails(id, (list)OBJECT_PHANTOM), 0) ){
+				
+				list spl = explode("$", desc);
+				if( ~l2i(spl, 2) & Interact$TASK_DESK$NO_SENSOR )
+					near += id;
+				
+			}
+				
 		}
 		
 		seek(near);

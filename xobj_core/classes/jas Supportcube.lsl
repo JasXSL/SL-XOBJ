@@ -49,7 +49,7 @@
 #define SupportcubeOverride$tSetPosAndRot 6		// Tunneled through override - (vec)pos, (rot)rotation
 
 
-#define SupportcubeBuildTask(task, params) llList2Json(JSON_OBJECT, (list)"t" + task + "p" + mkarr(params))
+#define SupportcubeBuildTask(task, params) llList2Json(JSON_OBJECT, (list)"t" + task + "p" + mkarr((list)params))
 
 #define SupportcubeBuildTeleport(pos) [SupportcubeBuildTask(Supportcube$tSetPos, [llGetRootPosition()]), SupportcubeBuildTask(Supportcube$tDelay, [.1]), SupportcubeBuildTask(Supportcube$tForceSit, ([FALSE, TRUE])), SupportcubeBuildTask(Supportcube$tSetPos, [pos]), SupportcubeBuildTask(Supportcube$tForceUnsit, [])]
 #define SupportcubeBuildTeleportNoUnsit(pos, rot) [SupportcubeBuildTask(Supportcube$tSetPos, [llGetRootPosition()]), SupportcubeBuildTask(Supportcube$tDelay, [.1]), SupportcubeBuildTask(Supportcube$tForceSit, ([TRUE, TRUE])), SupportcubeBuildTask(Supportcube$tSetPos, [pos]), SupportcubeBuildTask(Supportcube$tSetRot, [rot])]

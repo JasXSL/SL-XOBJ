@@ -37,7 +37,8 @@
 // #define InteractConf$ALLOW_ML_LCLICK 	// Use ml lclick as well for E
 //D$Climb$$CL$<0,.7,.7,0>$c_p$c_a$c_a$ $ $<-5,-.9,0>,<-5,-.9,0>,<5,-.9,0>,<5,-.9,0>
 //D$Climb$$CL$<0,0,-.7,.7>$l_p$l_a$l_a$l_d$ $<0,.5,-.5>,<0,.5,-.5>,<0,.5,.8>,<0,-.2,1.5>
-#define Interact$TASK_DESC "D"				// [(str)text] - Text that shows on your HUD
+#define Interact$TASK_DESC "D"				// [(str)text,(int)flags] - Text that shows on your HUD
+	#define Interact$TASK_DESK$NO_SENSOR 0x1			// Prevent use of sensor, allowing only raycast to detect this
 #define Interact$TASK_TELEPORT "P"			// [(vec)offset] - Teleports you
 #define Interact$TASK_INTERACT "I"			// NULL - Sends an interact com to the object
 #define Interact$TASK_TRIGGER_SOUND "T"		// [(key)uuid, (float)vol=1]
@@ -48,6 +49,7 @@
 #define Interact$TASK_SOUNDSPACE "SS"		// (str)name, (float)vol
 #define Interact$TASK_WL_PRESET "WL"		// (str)preset
 #define Interact$TASK_FOOTSTEPS "tFS"		// 
+
 
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
 #define InteractEvt$onInteract 2			// (key)targ OR custom - Not built in by default, you can raise this manually if you want or define InteractConf$raiseEvent
