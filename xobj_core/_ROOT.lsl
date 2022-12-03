@@ -11,7 +11,11 @@
 #define DEBUG_UNCOMMON 30
 #define DEBUG_COMMON 40
 
-#define USE_DB3 	// use undef if you do not want to use this
+// For now. USE_DB3 will be preferred unless you specify USE_DB4.
+// Later this will be reversed.
+#ifndef USE_DB4
+	#define USE_DB3 	// use undef if you do not want to use this
+#endif
 
 #ifndef DEBUG
 	#define qd(text) _dbg(text)
@@ -106,6 +110,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define DB2_REFRESHME -8		// refreshes db2 on the script and sends a callback
 #define DB3_ADD -5				// (str)sender_script, (arr)tableNames - Adds a table to DB3 - Sends stdMethod$setShared as a callback to the script on completion, params containing an array of tables added
 #define DB3_TABLES_ADDED -6		// (arr)tables
+#define DB4_ADD -7				// (str)sender_script, (arr)tableNames - Adds tables to DB4. Sends stdMethod$setShared as a callback to the script on completion, params containing an array of tables added
+
 #define WATCHDOG_PING -10		// Pings all scripts
 #define WATCHDOG_PONG -11		// str = (string)script
 
@@ -113,8 +119,12 @@ string getToken(key senderKey, key recipient, string saltrand){
 
 // Standard methods
 // These are standard methods used by package modules. Do not define module-specific methods as negative numbers between -1 and -1000. Use -1000 if you need project wide generic STD Methods
-#define stdMethod$setShared -3	// [(str)table_name, (arr)table_key] DB2 Shared has been set from root / DB3 table has been created. Note that this is only sent when db2 return "0" for asynchronous
-
+#define stdMethod$setShared -3	/*
+	Sent as a callback after creating tables
+	DB2: [(str)table_name, (arr)table_key] DB2 Shared has been set from root. Note that this is only sent when db2 return "0" for asynchronous
+	DB3: [(str)table1, (str)table2...] - Tables have been created.
+	DB4: == || ==
+*/
 
 // General methods.
 // Putting CALLBACK_NONE in the callback field will prevent callbacks from being sent when raising a method
@@ -193,6 +203,8 @@ runLimitMethod(string tokenSender, string className, integer method, list data, 
 // Database management
 #ifdef USE_DB2
 	#include "xobj_core/_DB2.lsl"
+#elif defined USE_DB4
+	#include "xobj_core/_DB4.lsl"
 #else
 	// DB2 & 3 needs you to define the scripts you want to use
 	// #define USE_SHARED [Script1, Script2...]

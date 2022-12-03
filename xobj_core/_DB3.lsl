@@ -1,3 +1,5 @@
+#ifndef __DB3
+#define __DB3
 /*
 
 
@@ -177,3 +179,5 @@ string db3(list input){
 
 #define clearDB3() links_each(ln, n, {if(llGetSubString(n,0,1) == "DB"){integer i;for(i=0; i<llGetLinkNumberOfSides(ln); i++){llClearLinkMedia(ln, i);}}})
 
+
+#endif
