@@ -11,7 +11,7 @@
     - You cannot use an empty table name
     - It does not check for deleted keys. 
         If you delete many many entries from a table, you may want to reindex to speed things up.
-    
+    - To save memory, none of these functions check if you are using a proper table char. Make sure that your tables have been created before using writes.
     
     Table names:
     
@@ -26,10 +26,7 @@
             "_" : (str)full_name
         }
     (char table)(char row) : A tableChar followed by a row ID converted to a char is a table row.
-                            It stores a JSON array. 
-                            The first value is always the unique table ID as an integer (auto created).
-                            The rest of the values are user specified.
-        [(int)id,val0,val1...]
+                            Stores your data. You can put any data here.
     
 */
 
@@ -47,7 +44,7 @@
 // note: if a table exists nothing happens, and the callback stdMethod$setShared will still include the table
 #define db4$createTables(tables) llMessageLinked(LINK_ROOT, DB4_ADD, llList2Json(JSON_ARRAY, (list)llGetScriptName() + mkarr((list)tables)), "")
 
-#define db4$ofs 32	// Added to every table and insert char. Because SL breaks if you use a lower number.
+#define db4$ofs 32	// Added to every table and insert char. Because SL breaks if you use controlchars below 32.
 
 // Create a table with a name (string). Name cannot be empty. XOBJ prefers the use of a #ROOT script. When using a #ROOT script, use db4$createTables
 // Returns a tableChar string of the newly created table
@@ -67,8 +64,10 @@
     )
 
 // Get a row from a table by table name (string) and row ID (int)
+#define db4$getString(table, id) \
+    llLinksetDataRead(db4$getTableChar(table) + llChar(id+db4$ofs))
 #define db4$get(table, id) \
-    llJson2List(llLinksetDataRead(db4$getTableChar(table) + llChar(id+db4$ofs)))
+    llJson2List(db4$getString(table, id))
 // Delete a row from a table by table name (string) and row ID (int)
 #define db4$delete(table,id) \
     llLinksetDataDelete(db4$getTableChar(table) + llChar(id+db4$ofs))
@@ -77,19 +76,25 @@
 // Data can use plus notation
 // Note: Replacing a row with an ID greater than the current auto increase index will cause it to be overwritten when performing an insert
 // 	I only suggest you do this if you want to hard code the index and ONLY use db4$replace, and never insert
+#define db4$replaceString(table, id, data) \
+    llLinksetDataWrite(db4$getTableChar(table) + llChar(id+db4$ofs), (string)(data))
+// Same as above but lets you specify a list to be JSON encoded
 #define db4$replace(table, id, data) \
-    llLinksetDataWrite(db4$getTableChar(table) + llChar(id+db4$ofs), mkarr((list)(id) + data))
-
-
+	db4$replaceString(table, id, mkarr(data))
+	
 // You can cache the tableChar as a string with db4$getTableChar or on table creation.
 // By using a tableChar you can speed up your calls a little by not having to convert a table name to a char
 // Same as above non-fast, but use a tableChar instead of a table name
+#define db4$getFastString(tableChar, id) \
+    llLinksetDataRead( tableChar + llChar(id+db4$ofs) )
 #define db4$getFast(tableChar, id) \
-    llJson2List( llLinksetDataRead( tableChar + llChar(id+db4$ofs) ))
+    llJson2List( db4$getFastString(tableChar, id) )
 #define db4$deleteFast(tableChar,id) \
     llLinksetDataDelete(tableChar + llChar(id+db4$ofs))
+#define db4$replaceFastString(tableChar, id, data) \
+    llLinksetDataWrite(tableChar + llChar(id+db4$ofs), (string)(data))
 #define db4$replaceFast(tableChar, id, data) \
-    llLinksetDataWrite(tableChar + llChar(id+db4$ofs), mkarr((list)(id) + data))
+    db4$replaceFastString(tableChar, id, mkarr((list)data))
 
 // Gets the first unused ID from a table, or returns 0 if it has no free ones.
 // Can be used if you want to reuse deleted row IDs, but is not recommended.
@@ -105,9 +110,11 @@
 	
 // Inserts a new row by table (str) and a list of data.
 // Data can use plus notation
-#define db4$insert(table,data) _4i(table, (list)data, FALSE)
+#define db4$insertString(table,data) _4i(table, (string)(data), FALSE)
+#define db4$insert(table,data) db4$insertString(table,mkarr((list)data))
 // Same as above but uses a tableChar
-#define db4$insertFast(tableChar,data) _4i(tableChar, (list)data, TRUE)
+#define db4$insertFastString(tableChar,data) _4i(tableChar, (string)(data), TRUE)
+#define db4$insertFast(tableChar,data) db4$insertFastString(tableChar,mkarr((list)data))
 
 // Tries to print a table in a readable format. Fields are used as headlines for each column. ID is not needed, it is auto added.
 // Supports plus notation
@@ -115,13 +122,13 @@
 
 
 // Loop over all entries of a table
-#define db4$each(table, dataVar, code) \
+#define db4$each(table, index, dataVar, code) \
     { \
         string _c = db4$getTableChar(table); \
         integer _m = (int)j(llLinksetDataRead(_c), "i"); \
-        integer _i; string _d; \
-        for(; _i < _m; ++_i ){ \
-            _d = llLinksetDataRead(_c+llChar(_i+db4$ofs)); \
+        integer index; string _d; \
+        for(; index < _m; ++index ){ \
+            _d = llLinksetDataRead(_c+llChar(index+db4$ofs)); \
             if( _d ){ \
                 list dataVar = llJson2List(_d); \
                 code \
@@ -129,12 +136,12 @@
         } \
     }
 // Same as above but uses tableChar to save time and memory
-#define db4$eachFast(tableChar, dataVar, code) \
+#define db4$eachFast(tableChar, index, dataVar, code) \
     { \
         integer _m = (int)j(llLinksetDataRead(tableChar), "i"); \
-        integer _i; string _d; \
-        for(; _i < _m; ++_i ){ \
-            _d = llLinksetDataRead(tableChar+llChar(_i+db4$ofs)); \
+        integer index; string _d; \
+        for(; index < _m; ++index ){ \
+            _d = llLinksetDataRead(tableChar+llChar(index+db4$ofs)); \
             if( _d ){ \
                 list dataVar = llJson2List(_d); \
                 code \
@@ -147,36 +154,33 @@
 
 // Creates a DB4 table. If it already exists, nothing happens. Returns the table charid.
 // It is adviced to let the root script handle table creation to prevent race conditions
-// Inline lets you use it either in root or as a standalone function
-#define _4c_inline( n ) \
-	list idx = llJson2List(llLinksetDataRead("$d4")); \
-    integer pos = llListFindList(idx, (list)n); \
-    if( ~pos || n == "" ){ \
-        debugRare("Table already exists or is empty: "+n); \
-        return llChar(pos+1); \
-    } \
-    integer free = llListFindList(idx, (list)""); \
-    string id; \
-    /* A table has been dropped, we can reuse its position */  \
-    if( ~free ){  \
-        idx = llListReplaceList(idx, (list)n, free, free); \
+str _4c( string n ){
+
+	list idx = llJson2List(llLinksetDataRead("$d4"));
+    integer pos = llListFindList(idx, (list)n);
+    if( ~pos || n == "" ){
+        debugRare("Table already exists or is empty: "+n);
+        return llChar(pos+1);
+    }
+    integer free = llListFindList(idx, (list)"");
+    string id;
+    /* A table has been dropped, we can reuse its position */ 
+    if( ~free ){
+        idx = llListReplaceList(idx, (list)n, free, free);
         id = llChar(free+db4$ofs); \
-    } \
-    /* No dropped table, we cannot replace */  \
-    else{ \
-        id = llChar(count(idx)+db4$ofs); \
-        idx += n; \
-    } \
-    llLinksetDataWrite("$d4", mkarr(idx)); \
-    llLinksetDataWrite(id, llList2Json(JSON_OBJECT, (list) \
+    }
+    /* No dropped table, we cannot replace */ 
+    else{
+        id = llChar(count(idx)+db4$ofs);
+        idx += n;
+    }
+    llLinksetDataWrite("$d4", mkarr(idx));
+    llLinksetDataWrite(id, llList2Json(JSON_OBJECT, (list)
         "i" + 0 + \
         "_" + n \
-    )); \
+    ));
     return id;
 	
-
-str _4c( string n ){
-    _4c_inline(n)
 }
 
 // Drops a DB4 table
@@ -220,7 +224,7 @@ int _4f( string n, integer fast ){
     
 }
 // insert. Returns the inserted id
-int _4i( string n, list vals, integer fast ){
+int _4i( string n, str vals, integer fast ){
     
     string ch = n;
     if( !fast )
@@ -231,7 +235,7 @@ int _4i( string n, list vals, integer fast ){
     llLinksetDataWrite(ch, llJsonSetValue(meta, (list)"i", (str)(nr+1))); // Add to indexer
     // Write the data
     string chn = llChar(nr+db4$ofs);
-    if( llLinksetDataWrite(ch+chn, mkarr(nr + vals)) )
+    if( llLinksetDataWrite(ch+chn, vals) )
         return 0;
     return nr;
     
@@ -252,11 +256,10 @@ _4du( string table, list fields){
         title += t+llGetSubString(tab, 0, 15-llStringLength(t));
     }
     llOwnerSay(title);
-    db4$each(table, row,
-        string id = l2s(row, 0);
-        title = "#"+id+llGetSubString(tab, 0, 15-llStringLength(id));
+    db4$each(table, id, row,
+        title = "#"+(str)id+llGetSubString(tab, 0, 15-llStringLength((str)id));
         for( i = 0; i < count(fields); ++i ){
-            string data = llGetSubString(l2s(row, i+1), 0, 15);
+            string data = llGetSubString(l2s(row, i), 0, 15);
             title += data + llGetSubString(tab, 0, 15-llStringLength(data));
         } 
         llOwnerSay(title);
