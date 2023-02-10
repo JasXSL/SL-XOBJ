@@ -6,32 +6,18 @@
     Each row is assigned 1 character corresponding to its ID
 
     Limitations:
-    - If creating your own tables outside of DB4, use at least 3 character length. 
-        DB4 lsd indexes are always one or two characters long, and span all character combinations.
+    - If creating your own tables outside of DB4, use 1 or 3+ character length. 
+        DB4 lsd indexes are always two characters long, and span all character combinations.
     - You cannot use an empty table name
     - It does not check for deleted keys. 
         If you delete many many entries from a table, you may want to reindex to speed things up.
-    - To save memory, none of these functions check if you are using a proper table char. Make sure that your tables have been created before using writes.
-    
+		
     Table names:
-    
-    "$d4" : Stores a JSON array of each table. 
-            The order they are stored in decides their tableChar with llChar(indexInArray+1)
-        [name0, name1...]
-    
-    (char table) : A single tableChar is used to mark metadata.
-                    It stores the current auto increase index and a full name for debugging.
-        {
-            "i" : (int)ai_idx,
-            "_" : (str)full_name
-        }
-    (char table)(char row) : A tableChar followed by a row ID converted to a char is a table row.
+    (char table)(unicode 9) : Current auto increase index of the table
+	(char table)(char row) : A tableChar followed by a row ID converted to a char is a table row.
                             Stores your data. You can put any data here.
     
 */
-
-
-// #define db4$PASS ""          Todo: Use to enable password protect
 
 // NOTE: "char" below is used to represent an integer stored as a single character string.
 // NOTE: Plus notation lets you make a list by using a plus, or inputting a single value.
@@ -42,108 +28,40 @@
 
 // Have the root script create tables. This is recommended because it prevents race conditions. stdMethod$setShared is run as a callback on table creation.
 // note: if a table exists nothing happens, and the callback stdMethod$setShared will still include the table
-#define db4$createTables(tables) llMessageLinked(LINK_ROOT, DB4_ADD, llList2Json(JSON_ARRAY, (list)llGetScriptName() + mkarr((list)tables)), "")
+#define db4$ofs 33	// Added to every table and insert char. Because SL breaks if you use controlchars below 32. tableChar()+u32 is used to maintain index
+#define db4$idxChar " " 	// Unicode 32 is used to mark as index val
 
-#define db4$ofs 32	// Added to every table and insert char. Because SL breaks if you use controlchars below 32.
+#define db4$setIndex(table, nrEntries) llLinksetDataWrite(table+db4$idxChar, (str)(nrEntries))
+#define db4$getIndex(table) (int)llLinksetDataRead(table+db4$idxChar)
+#define db4$get(table, index) llLinksetDataRead(table+llChar(index+db4$ofs))
+#define db4$delete(table, index) llLinksetDataDelete(table+llChar(db4$ofs+index))
+#define db4$replace(table, index, data) llLinksetDataWrite(table+llChar(db4$ofs+index), (str)(data))
+#define db4$drop(table) _4d(table)
 
-// Create a table with a name (string). Name cannot be empty. XOBJ prefers the use of a #ROOT script. When using a #ROOT script, use db4$createTables
-// Returns a tableChar string of the newly created table
-#define db4$createTableLocal(name) _4c(name)
-// Drop a table and all its data by name (string)
-#define db4$dropTable(name) _4d(name)
-
-// Convert an a table name to a table char
-#define db4$getTableChar(n) \
-    llChar( \
-        llListFindList( \
-            llJson2List( \
-                llLinksetDataRead("$d4") \
-            ), \
-            (list)n \
-        )+db4$ofs \
-    )
-
-// Get a row from a table by table name (string) and row ID (int)
-#define db4$getString(table, id) \
-    llLinksetDataRead(db4$getTableChar(table) + llChar(id+db4$ofs))
-#define db4$get(table, id) \
-    llJson2List(db4$getString(table, id))
-// Delete a row from a table by table name (string) and row ID (int)
-#define db4$delete(table,id) \
-    llLinksetDataDelete(db4$getTableChar(table) + llChar(id+db4$ofs))
-// Replace the contents of a row with data (list) by specifying table (string) and id (int). 
-// Do not enter ID in the replacement, it is auto added.
-// Data can use plus notation
-// Note: Replacing a row with an ID greater than the current auto increase index will cause it to be overwritten when performing an insert
-// 	I only suggest you do this if you want to hard code the index and ONLY use db4$replace, and never insert
-#define db4$replaceString(table, id, data) \
-    llLinksetDataWrite(db4$getTableChar(table) + llChar(id+db4$ofs), (string)(data))
-// Same as above but lets you specify a list to be JSON encoded
-#define db4$replace(table, id, data) \
-	db4$replaceString(table, id, mkarr(data))
-	
-// You can cache the tableChar as a string with db4$getTableChar or on table creation.
-// By using a tableChar you can speed up your calls a little by not having to convert a table name to a char
-// Same as above non-fast, but use a tableChar instead of a table name
-#define db4$getFastString(tableChar, id) \
-    llLinksetDataRead( tableChar + llChar(id+db4$ofs) )
-#define db4$getFast(tableChar, id) \
-    llJson2List( db4$getFastString(tableChar, id) )
-#define db4$deleteFast(tableChar,id) \
-    llLinksetDataDelete(tableChar + llChar(id+db4$ofs))
-#define db4$replaceFastString(tableChar, id, data) \
-    llLinksetDataWrite(tableChar + llChar(id+db4$ofs), (string)(data))
-#define db4$replaceFast(tableChar, id, data) \
-    db4$replaceFastString(tableChar, id, mkarr((list)data))
-
-// Gets the first unused ID from a table, or returns 0 if it has no free ones.
-// Can be used if you want to reuse deleted row IDs, but is not recommended.
-#define db4$getFreeId(table) _4f(table, FALSE)
-#define db4$getFreeIdFast(tableChar) _4f(tableChar, TRUE)
-
-// Gets the next insert ID for a table. Differs from freeId in that it always returns the next ID that will be inserted.
-#define db4$getMax(table) \
-    ((int)j(llLinksetDataRead(db4$getTableChar(table)), "i"))
-#define db4$getMaxFast(tableChar) \
-    ((int)j(llLinksetDataRead(tableChar), "i"))
-
-	
-// Inserts a new row by table (str) and a list of data.
-// Data can use plus notation
-#define db4$insertString(table,data) _4i(table, (string)(data), FALSE)
-#define db4$insert(table,data) db4$insertString(table,mkarr((list)data))
-// Same as above but uses a tableChar
-#define db4$insertFastString(tableChar,data) _4i(tableChar, (string)(data), TRUE)
-#define db4$insertFast(tableChar,data) db4$insertFastString(tableChar,mkarr((list)data))
-
-// Tries to print a table in a readable format. Fields are used as headlines for each column. ID is not needed, it is auto added.
-// Supports plus notation
-#define db4$dump(table, fields) _4du(table, (list)fields)
+// These are faster than above by using a precalculated index char
+#define db4$fget(table, idxChar) llLinksetDataRead(table+idxChar)
+#define db4$fdelete(table, idxChar) llLinksetDataDelete(table+idxChar)
+#define db4$freplace(table, idxChar, data) llLinksetDataWrite(table+idxChar, (str)(data))
 
 
-// Loop over all entries of a table
+#define db4$insert(table, data) _4i(table, (str)(data))
+integer _4i( string table, string data ){
+	integer n = db4$getIndex(table);
+	llLinksetDataWrite(table+llChar(n+db4$ofs), data);
+	db4$setIndex(table, n+1);
+	return n;
+}
+
+
+
+// Loop over valid rows
 #define db4$each(table, index, dataVar, code) \
     { \
-        string _c = db4$getTableChar(table); \
-        integer _m = (int)j(llLinksetDataRead(_c), "i"); \
-        integer index; string _d; \
+        integer _m = db4$getIndex(table); \
+        integer index; \
         for(; index < _m; ++index ){ \
-            _d = llLinksetDataRead(_c+llChar(index+db4$ofs)); \
-            if( _d ){ \
-                list dataVar = llJson2List(_d); \
-                code \
-            } \
-        } \
-    }
-// Same as above but uses tableChar to save time and memory
-#define db4$eachFast(tableChar, index, dataVar, code) \
-    { \
-        integer _m = (int)j(llLinksetDataRead(tableChar), "i"); \
-        integer index; string _d; \
-        for(; index < _m; ++index ){ \
-            _d = llLinksetDataRead(tableChar+llChar(index+db4$ofs)); \
-            if( _d ){ \
-                list dataVar = llJson2List(_d); \
+            str dataVar = db4$get(table, index); \
+            if( dataVar ){ \
                 code \
             } \
         } \
@@ -152,120 +70,252 @@
 
 // NOTE: USE THE MACROS ABOVE. NOT THESE.
 
-// Creates a DB4 table. If it already exists, nothing happens. Returns the table charid.
-// It is adviced to let the root script handle table creation to prevent race conditions
-str _4c( string n ){
-
-	list idx = llJson2List(llLinksetDataRead("$d4"));
-    integer pos = llListFindList(idx, (list)n);
-    if( ~pos || n == "" ){
-        debugRare("Table already exists or is empty: "+n);
-        return llChar(pos+1);
-    }
-    integer free = llListFindList(idx, (list)"");
-    string id;
-    /* A table has been dropped, we can reuse its position */ 
-    if( ~free ){
-        idx = llListReplaceList(idx, (list)n, free, free);
-        id = llChar(free+db4$ofs); \
-    }
-    /* No dropped table, we cannot replace */ 
-    else{
-        id = llChar(count(idx)+db4$ofs);
-        idx += n;
-    }
-    llLinksetDataWrite("$d4", mkarr(idx));
-    llLinksetDataWrite(id, llList2Json(JSON_OBJECT, (list)
-        "i" + 0 + \
-        "_" + n \
-    ));
-    return id;
-	
-}
-
 // Drops a DB4 table
-_4d( string n ){
+_4d( string t ){
     
-    list idx = llJson2List(llLinksetDataRead("$d4"));
-    integer pos = llListFindList(idx, (list)n);
-    if( pos == -1 ){
-        debugRare("Table does not exist "+n);
-        return;
-    }
-    idx = llListReplaceList(idx, (list)"", pos, pos);
-    llLinksetDataWrite("$d4", mkarr(idx));
-	
-    str ch = llChar(pos+db4$ofs);
-    integer max = (int)j(llLinksetDataRead(ch), "i");
-    llLinksetDataDelete(ch);
-    integer i;
-    for(; i < max; ++i )
-        llLinksetDataDelete(ch+llChar(i+db4$ofs));
-    
-}
-
-// Gets the first free ID of a table
-// Can be used with replace if you want to reuse deleted rows
-int _4f( string n, integer fast ){
-    
-    string ch = n;
-    if( !fast )
-        ch = db4$getTableChar(n);
-    
-    string meta = llLinksetDataRead(ch);
-    integer max = (int)j(meta, "i");
-    integer at;
-    for(; at < max; ++at ){
-        integer o = at+db4$ofs;
-        if( !llStringLength(llLinksetDataRead(ch+llChar(o))) )
-            return at+1;
-    }
-    return max;	// Max has the next field to be inserted
-    
-}
-// insert. Returns the inserted id
-int _4i( string n, str vals, integer fast ){
-    
-    string ch = n;
-    if( !fast )
-        ch = db4$getTableChar(n);
-    string meta = llLinksetDataRead(ch);
-    integer max = (int)j(meta, "i");
-    integer nr = max;
-    llLinksetDataWrite(ch, llJsonSetValue(meta, (list)"i", (str)(nr+1))); // Add to indexer
-    // Write the data
-    string chn = llChar(nr+db4$ofs);
-    if( llLinksetDataWrite(ch+chn, vals) )
-        return 0;
-    return nr;
+	list found; integer i;
+	while( (found = llLinksetDataFindKeys("^"+t+".{1}$", 0, 50)) != [] ){ \
+		for( i = 0; i < count(found); ++i ) \
+			llLinksetDataDelete(l2s(found, i)); \
+	}
     
 }
 
 
-// I strongly suggest defining constants for your tables
-// It will make it easier to remember which index is which
-// DB4 relies on arrays because they save memory
-
-_4du( string table, list fields){
-    
-    string tab = "                ";
-    string title = "ID"+"             ";
-    integer i;
-    for(; i < count(fields); ++i ){
-        string t = llGetSubString(l2s(fields, i), 0, 14);
-        title += t+llGetSubString(tab, 0, 15-llStringLength(t));
-    }
-    llOwnerSay(title);
-    db4$each(table, id, row,
-        title = "#"+(str)id+llGetSubString(tab, 0, 15-llStringLength((str)id));
-        for( i = 0; i < count(fields); ++i ){
-            string data = llGetSubString(l2s(row, i), 0, 15);
-            title += data + llGetSubString(tab, 0, 15-llStringLength(data));
-        } 
-        llOwnerSay(title);
-    )
-    
+dumpLSD(){
+	list keys = llLinksetDataListKeys(0,-1);
+	integer i;
+	for( i = 0; i < count(keys); ++i )
+		llOwnerSay(l2s(keys, i)+" >> "+llLinksetDataRead(l2s(keys, i)));
 }
+
+
+
+// List of index chars starting from 32 db4$0 is actually llChar(db4$ofs)
+#define db4$0 "!"
+#define db4$1 "\""
+#define db4$2 "#"
+#define db4$3 "$"
+#define db4$4 "%"
+#define db4$5 "&"
+#define db4$6 "'"
+#define db4$7 "("
+#define db4$8 ")"
+#define db4$9 "*"
+#define db4$10 "+"
+#define db4$11 ","
+#define db4$12 "-"
+#define db4$13 "."
+#define db4$14 "/"
+#define db4$15 "0"
+#define db4$16 "1"
+#define db4$17 "2"
+#define db4$18 "3"
+#define db4$19 "4"
+#define db4$20 "5"
+#define db4$21 "6"
+#define db4$22 "7"
+#define db4$23 "8"
+#define db4$24 "9"
+#define db4$25 ":"
+#define db4$26 ";"
+#define db4$27 "<"
+#define db4$28 "="
+#define db4$29 ">"
+#define db4$30 "?"
+#define db4$31 "@"
+#define db4$32 "A"
+#define db4$33 "B"
+#define db4$34 "C"
+#define db4$35 "D"
+#define db4$36 "E"
+#define db4$37 "F"
+#define db4$38 "G"
+#define db4$39 "H"
+#define db4$40 "I"
+#define db4$41 "J"
+#define db4$42 "K"
+#define db4$43 "L"
+#define db4$44 "M"
+#define db4$45 "N"
+#define db4$46 "O"
+#define db4$47 "P"
+#define db4$48 "Q"
+#define db4$49 "R"
+#define db4$50 "S"
+#define db4$51 "T"
+#define db4$52 "U"
+#define db4$53 "V"
+#define db4$54 "W"
+#define db4$55 "X"
+#define db4$56 "Y"
+#define db4$57 "Z"
+#define db4$58 "["
+#define db4$59 "\\"
+#define db4$60 "]"
+#define db4$61 "^"
+#define db4$62 "_"
+#define db4$63 "`"
+#define db4$64 "a"
+#define db4$65 "b"
+#define db4$66 "c"
+#define db4$67 "d"
+#define db4$68 "e"
+#define db4$69 "f"
+#define db4$70 "g"
+#define db4$71 "h"
+#define db4$72 "i"
+#define db4$73 "j"
+#define db4$74 "k"
+#define db4$75 "l"
+#define db4$76 "m"
+#define db4$77 "n"
+#define db4$78 "o"
+#define db4$79 "p"
+#define db4$80 "q"
+#define db4$81 "r"
+#define db4$82 "s"
+#define db4$83 "t"
+#define db4$84 "u"
+#define db4$85 "v"
+#define db4$86 "w"
+#define db4$87 "x"
+#define db4$88 "y"
+#define db4$89 "z"
+#define db4$90 "{"
+#define db4$91 "|"
+#define db4$92 "}"
+#define db4$93 "~"
+#define db4$94 ""
+#define db4$95 ""
+#define db4$96 ""
+#define db4$97 ""
+#define db4$98 ""
+#define db4$99 ""
+#define db4$100 ""
+#define db4$101 ""
+#define db4$102 ""
+#define db4$103 ""
+#define db4$104 ""
+#define db4$105 ""
+#define db4$106 ""
+#define db4$107 ""
+#define db4$108 ""
+#define db4$109 ""
+#define db4$110 ""
+#define db4$111 ""
+#define db4$112 ""
+#define db4$113 ""
+#define db4$114 ""
+#define db4$115 ""
+#define db4$116 ""
+#define db4$117 ""
+#define db4$118 ""
+#define db4$119 ""
+#define db4$120 ""
+#define db4$121 ""
+#define db4$122 ""
+#define db4$123 ""
+#define db4$124 ""
+#define db4$125 ""
+#define db4$126 ""
+#define db4$127 " "
+#define db4$128 "¡"
+#define db4$129 "¢"
+#define db4$130 "£"
+#define db4$131 "¤"
+#define db4$132 "¥"
+#define db4$133 "¦"
+#define db4$134 "§"
+#define db4$135 "¨"
+#define db4$136 "©"
+#define db4$137 "ª"
+#define db4$138 "«"
+#define db4$139 "¬"
+#define db4$140 "­"
+#define db4$141 "®"
+#define db4$142 "¯"
+#define db4$143 "°"
+#define db4$144 "±"
+#define db4$145 "²"
+#define db4$146 "³"
+#define db4$147 "´"
+#define db4$148 "µ"
+#define db4$149 "¶"
+#define db4$150 "·"
+#define db4$151 "¸"
+#define db4$152 "¹"
+#define db4$153 "º"
+#define db4$154 "»"
+#define db4$155 "¼"
+#define db4$156 "½"
+#define db4$157 "¾"
+#define db4$158 "¿"
+#define db4$159 "À"
+#define db4$160 "Á"
+#define db4$161 "Â"
+#define db4$162 "Ã"
+#define db4$163 "Ä"
+#define db4$164 "Å"
+#define db4$165 "Æ"
+#define db4$166 "Ç"
+#define db4$167 "È"
+#define db4$168 "É"
+#define db4$169 "Ê"
+#define db4$170 "Ë"
+#define db4$171 "Ì"
+#define db4$172 "Í"
+#define db4$173 "Î"
+#define db4$174 "Ï"
+#define db4$175 "Ð"
+#define db4$176 "Ñ"
+#define db4$177 "Ò"
+#define db4$178 "Ó"
+#define db4$179 "Ô"
+#define db4$180 "Õ"
+#define db4$181 "Ö"
+#define db4$182 "×"
+#define db4$183 "Ø"
+#define db4$184 "Ù"
+#define db4$185 "Ú"
+#define db4$186 "Û"
+#define db4$187 "Ü"
+#define db4$188 "Ý"
+#define db4$189 "Þ"
+#define db4$190 "ß"
+#define db4$191 "à"
+#define db4$192 "á"
+#define db4$193 "â"
+#define db4$194 "ã"
+#define db4$195 "ä"
+#define db4$196 "å"
+#define db4$197 "æ"
+#define db4$198 "ç"
+#define db4$199 "è"
+#define db4$200 "é"
+#define db4$201 "ê"
+#define db4$202 "ë"
+#define db4$203 "ì"
+#define db4$204 "í"
+#define db4$205 "î"
+#define db4$206 "ï"
+#define db4$207 "ð"
+#define db4$208 "ñ"
+#define db4$209 "ò"
+#define db4$210 "ó"
+#define db4$211 "ô"
+#define db4$212 "õ"
+#define db4$213 "ö"
+#define db4$214 "÷"
+#define db4$215 "ø"
+#define db4$216 "ù"
+#define db4$217 "ú"
+#define db4$218 "û"
+#define db4$219 "ü"
+#define db4$220 "ý"
+#define db4$221 "þ"
+#define db4$222 "ÿ"
+
 
 
 #endif

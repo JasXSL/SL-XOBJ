@@ -253,10 +253,20 @@ list bitArrToList(integer n, integer bytesize){
 
 #define norm2rot(normal, axis) llAxes2Rot(llVecNorm(normal % axis) % normal, llVecNorm(normal % axis), normal)
 
+#define rotMag( rot ) llSqrt(rot.x*rot.x+rot.y*rot.y+rot.z*rot.z+rot.s*rot.s)
+#define rotDiv( rot, div ) <rot.x/div, rot.y/div, rot.z/div, rot.s/div>
+
+// Returns a vector based on the global Z axis rotation of targ, with angle (radians) added
+// Good for getting a position based on an avatar. Like rotation rot = prRot(targ); vector offs = zRotNorm(PI, rot) gets a vector pointing 1m behind targ
+// zRotMag is a helper
+#define zRotMag( rot ) \
+	llSqrt(rot.z*rot.z+rot.s*rot.s)
+#define zRotNorm( angle, rot ) \
+	 (<llCos(angle),llSin(angle),0>*<0,0,rot.z/zRotMag(rot),rot.s/zRotMag(rot)>)
+
 
 #define xLookAt(pos) llRotLookAt(llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())), 1, 1)
 #define xLookAtLinked(link, pos) llSetLinkPrimitiveParamsFast(link, (list)PRIM_ROTATION + llRotBetween(<1,0,0>, llVecNorm(pos-llGetPos())))
-
 
 
 // Vectors

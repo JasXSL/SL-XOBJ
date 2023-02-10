@@ -200,17 +200,7 @@ link_message(integer link, integer nr, string s, key id){
 			sendCallback(id, sender, stdMethod$setShared, mkarr(_to_create), "");
 		}
 		#endif
-		// DB4 is much more simple
-		#ifdef USE_DB4
-		else if( nr == DB4_ADD ){
-			str sender = j(s, 0);
-			list _to_create = llJson2List(j(s,1)); 
-			integer _i;
-			for(; _i < count(_to_create); ++_i )
-				db4$createTableLocal( l2s(_to_create, _i) );
-			sendCallback(id, sender, stdMethod$setShared, mkarr(_to_create), "");
-		}
-		#endif
+		// DB4 does not need any code here
 	#endif
 #endif
 

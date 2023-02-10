@@ -92,9 +92,20 @@ default{
         memLim(1.5);
         if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-			
+		
+		#ifdef onStateEntry
+		onStateEntry
+		#endif
+		
     }
     
+	#ifdef onPerms
+	run_time_permissions( integer perm ){
+		if( perm & PERMISSION_TRIGGER_ANIMATION ){
+			onPerms();
+		}
+	}
+	#endif
 
     timer(){multiTimer([]);}
 
