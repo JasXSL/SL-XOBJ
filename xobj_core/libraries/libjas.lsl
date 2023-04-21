@@ -682,16 +682,11 @@ string bits2nybbles(integer bits){
 }
 
 // Minified version that only works on the root prim
-updateSitTarget(key player, integer prim, vector pos, rotation rot){//Using this while the object is moving may give unpredictable results.
+updateSitTarget(key player, vector pos, rotation rot){//Using this while the object is moving may give unpredictable results.
 	integer ln = llGetNumberOfPrims();
 	do{
 		if( player == llGetLinkKey(ln) ){
 			vector size = llGetAgentSize(player);
-			/*
-			rotation offs;
-			if( prim > 1 )
-				offs = l2r(llGetLinkPrimitiveParams(prim, (list)PRIM_ROT_LOCAL), 0);
-			*/
 			float fAdjust = ((((0.008906 * size.z) + -0.049831) * size.z) + 0.088967) * size.z;
 			list pp = [
 				PRIM_POS_LOCAL, (pos + <0.0, 0.0, 0.4> - (llRot2Up(rot) * fAdjust)),// * offs, + l2v(offs, 0),

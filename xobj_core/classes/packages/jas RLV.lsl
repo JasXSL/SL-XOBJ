@@ -52,6 +52,7 @@ integer BFL;
 
 int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 
+
 float lastCube;	// Time last tried rezz
 key supportcube;
 list cubetasks;

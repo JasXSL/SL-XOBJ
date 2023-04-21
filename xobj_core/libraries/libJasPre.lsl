@@ -24,6 +24,7 @@
 #define NaN ((float)"nan")
 #define ONE_VECTOR <1.0,1.0,1.0>
 #define MAXINT 0x7FFFFFFF
+#define fabs(X) X*(-1*((X<0.0)-(X>0.0)))
 
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)
@@ -249,7 +250,7 @@ list bitArrToList(integer n, integer bytesize){
 #define linkAlpha(link, alpha, side) PRIM_LINK_TARGET, link, PRIM_COLOR, side, llList2Vector(llGetLinkPrimitiveParams(link, [PRIM_COLOR, side]), 0), alpha
 
 
-#define boundsHeight(obj, var) float var; {list _bounds = llGetBoundingBox(obj); vector _a =llList2Vector(_bounds, 0); vector _b = llList2Vector(_bounds,1); var = (llFabs(_a.z)+llFabs(_b.z));}
+#define boundsHeight(obj, var) float var; {list _bounds = llGetBoundingBox(obj); vector _a =llList2Vector(_bounds, 0); vector _b = llList2Vector(_bounds,1); var = (fabs(_a.z)+fabs(_b.z));}
 
 #define norm2rot(normal, axis) llAxes2Rot(llVecNorm(normal % axis) % normal, llVecNorm(normal % axis), normal)
 
@@ -261,6 +262,8 @@ list bitArrToList(integer n, integer bytesize){
 // zRotMag is a helper
 #define zRotMag( rot ) \
 	llSqrt(rot.z*rot.z+rot.s*rot.s)
+// 
+// Returns a vector based on angle multiplied by zrot. PI = right behind you. 0 = right in front
 #define zRotNorm( angle, rot ) \
 	 (<llCos(angle),llSin(angle),0>*<0,0,rot.z/zRotMag(rot),rot.s/zRotMag(rot)>)
 
