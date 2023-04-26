@@ -378,73 +378,66 @@ list _T;	// (float)timeout, id, data, looptime, repeating
 #define multiTimerRemoveAll() \
 	_T = []; llSetTimerEvent(0)
 
+
 multiTimer( list da ){
     
+	int len = count(_T);	// Tracks if we need to update the timer
+	float time = llGetTime();
 	integer i;
-	// If there's an add or remove, remove existing regardless
+	
+	// Add or remove
     if( da ){
 	
-		// Find the 
-        integer pos = llListFindList(llList2ListStrided(llDeleteSubList(_T,0,0), 0, -1, 5), llList2List(da,0,0));
-        if( ~pos ){
-			_T = llDeleteSubList(_T, pos*5, pos*5+4);	// Remove existing
+		float fade = time + llList2Float(da,2);
+		// Delete if exists
+        integer pos = llListFindStrided(_T, llList2List(da,0,0), 1,-1, 5);
+        if( ~pos )
+			_T = llDeleteSubList(_T, pos-1, pos+3);	// Remove existing
+		
+		// Add
+		if( count(da) == 4 ){
+		
+			// Order by time
+			int ct = count(_T);
+			int slot = ct;
+			for( ; i < ct && slot == ct; i+= 5 ){
+				if( l2f(_T, i) > fade )
+					slot = i;
+			}
+			_T = llListInsertList(_T, (list)fade + da, slot);
+			len *= slot > 0; // If this is now the first element, we need to refresh the timer
+
 		}
-		// Entries are 4, add
-        if( count(da) == 4 )
-			_T = _T + (list)(llGetTime() + llList2Float(da,2)) + da;
-
+		
     }
 	
-	float next = -3.402823466E+38;	// min value
-	
-	// Iterate over active events
-	for( ; i<count(_T); i = i+5 ){
-	
+	// Trigger (SET is not allowed to trigger)
+	while( da == [] && _T != [] && l2f(_T, 0) < time ){
 		
-		int del;
-		float offs = llGetTime()-llList2Float(_T,i);	// When next to trigger
-		// less than 0 means this shouldn't trigger yet, above 0 is lag
-        if( offs >= 0 && !count(da) ){	// Triggering on add/remove can cause recursion issues, best do it asynchronously
-            
-			string t = llList2String(_T, -~i);	// id
-            string d = llList2String(_T,-~-~i);	// data
-
-			// looping
-            if( llList2Integer(_T,i+4) ){
-				offs = llList2Float(_T,i+3)-offs;	// -offs Adjusts for lag
-				_T = llListReplaceList(_T, (list)(llGetTime()+offs), i, i);
-				offs = -offs;	// Updates so we know how far in the future it should trigger
-			}
-            // Not looping, remove
-			else{
-				_T= llDeleteSubList(_T, i, i+4);
-				del = TRUE;
-				i -= 5;	// Go back since we removed it
-			}
-			
-			// Trigger the timer event
-            timerEvent(t, d);
-			// Go back since we removed it
-           
-			
-        }
+		list sl = llList2List(_T, 1, 4);
+		_T = llDeleteSubList(_T, 0, 4);
+		// Looping. Re-add.
+		if( l2i(sl, 3) )
+			multiTimer(sl);
+		timerEvent(l2s(sl, 0), l2s(sl, 1));
 		
-		// The more negative offs is, the further in the future it is.
-		if( offs > next && !del )
-			next = offs;
+		time = llGetTime();
+		
+	}
+	
 
-    }
-	
-	
     if( _T == [] ){
 		llSetTimerEvent(0); 
 		return;
 	}
+	// Timer hasn't changed
+	if( len )
+		return;
 
-	if( next > -0.01 )
-		next = -0.01;
-
-    llSetTimerEvent(llFabs(next));
+	float nx = l2f(_T, 0)-time;
+	if( nx < 0.01 )
+		nx = 0.01;
+    llSetTimerEvent(nx);
 	
 }
 
