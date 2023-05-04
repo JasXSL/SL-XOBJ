@@ -1,3 +1,4 @@
+#define USE_DB4
 #ifndef USE_EVENTS
 #define USE_EVENTS
 #endif
@@ -32,21 +33,15 @@ float timerSpeed;
 float SSM = 1;					// SwimSpeedMulti PrimswimMethod$swimSpeedMultiplier
 
 #define SURFACE_DEPTH -.4
-#define FOOTSTEP_SPEED .4
 
 
-#define BFL_IN_WATER 1
-#define BFL_SWIMMING 2              // Actively swimming
-#define BFL_CAM_UNDER_WATER 4
-#define BFL_FULLY_SUBMERGED 8
-#define BFL_FEET_SUBMERGED 16
-#define BFL_WITHIN_20M_OF_WATER 32
-//#define BFL_STOP_ANIMATION 64       // Stop swimming because of effect
-#define BFL_HAS_WET_FEET 256
-#define BFL_CONTROLS_TAKEN 512
-#define BFL_AT_SURFACE 1024
-#define BFL_CLIMBING 2048
-integer BFL;
+integer STATUS;
+setStatus( integer st ){
+	STATUS = st;
+	str s = (str)st;
+	db4$freplace(PrimSwimCfg$table, PrimSwimCfg$table$status, s);
+	//raiseEvent(PrimswimEvt$status, (str)s);
+}
 
 
 integer BFA;                        // Anims bitfield
@@ -56,8 +51,6 @@ integer BFA;                        // Anims bitfield
 #define TIMER_SWIM_CHECK "a"
 #define TIMER_WETFEET_FADE "b"
 #define TIMER_SPEEDCHECK "c"
-#define TIMER_SWIMSTROKE "d"
-#define TIMER_FOOTSPLASH "e"
 #define TIMER_CLIMB_CD "f"
 #define TIMER_COUT_CHECK "g"
 
@@ -138,7 +131,7 @@ updateAnimstate(){
 		override = !scriptRunning();
 	#endif
 	
-    if(BFL&BFL_IN_WATER && !sitting && !forceStop && !override){
+    if( STATUS & PrimswimStatus$IN_WATER && !sitting && !forceStop && !override ){
 		if(~BFA&BFA_IDLE){
 			bf_start = bf_start|BFA_IDLE;
 			BFA = BFA|BFA_IDLE;
@@ -148,12 +141,12 @@ updateAnimstate(){
         BFA = BFA&~BFA_IDLE;
     }
         
-    if(BFL&BFL_SWIMMING && !sitting && !forceStop && !override){
-		if(~BFA&BFA_ACTIVE){
+    if( STATUS&PrimswimStatus$SWIMMING && !sitting && !forceStop && !override ){
+		if( ~BFA&BFA_ACTIVE ){
 			bf_start = bf_start|BFA_ACTIVE;
 			BFA = BFA|BFA_ACTIVE;
 		}
-    }else if(BFA&BFA_ACTIVE){
+    }else if( BFA&BFA_ACTIVE ){
         bf_stop = bf_stop|BFA_ACTIVE;
         BFA = BFA&~BFA_ACTIVE;
     }
@@ -187,25 +180,19 @@ enterWater(){
 			return;
 	#endif
 
-    BFL = BFL|BFL_IN_WATER;
-    BFL=BFL&~BFL_FEET_SUBMERGED;
+    setStatus(STATUS|PrimswimStatus$IN_WATER);
+    setStatus(STATUS&~PrimswimStatus$FEET_SUBMERGED);
     setBuoyancy();
     float vel = llVecMag(llGetVel());
-	int weight = 0;
-    if( vel>8 ){
-		llTriggerSound(PrimswimCfg$splashBig, 1.);
+	int weight;
+    if( vel > 8 )
 		weight = 2;
-	}
-    else if( vel>5 ){
-		llTriggerSound(PrimswimCfg$splashMed, 1.);
+	else if( vel > 5 )
 		weight = 1;
-	}
-    else 
-		llTriggerSound(PrimswimCfg$splashSmall, 1);
-    
+	    
 	vector gpos = llGetRootPosition();
 	gpos.z = deepest+0.05;
-    raiseEvent(PrimswimEvt$onWaterEnter, mkarr(([weight, gpos])));
+    raiseEvent(PrimswimEvt$onWaterEnter, mkarr((list)weight + gpos));
 	debugUncommon("Entered water");
 
     //dif=llGetVel()*.25;
@@ -220,17 +207,16 @@ exitWater(){
 	
     // Just exited water
     CONTROL = 0;
-    multiTimer([TIMER_SWIMSTROKE]);
     llStopMoveToTarget();
-    BFL=BFL&~BFL_IN_WATER;
-    BFL=BFL&~BFL_AT_SURFACE;
-    BFL=BFL&~BFL_SWIMMING;
-    BFL=BFL&~BFL_FULLY_SUBMERGED;
+	setStatus(STATUS&~PrimswimStatus$IN_WATER);
+    setStatus(STATUS&~PrimswimStatus$AT_SURFACE);
+    setStatus(STATUS&~PrimswimStatus$SWIMMING);
+    setStatus(STATUS&~PrimswimStatus$FULLY_SUBMERGED);
     
     raiseEvent(PrimswimEvt$onWaterExit, "");
 	
 
-	triggerRandomSound([PrimswimCfg$soundExit], .5, .75);
+	
     setBuoyancy();
     // Diving soundspace
     Soundspace$dive(FALSE);
@@ -251,16 +237,17 @@ toggleCam(integer submerged){
 		if(!scriptRunning())
 			return;
 	#endif
-	if(!isset(wl_set))return;
+	if( !isset(wl_set) )
+		return;
     if(submerged){
 	
-        BFL = BFL|BFL_CAM_UNDER_WATER;
+        setStatus(STATUS|PrimswimStatus$CAM_UNDER_WATER);
         RLV$windlightPreset(LINK_ROOT, wl_set, TRUE);
 		
     }
 	else{
 	
-        BFL = BFL&~BFL_CAM_UNDER_WATER;
+        setStatus(STATUS&~PrimswimStatus$CAM_UNDER_WATER);
         RLV$resetWindlight(LINK_ROOT);
 		
 	}
@@ -274,7 +261,8 @@ float buoyancy_default = 0;
 setBuoyancy(){
 
     float b = buoyancy_default;
-    if(BFL&BFL_IN_WATER)b = .9;
+    if( STATUS&PrimswimStatus$IN_WATER )
+		b = .9;
     llSetBuoyancy(b);
 	
 }
@@ -283,14 +271,14 @@ vector ascale;
 integer CONTROL;
 list water;
 list airpockets;
-float deepest;
+float deepest;		// Z position of surface in region coordinates
 vector prePush;
 float pp;
 
 timerEvent(string id, string data){
 	
 	// Core frame
-    if(id == TIMER_SWIM_CHECK){
+    if( id == TIMER_SWIM_CHECK ){
 	
 		#ifdef USE_SCRIPT_RUNNING_CHECK
 			if(!scriptRunning()){
@@ -302,10 +290,12 @@ timerEvent(string id, string data){
         integer ainfo = llGetAgentInfo(llGetOwner());
         integer i;
         deepest = 0;
+		
 		#ifndef RC_DEFAULT
 		list RC_DEFAULT = (list)RC_REJECT_TYPES + (RC_REJECT_AGENTS|RC_REJECT_PHYSICAL);
 		#endif
-		for( ; i<llGetListLength(water) && llGetListLength(water) && ~BFL&BFL_CLIMBING; ++i ){
+		
+		for( ; i < count(water) && water != [] && ~STATUS&PrimswimStatus$CLIMBING; ++i ){
 		
 			key wID = llList2Key(water,i);
 			
@@ -317,8 +307,9 @@ timerEvent(string id, string data){
 			if( is ==-1 || is == 0 )
 				is = waterZ(llGetRootPosition(), wID, FALSE);	// Get the water surface Z position at this location
 			
-			if( is > deepest )
+			if( is > deepest ){
 				deepest = is;
+			}
 			
 			// How far below the water the top of your head is. If negative, it means your head is out of the water.
 			float depth = is-(gpos.z+ascale.z/2);
@@ -333,12 +324,12 @@ timerEvent(string id, string data){
 			
 			// Handle camera
 			vector pos = llGetCameraPos();
-			if( pointSubmerged(pos) != 0 && (~BFL&BFL_AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
+			if( pointSubmerged(pos) != 0 && (~STATUS&PrimswimStatus$AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
 			
-				if( ~BFL&BFL_CAM_UNDER_WATER )
+				if( ~STATUS&PrimswimStatus$CAM_UNDER_WATER )
 					toggleCam(TRUE);
 					
-			}else if( BFL&BFL_CAM_UNDER_WATER )
+			}else if( STATUS&PrimswimStatus$CAM_UNDER_WATER )
 				 toggleCam(FALSE);
 			
 			
@@ -352,7 +343,7 @@ timerEvent(string id, string data){
 			if( is == -1 ){
 				
 				water = llDeleteSubList(water,i,i);
-				i--; 
+				--i; 
 				
 			}
 			// We are not fully submerged. But might be standing in water
@@ -360,7 +351,7 @@ timerEvent(string id, string data){
 			
 				is = waterZ(gpos-<0,0,ascale.z/2>, wID, FALSE);
 				if( is > deepest )
-					deepest=is;
+					deepest = is;
 				
 			}
 			// We are fully submerged
@@ -420,7 +411,7 @@ timerEvent(string id, string data){
 				}
 				
 				vector dif; vector vel = llGetVel(); 
-				if( ~BFL&BFL_IN_WATER ){ // Just entered water
+				if( ~STATUS&PrimswimStatus$IN_WATER ){ // Just entered water
 				
 					enterWater();
 					water_just_entered = TRUE;
@@ -435,11 +426,11 @@ timerEvent(string id, string data){
 					if( CONTROL&(CONTROL_FWD|CONTROL_BACK) )
 						fwd = llRot2Fwd(llGetCameraRot());
 					if( CONTROL&CONTROL_BACK )
-						fwd=-fwd;
+						fwd = -fwd;
 					if( CONTROL&(CONTROL_LEFT|CONTROL_RIGHT) )
 						left = llRot2Left(llGetCameraRot());
 					if( CONTROL&CONTROL_RIGHT )
-						left=-left;
+						left = -left;
 						
 					if( CONTROL&CONTROL_UP )
 						up = <0,0,1>;
@@ -480,27 +471,18 @@ timerEvent(string id, string data){
 					!stopped && 
 					(
 						CONTROL&(CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_DOWN) || 
-						(CONTROL&CONTROL_UP&&~BFL&BFL_AT_SURFACE) || 
+						(CONTROL&CONTROL_UP && ~STATUS&PrimswimStatus$AT_SURFACE) || 
 						llVecMag(<dif.x,dif.y,0>) > .5
 					)
 				){ 
 				
-					if( ~BFL&BFL_SWIMMING ){
-						
-						BFL=BFL|BFL_SWIMMING;
-						triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
-						multiTimer([TIMER_SWIMSTROKE, "", 1., TRUE]);
-						
-					}
+					if( ~STATUS&PrimswimStatus$SWIMMING )
+						setStatus(STATUS|PrimswimStatus$SWIMMING);
 					
 				}
-				else if( BFL&BFL_SWIMMING ){
+				else if( STATUS&PrimswimStatus$SWIMMING )
+					setStatus(STATUS&~PrimswimStatus$SWIMMING);
 					
-					multiTimer([TIMER_SWIMSTROKE]);
-					BFL=BFL&~BFL_SWIMMING;
-					
-				}
-				
 				if( ssm <= 0 )
 					ssm = 1;
 				
@@ -525,21 +507,17 @@ timerEvent(string id, string data){
 					
 						SP.z = is-SURFACE_DEPTH-.1-ascale.z*.5;
 						dif.z = 0;
-						BFL = BFL|BFL_AT_SURFACE;
+						setStatus(STATUS|PrimswimStatus$AT_SURFACE);
 						
 					}
 					else{
-						BFL = BFL&~BFL_AT_SURFACE;
+						setStatus(STATUS&~PrimswimStatus$AT_SURFACE);
 					}
 					SUB = FALSE;
 					
 				}
-				else {
-				
-					BFL = BFL&~BFL_AT_SURFACE;
-					
-					
-				}
+				else
+					setStatus(STATUS&~PrimswimStatus$AT_SURFACE);
 				
 				integer B;	// We're bottoming out at our current position, so only use XY
 				// Check if we're at the bottom, in that case only move on XY
@@ -589,21 +567,21 @@ timerEvent(string id, string data){
 				// HANDLES DIVING SOUNDS
 				if( SUB ){ // Entire body is submerged
 					
-					if( ~BFL&BFL_FULLY_SUBMERGED ){
+					if( ~STATUS&PrimswimStatus$FULLY_SUBMERGED ){
 						
 						// Dive
-						BFL=BFL|BFL_FULLY_SUBMERGED;
+						setStatus(STATUS|PrimswimStatus$FULLY_SUBMERGED);
 						Soundspace$dive(TRUE);
 						
 					}
 					
 				}
-				else if( BFL&BFL_FULLY_SUBMERGED ){
+				else if( STATUS&PrimswimStatus$FULLY_SUBMERGED ){
 				
 					// Emerge
-					llTriggerSound(PrimswimCfg$soundSubmerge, .5);
+					
 					Soundspace$dive(FALSE);
-					BFL=BFL&~BFL_FULLY_SUBMERGED;
+					setStatus(STATUS&~PrimswimStatus$FULLY_SUBMERGED);
 					vector pos = gpos;
 					pos.z = deepest;
 					list ray = llCastRay(pos+<0,0,.1>, pos-<0,0,.2>, [
@@ -623,8 +601,7 @@ timerEvent(string id, string data){
 							ray = [];
 						}
 					}
-					
-					partCom(jasPrimswimParticles$emerge, [pos, rot]);
+					raiseEvent(PrimswimEvt$submerge, mkarr((list)0 + pos + rot));
 					
 				}
 				
@@ -634,47 +611,46 @@ timerEvent(string id, string data){
 				return;
 				
 			}
-			
-			
-			
+						
 		}
             
-        if( deepest > 0 || BFL&BFL_IN_WATER ){
+		db4$freplace(PrimSwimCfg$table, PrimSwimCfg$table$surfaceZ, deepest);
+		
+		
+        if( deepest > 0 || STATUS & PrimswimStatus$IN_WATER ){
             
-			if(~BFL&BFL_FEET_SUBMERGED){
+			if( ~STATUS&PrimswimStatus$FEET_SUBMERGED ){
 
-                BFL=BFL|BFL_FEET_SUBMERGED;
-                BFL=BFL|BFL_HAS_WET_FEET;
-                multiTimer([TIMER_FOOTSPLASH, "", FOOTSTEP_SPEED, TRUE]);
-                if(deepest>0)
+                setStatus(STATUS|PrimswimStatus$FEET_SUBMERGED);
+                setStatus(STATUS|PrimswimStatus$HAS_WET_FEET);
+                if( deepest > 0 )
 					multiTimer([TIMER_WETFEET_FADE]);
 				raiseEvent(PrimswimEvt$feetWet, "1");
 				
             }
 			
         }
-		else if(BFL&BFL_FEET_SUBMERGED){
+		else if( STATUS & PrimswimStatus$FEET_SUBMERGED ){
 		
-            BFL=BFL&~BFL_FEET_SUBMERGED;
+            setStatus(STATUS&~PrimswimStatus$FEET_SUBMERGED);
             multiTimer([TIMER_WETFEET_FADE,"", 30, FALSE]);
 			
         }
 		
 		// Couldn't find
-        if( BFL&BFL_IN_WATER && ~BFL&BFL_CLIMBING )
+        if( STATUS & PrimswimStatus$IN_WATER && ~STATUS & PrimswimStatus$CLIMBING )
 			exitWater();
 			
         updateAnimstate();
         multiTimer([id,"", timerSpeed, FALSE]);
-		
+
     }
     
 	// Removes wet feet
     else if( id == TIMER_WETFEET_FADE ){
 	
-        BFL = BFL&~BFL_HAS_WET_FEET;
+        setStatus(STATUS&~PrimswimStatus$HAS_WET_FEET);
 		raiseEvent(PrimswimEvt$feetWet, "0");
-		multiTimer([TIMER_FOOTSPLASH]);
 		
     }
 	
@@ -683,10 +659,10 @@ timerEvent(string id, string data){
 	
 		// Checks if you're at an edge and can climb out
 		if(
-			BFL&BFL_IN_WATER && 
+			STATUS & PrimswimStatus$IN_WATER && 
 			~llGetAgentInfo(llGetOwner())&AGENT_SITTING && 
-			BFL&BFL_AT_SURFACE && 
-			~BFL&BFL_CLIMBING
+			STATUS & PrimswimStatus$AT_SURFACE && 
+			~STATUS & PrimswimStatus$CLIMBING
 		){
 		
 			// Check ray
@@ -766,111 +742,47 @@ timerEvent(string id, string data){
 		
 	}
     
-    else if(id == TIMER_SPEEDCHECK){ // Dynamic timer speed
-	
-        multiTimer([TIMER_SPEEDCHECK, "", 4, TRUE]);
+    else if( id == TIMER_SPEEDCHECK ){ // Dynamic timer speed
+
+        multiTimer([id, "", 4, TRUE]);
         
-        if(BFL&BFL_IN_WATER){
+        if( STATUS & PrimswimStatus$IN_WATER || count(water) ){
 		
-            if(~BFL&BFL_WITHIN_20M_OF_WATER){
+            if( ~STATUS & PrimswimStatus$TIMER_FAST ){
 			
-                BFL=BFL|BFL_WITHIN_20M_OF_WATER;
-                timerSpeed = PrimswimCfg$maxSpeed;
-                multiTimer([TIMER_SWIM_CHECK,"",timerSpeed, FALSE]);
+				setStatus(STATUS|PrimswimStatus$TIMER_FAST);
+				timerSpeed = PrimswimCfg$maxSpeed;
+				multiTimer([TIMER_SWIM_CHECK,"",timerSpeed, FALSE]);
 				
-            }
-            return;
+			}
+			
+			return;
 			
         }
-		else{
+        
+        if( STATUS & PrimswimStatus$TIMER_FAST ){
 		
-            vector gpos = llGetRootPosition();
-            integer i; 
-            for(i=0; i<llGetListLength(water); i++){
-                vector pos = llList2Vector(llGetObjectDetails(llList2Key(water,i), [OBJECT_POS]), 0);
-                if(llVecDist(pos,gpos)<30){ 
-                    if(~BFL&BFL_WITHIN_20M_OF_WATER){
-                        timerSpeed = PrimswimCfg$maxSpeed;
-                        multiTimer([TIMER_SWIM_CHECK,"",timerSpeed, FALSE]);
-                        BFL=BFL|BFL_WITHIN_20M_OF_WATER;
-                    }
-                    return;
-                }
-            }
+            timerSpeed = PrimswimCfg$minSpeed;
+            multiTimer([TIMER_SWIM_CHECK, 0, timerSpeed, FALSE]);
 			
         }
-        
-        if(BFL&BFL_WITHIN_20M_OF_WATER){
-            timerSpeed = PrimswimCfg$minSpeed;
-            multiTimer([TIMER_SWIM_CHECK,"", timerSpeed, FALSE]);
-        }
-        BFL=BFL&~BFL_WITHIN_20M_OF_WATER;
-        
+        setStatus(STATUS&~PrimswimStatus$TIMER_FAST);
         
     }
     
     else if( id == TIMER_CLIMB_CD )
-		BFL = BFL&~BFL_CLIMBING;
+		setStatus(STATUS&~PrimswimStatus$CLIMBING);
     
-    else if(id == TIMER_SWIMSTROKE){
-        triggerRandomSound([PrimswimCfg$soundStroke], .5, .75);
-    }
     
-    else if( id == TIMER_FOOTSPLASH ){
+    
 	
-        if( ( deepest <=0 && ~BFL&BFL_HAS_WET_FEET ) || BFL&BFL_IN_WATER )
-            return;
-
-		// Splash sound
-        integer ainfo = llGetAgentInfo(llGetOwner());
-        vector gpos = llGetRootPosition();
-        float depth = deepest-(gpos.z-ascale.z/2);
-		
-		
-		
-        if( ainfo&AGENT_WALKING ){
-		
-            // Trigger splash
-            if( depth<.1 ){
-
-				if( deepest <= 0 )
-					depth = 0;
-				vector pos = <gpos.x,gpos.y,gpos.z-ascale.z/2+depth>;
-				partCom(jasPrimswimParticles$onFeetWetSplash, [0, pos]);
-                triggerRandomSound(PrimswimCfg$soundFootstepsShallow, .75,1);
-                return;
-				
-            }
-            else if( depth<.4 )
-				triggerRandomSound(PrimswimCfg$soundFootstepsMed, .75,1);
-            else 
-				triggerRandomSound(PrimswimCfg$soundFootstepsDeep, .75,1);
-			
-			partCom(jasPrimswimParticles$onFeetWetSplash, [1, <gpos.x,gpos.y,deepest>]);
-        }
-		
-		
-
-
-    }
-	
-}
-
-partCom( string task, list data ){
-	if( llKey2Name(PH) == "" )
-		PrimswimAux$spawn();
-	else
-		llRegionSayTo(PH, PCHAN, mkarr((list)task+data));
-}
-
-triggerRandomSound(list sounds, float minVol, float maxVol){
-    llTriggerSound(llList2Key(sounds, floor(llFrand(llGetListLength(sounds)))), minVol+llFrand(maxVol-minVol));
 }
 
 integer climbOut(){
 
-	if( climb_out_to == ZERO_VECTOR || BFL&BFL_CLIMBING )
+	if( climb_out_to == ZERO_VECTOR || STATUS & PrimswimStatus$CLIMBING )
 		return FALSE;
+		
 	list tasks = [
 		SupportcubeBuildTask(Supportcube$tSetPos, [climb_out_to]),
         SupportcubeBuildTask(Supportcube$tSetRot, [climb_out_rot]),
@@ -881,7 +793,7 @@ integer climbOut(){
     ];
                 
     RLV$cubeTask(tasks);
-    BFL = BFL|BFL_CLIMBING;
+    setStatus(STATUS|PrimswimStatus$CLIMBING);
 	
 	climb_out_to = ZERO_VECTOR;
 	raiseEvent(PrimswimEvt$atLedge, "0");
@@ -895,6 +807,7 @@ onEvt( string script, integer evt, list data ){
 	#ifdef USE_CUSTOM_EVENTS
 	onCustomEvt(script, evt, data);
 	#endif
+	
 	integer d = llList2Integer(data,0);
     if( script == "#ROOT" ){
 	
@@ -913,8 +826,13 @@ onEvt( string script, integer evt, list data ){
     }
 	
 	#ifdef PrimSwimCfg$useJasInteract
-	if( script == "jas Interact" && evt == InteractEvt$onInteract && l2s(data, 0) == "_PRIMSWIM_CLIMB_" )
-		climbOut();
+	
+	if( 
+		script == "jas Interact" && 
+		evt == InteractEvt$onInteract && 
+		l2s(data, 0) == "_PRIMSWIM_CLIMB_" 
+	)climbOut();
+	
 	#endif
 	
 }
@@ -925,15 +843,13 @@ default{
     state_entry(){
 	
 		PCHAN = Primswim$partChan;
-		llSetText("", ZERO_VECTOR, 0);
-        ascale = llGetAgentSize(llGetOwner());
+		ascale = llGetAgentSize(llGetOwner());
         llStopMoveToTarget();
         setBuoyancy();
         llSensor(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI);
-        llSleep(1);
-        multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
         
-		// Slow timer at start
+		multiTimer([TIMER_SPEEDCHECK, "", .1, TRUE]);
+        // Slow timer at start
 		timerSpeed = PrimswimCfg$minSpeed;
         multiTimer([TIMER_SWIM_CHECK,"", timerSpeed, FALSE]);
 			
@@ -941,18 +857,18 @@ default{
 			llResetOtherScript("jas PrimswimAux");
         if( llGetAttached() )
 			llRequestPermissions(llGetOwner(), PERMISSION_TRACK_CAMERA);
-		memLim(1.5);
 		
     }
         
     sensor(integer total){ 
 	
         integer i;
-        for(i=0;i<total;i++){
+        for( ; i < total; ++i ){
+		
             key id = llDetectedKey(i);
-            if(llListFindList(water, [id])==-1){
-                water+=[id];
-            }
+            if( llListFindList(water, (list)id) == -1)
+                water += (list)id;
+            
         }
         llSensorRepeat(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI, 5);
 		
@@ -964,13 +880,15 @@ default{
     
     #include "xobj_core/_LM.lsl"
 
-    if(method$isCallback){return;}
-    if(method$internal){
+    if( method$isCallback )
+		return;
+		
+    if( method$internal ){
 	
-        if(METHOD == PrimswimMethod$airpockets)
+        if( METHOD == PrimswimMethod$airpockets )
 			airpockets = PARAMS;
 		
-		else if(METHOD == PrimswimMethod$swimSpeedMultiplier)
+		else if( METHOD == PrimswimMethod$swimSpeedMultiplier )
 			SSM = l2f(PARAMS, 0);
 		
 		else if( METHOD == PrimswimMethod$particleHelper )

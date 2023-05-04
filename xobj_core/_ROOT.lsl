@@ -144,7 +144,8 @@ string getToken(key senderKey, key recipient, string saltrand){
 // NOTE: you can target all scripts with SCRIPT_IS_ROOT by using the recipient "__ROOTS__". Useful for things that need to be updated in ALL spawned items in a region.
 // Disregard these, they're just preprocessor shortcuts
 #define stdObjCom(methodType, uuidOrLink, className, data) llRegionSayTo(uuidOrLink, playerChan(llGetOwnerKey(uuidOrLink)), getToken(llGetKey(), uuidOrLink, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
-#define stdOmniCom(chan, methodType, className, data) llRegionSay(chan, getToken(llGetKey(), sender, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
+#define stdOmniCom(chan, methodType, className, data) \
+	llRegionSay(chan, getToken(llGetKey(), sender, "")+(string)methodType+":"+className+llList2Json(JSON_ARRAY, data)) 
 #define stdIntCom(methodType, uuidOrLink, className, data) fwdIntCom(methodType, uuidOrLink, className, data, "")
 #define fwdIntCom(methodType, uuidOrLink, className, data, sender) llMessageLinked((integer)uuidOrLink, methodType, className+llList2Json(JSON_ARRAY, data), sender)
 #define sendCallback(sender, senderScript, method, cbdata, cb) list CB_OP = [method, cbdata, llGetScriptName(), cb]; if(llStringLength(sender)!=36){stdIntCom(METHOD_CALLBACK,LINK_SET, senderScript, CB_OP);}else{ stdObjCom(METHOD_CALLBACK,sender, senderScript, CB_OP);}
@@ -155,10 +156,12 @@ string getToken(key senderKey, key recipient, string saltrand){
 #define runMethod _rm
 // This is the standard way to run a method on a module. See the readme files on how to use it properly.
 _rm( string uuidOrLink, string className, integer method, list data, string callback ){
+
 	list op = (list)(method) + mkarr(data) + llGetScriptName() + callback;
 	if( (key)uuidOrLink )
 		return stdObjCom(RUN_METHOD, uuidOrLink, className, op);
 	stdIntCom(RUN_METHOD, uuidOrLink, className, op);
+	
 }
 
 

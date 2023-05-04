@@ -26,6 +26,15 @@
 #define MAXINT 0x7FFFFFFF
 #define fabs(X) X*(-1*((X<0.0)-(X>0.0)))
 
+// Max and Min Functions and Unit Tests
+// Emilie (Hermit Barber in World)
+// Creative Commons: Attribution, Share-alike, Non Commecial
+#define max2(x,y) \
+	( ( llAbs( (x) >= (y) ) ) * (x) ) + ( ( llAbs( (x)<(y) ) ) * (y) )
+#define min2(x,y) \
+	( ( llAbs( (x) >= (y) ) ) * (y) ) + ( ( llAbs( (x)<(y) ) ) * (x) )
+
+
 #define l2i(input, index) llList2Integer(input, index)
 #define l2v(input, index) llList2Vector(input, index)
 #define l2f(input, index) llList2Float(input, index)

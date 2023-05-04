@@ -69,6 +69,7 @@
 // #define InteractConf$raiseEvent			// Raises the InteractEvt$onInteract on interact. Data is (key)id
 // #define InteractConf$soundOnFail (str)sound // Triggers a sound if interact fails
 // #define InteractConf$soundOnSuccess (str)sound // Triggers a sound if interact is successful
+// #define InteractConf$soundPrim (int)linknr 		// Link number to play HUD sounds for interact. Default 1
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
 #define Interact$override(targ, text, callback, flags) runMethod((string)targ, "jas Interact", InteractMethod$override, [text, flags], callback)

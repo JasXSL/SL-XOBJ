@@ -411,33 +411,36 @@ multiTimer( list da ){
 		
     }
 	
+	integer trigs;
 	// Trigger (SET is not allowed to trigger)
-	while( da == [] && _T != [] && l2f(_T, 0) < time ){
+	while( da == [] && _T != [] && l2f(_T, 0) <= time ){
 		
 		list sl = llList2List(_T, 1, 4);
 		_T = llDeleteSubList(_T, 0, 4);
 		// Looping. Re-add.
 		if( l2i(sl, 3) )
 			multiTimer(sl);
+		++trigs;
 		timerEvent(l2s(sl, 0), l2s(sl, 1));
-		
 		time = llGetTime();
 		
 	}
-	
 
+	
     if( _T == [] ){
 		llSetTimerEvent(0); 
 		return;
 	}
+
 	// Timer hasn't changed
 	if( len )
 		return;
-
+	
+	time = llGetTime();
 	float nx = l2f(_T, 0)-time;
 	if( nx < 0.01 )
 		nx = 0.01;
-    llSetTimerEvent(nx);
+    llSetTimerEvent(nx+0.03); // Adjust for sim tick rate
 	
 }
 

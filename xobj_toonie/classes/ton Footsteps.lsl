@@ -71,6 +71,11 @@ init(){
 		(key)"812d7bf9-6f5d-e7cc-bcc8-9c89c94cd89a",
 		(key)"8fb332e0-7863-3b68-3b4e-0a9b184c6cd8",
 		(key)"0072c548-5102-c6dc-9a18-bb96af53eaac",
+		"HOW", // Hollow wood
+		(key)"a6ca8b74-087f-ff1b-8ebf-4647693438b2",
+		(key)"554e2b87-c32e-91ed-56b8-e2d3249af56b",
+		(key)"1255eec7-d196-82fc-9edf-d16974c4235a",
+		(key)"692eb3bc-4ca6-7857-4677-f3931d06004f",
 		"SLM", // SLIME
 		(key)"67850540-2107-1474-37d8-6cb89b2a8773",
 		(key)"8e5f4532-d073-627e-bb2c-d06a1ad3b01f",

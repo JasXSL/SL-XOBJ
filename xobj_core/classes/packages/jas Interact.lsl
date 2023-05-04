@@ -10,6 +10,10 @@ integer ALLOW_ALL_AGENTS;				// Makes all agents use a CUSTOM type interact, reg
 
 integer BFL;
 
+#ifndef InteractConf$soundPrim
+	#define InteractConf$soundPrim 1
+#endif
+
 
 #define BFL_RECENT_CLICK 1      		// Recently interacted
 #define BFL_OVERRIDE_DISPLAYED 0x2		// Override has been shown
@@ -105,11 +109,10 @@ onEvt(string script, integer evt, list data){
 			#endif
 			
 			if( !llGetListLength(actions) ){
-				return 
 				#ifdef InteractConf$soundOnFail
-					llPlaySound(InteractConf$soundOnFail, .25)
+					llLinkPlaySound(InteractConf$soundPrim, InteractConf$soundOnFail, .25, SOUND_PLAY);
 				#endif
-				;
+				return;
 			}
 			
 			integer successes;
@@ -135,7 +138,7 @@ onEvt(string script, integer evt, list data){
 					if( task == Interact$TASK_TRIGGER_SOUND )
 						llTriggerSound(sound, vol);
 					else 
-						llPlaySound(sound, vol);
+						llLinkPlaySound(InteractConf$soundPrim, sound, vol, SOUND_PLAY);
 						
 				}
 				else if(task == Interact$TASK_SITON){
@@ -172,11 +175,11 @@ onEvt(string script, integer evt, list data){
 			
 			#ifdef InteractConf$soundOnFail
 			if( !successes )
-				llPlaySound(InteractConf$soundOnFail, .25);
+				llLinkPlaySound(InteractConf$soundPrim, InteractConf$soundOnFail, .25, SOUND_PLAY);
 			#endif
 			#ifdef InteractConf$soundOnSuccess
 			if( successes )
-				llPlaySound(InteractConf$soundOnSuccess, .25);
+				llLinkPlaySound(InteractConf$soundPrim, InteractConf$soundOnSuccess, .25, SOUND_PLAY);
 			#endif
 			
 			

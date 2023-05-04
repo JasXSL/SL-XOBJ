@@ -213,7 +213,7 @@ link_message(integer link, integer nr, string s, key id){
 
 	// Run method
 	#ifndef LM_NO_METHODS
-	else if(nr==RUN_METHOD || nr == METHOD_CALLBACK){
+	else if( nr==RUN_METHOD || nr == METHOD_CALLBACK ){
 		list CB_DATA;
 		string CB = JSON_NULL;
 		
@@ -232,15 +232,16 @@ link_message(integer link, integer nr, string s, key id){
 		#else
 		list l = SCRIPT_ALIASES+_mname;
 		string _n = llGetSubString(s, 0, llSubStringIndex(s, "[")-1);
-		if(llListFindList(l, [_n]) == -1)return;
+		if( llListFindList(l, [_n]) == -1 )
+			return;
 		_mnl = llStringLength(_n);
 		#endif
 		
 		list _s_DATA = llJson2List(llGetSubString(s, llSubStringIndex(s, "["), -1));
-		integer METHOD = llList2Integer(_s_DATA, 0);
-		list PARAMS = llJson2List(llList2String(_s_DATA, 1));
-		string SENDER_SCRIPT = llList2String(_s_DATA, 2);
-		CB = llList2String(_s_DATA, 3);
+		integer METHOD = l2i(_s_DATA, 0);
+		list PARAMS = llJson2List(l2s(_s_DATA, 1));
+		string SENDER_SCRIPT = l2s(_s_DATA, 2);
+		CB = l2s(_s_DATA, 3);
 		_s_DATA = [];
 		
 		#ifdef LM_ON_METHOD

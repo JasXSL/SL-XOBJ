@@ -1,5 +1,8 @@
+/*
+	
+	
+*/
 #include "xobj_core/_ROOT.lsl"
-#include "xobj_core/classes/jas SoundspaceAux.lsl"
 #include "xobj_core/classes/jas Interact.lsl"
 #include "xobj_core/classes/jas Soundspace.lsl"
 
@@ -12,107 +15,150 @@ integer BFL;
 #define BFL_QUEUE 2			// Timer needs to update soundspace
  
 // Active sound
-string currentsound; 
+string currentSound;
 float currentsoundvol = .5;
+float preSoundVol = 0;
 
 // Active ground soundspace
 string groundsound;
 float groundsoundvol = .5;
 
 // Active override sound set via script
-key overridesound;
+string overridesound;
 float overridesoundvol = .5;
 
 float last_update;				// Last update of soundspace
 
-integer aux = 1;   
-updateSoundspace(){
-	
-	if( last_update+2 > llGetTime() ){
-	
-		BFL = BFL|BFL_QUEUE;
-		return;
-		
-	}
+// Time when last change was
+float tweenStarted;
+int aux;			// Which prim are we tweening up?
 
-    string cs = currentsound;
-    float csv = currentsoundvol;
+
+integer getAuxLink( integer pr ){
+	if( !pr )
+		return SoundSpaceConst$prim0;
+	return SoundSpaceConst$prim1;
+}
+
+updateSoundspace(){
+
+
+    string cSound;						// 
+	float cSoundVol;
+	
 	// Scripted sound override
 	if( overridesound ){
 	
-		cs = overridesound;
-		csv = overridesoundvol;
+		cSound = overridesound;
+		cSoundVol = overridesoundvol;
 		
 	}
 	// Underwater is second
     else if( BFL&BFL_IN_WATER ){
         
-		cs = SP_UNDERWATER;
-        csv = .5;
+		cSound = SP_UNDERWATER;
+        cSoundVol = .5;
 		
     }
 	// Ground sound last
     else{
         
-		csv = groundsoundvol;
-        cs = groundsound;
+		cSoundVol = groundsoundvol;
+        cSound = groundsound;
 		
     }
 	
+	if( cSound == "NULL" )
+		cSound = "";
+	
+	if( cSound == currentSound && cSoundVol == currentsoundvol )
+		return;
+	
+	// Need to wait for the current tween
+	if( llGetTime()-last_update < 1.0 && ~BFL&BFL_QUEUE ){
+		multiTimer(["Q", 0, llGetTime()-last_update+0.1, FALSE]);
+		return;
+	}
+	
+	last_update = llGetTime();
+	currentSound = cSound;
+	
+	
+	
+	
 	// Turn it off if NULL
-    if( cs == "" || cs == "NULL" ){
+    if( cSound == "" ){
 	
         clearSoundspace();
         return;
 		
     }
-	
-	if( cs == currentsound && csv == currentsoundvol )
-		return;
-	
-	last_update = llGetTime();
+
+	preSoundVol = currentsoundvol;
+	currentsoundvol = cSoundVol;
 	
 	list SS = SP_DATA+SOUNDSPACE_ADDITIONAL;
-	key sound = cs;
-	
+	key sound = cSound;
 	// See if sound is a shorthand
 	integer i;
-    for( i=0; i<llGetListLength(SS); i+=2 ){
+    for( ; i<llGetListLength(SS); i+=2 ){
 	
-        if(llList2String(SS,i) == cs)
+        if( llList2String(SS,i) == cSound )
 			sound = llList2String(SS,i+1);
 			
 	}
 	
-	SoundspaceAux$set(aux, sound, csv);
-	++aux;
-    if( aux > 2 )
-		aux = 1;
-		
+	aux = !aux;
+	
+	int link = getAuxLink(aux);
+	llLinkPlaySound(link, sound, 0.01, SOUND_LOOP);
+	tweenStarted = llGetTime();
+	
+	multiTimer(["V", 0, 0.05, TRUE]);
+	
 }
 clearSoundspace(){
 
-    currentsound = "";
+    currentSound = "";
     groundsound = "";
-	SoundspaceAux$set(0, "", 0);
+	preSoundVol = currentsoundvol;
+	currentsoundvol = 0;
+	tweenStarted = llGetTime();
+	aux = !aux;
+	llLinkStopSound(getAuxLink(aux));
+	multiTimer(["V", 0, 0.05, TRUE]);
  
 }
 
+timerEvent( string id, string data ){
 
-default
-{
-    state_entry(){
+	// Volume
+	if( id == "V" ){
 	
-        clearSoundspace(); 
-        llSetMemoryLimit(llCeil(llGetUsedMemory()*1.5));
-		llSetTimerEvent(0.5);
-        llSetStatus(STATUS_DIE_AT_EDGE, TRUE);
+		float perc = llGetTime()-tweenStarted;
+		if( perc > 1 ){
+			perc = 1;
+			multiTimer([id]);
+		}
 		
-    }
 
-    timer(){
+		integer link = getAuxLink(aux);
+		llLinkAdjustSoundVolume(link, perc*currentsoundvol);
+		link = getAuxLink(!aux);
+		llLinkAdjustSoundVolume(link, (1.0-perc)*preSoundVol);
+
+	}
 	
-        // Raycast
+	else if( id == "Q" ){
+		BFL = BFL&~BFL_QUEUE;
+		updateSoundspace();
+	}
+		
+
+	// Raycast for soundspace
+	else if( id == "T" ){
+	
+		// Raycast
         list ray = llCastRay(llGetRootPosition(), llGetRootPosition()-<0,0,10>, [RC_REJECT_TYPES, RC_REJECT_PHYSICAL|RC_REJECT_AGENTS]);
 
         if( llList2Integer(ray,-1)==1 ){
@@ -129,8 +175,7 @@ default
 				
                     groundsoundvol = v;
                     groundsound = ssp;
-                    if(currentsound == "")
-						updateSoundspace();
+					updateSoundspace();
 						
                 }
 				
@@ -138,13 +183,24 @@ default
 			
         }
 		
-		if( BFL&BFL_QUEUE && llGetTime() > last_update+2 ){
-			
-			BFL = BFL&~BFL_QUEUE;
-			updateSoundspace();
-			
-		}
-			
+	}
+
+}
+
+
+default{
+
+    state_entry(){
+	
+        clearSoundspace(); 
+        llSetMemoryLimit(llCeil(llGetUsedMemory()*1.5));
+		multiTimer(["T", 0, 0.5, TRUE]);
+        llSetStatus(STATUS_DIE_AT_EDGE, TRUE);
+		
+    }
+
+    timer(){
+        multiTimer([]);
     }
     
     #include "xobj_core/_LM.lsl" 
@@ -197,9 +253,7 @@ default
     }
 	else if( METHOD == SoundspaceMethod$reset ){
 		
-		currentsound = "";
-		groundsound = "";
-		updateSoundspace();
+		clearSoundspace();
 		
 	}
 	

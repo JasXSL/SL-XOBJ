@@ -7,20 +7,59 @@
 int BFL;
 #define BFL_WAIT_SPAWN 0x1
 
+#define TIMER_WAIT_SPAWN "a"
+#define TIMER_SWIMSTROKE "d"
+#define TIMER_FOOTSPLASH "e"
+
 list AIR_POCKETS;			// Handles all the air pockets
 key PARTICLE_HELPER;		// Active particle generator prim
 integer CACHE_CHAN; 		// Channel it communicates on
+
 
 onEvt( string script, integer evt, list data){
 	
 	if( script != "jas Primswim" )
 		return;
 		
-	if( evt == PrimswimEvt$onWaterEnter )
+	if( evt == PrimswimEvt$onWaterEnter ){
+		
+		int weight = l2i(data, 0);
+		list sounds = (list)
+			PrimswimAuxCfg$splashSmall +
+			PrimswimAuxCfg$splashMed +
+			PrimswimAuxCfg$splashBig
+		;
+		llTriggerSound(l2k(sounds, weight), 1);		
 		send(jasPrimswimParticles$onWaterEntered, data);
-	
-	else if( evt == PrimswimEvt$onWaterExit )
+		
+		multiTimer([TIMER_SWIMSTROKE, "", 1., TRUE]);
+		
+	}
+	else if( evt == PrimswimEvt$onWaterExit ){
+		
+		llTriggerSound(PrimswimAuxCfg$soundExit, .75);
 		send(jasPrimswimParticles$onWaterExited, data);
+		multiTimer([TIMER_SWIMSTROKE]);
+		
+		
+	}
+	else if( evt == PrimswimEvt$submerge && !l2i(data, 0) ){
+		
+		llTriggerSound(PrimswimAuxCfg$soundExit, .5);
+		vector pos = (vector)l2s(data, 1);
+		rotation rot = (rotation)l2s(data, 2);
+		send(jasPrimswimParticles$emerge, [pos, rot]);
+		
+	}
+	else if( evt == PrimswimEvt$feetWet ){
+	
+		int wet = l2i(data, 0);
+		if( wet )
+			multiTimer([TIMER_FOOTSPLASH, 0, PrimswimAuxCfg$footstepSpeed, TRUE]);
+		else
+			multiTimer([TIMER_FOOTSPLASH]);
+	
+	}
 	
 }
 
@@ -41,8 +80,73 @@ spawnHelper(){
 		return;
 	llRezAtRoot("PrimSwimParts", llGetRootPosition()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 1);
 	BFL = BFL|BFL_WAIT_SPAWN;
-	llSetTimerEvent(5);
+	multiTimer([TIMER_WAIT_SPAWN, 0, 5, FALSE]);
 
+}
+
+timerEvent( string id, string data ){
+
+	if( id == TIMER_SWIMSTROKE ){
+	
+		if( PrimSwimGet$status() & PrimswimStatus$SWIMMING )
+			llTriggerSound(PrimswimAuxCfg$soundStroke, llFrand(.25)+.5);
+		
+	}
+	
+	else if( id == TIMER_WAIT_SPAWN ){
+		
+		BFL = BFL&~BFL_WAIT_SPAWN;
+	
+	}
+	
+	else if( id == TIMER_FOOTSPLASH ){
+	
+		float deepest = PrimSwimGet$surfaceZ();
+		integer status = PrimSwimGet$status();
+        if( ( deepest <=0 && ~status&PrimswimStatus$HAS_WET_FEET ) || status&PrimswimStatus$IN_WATER )
+            return;
+		
+		// Splash sound
+		vector ascale = llGetAgentSize(llGetOwner());
+        integer ainfo = llGetAgentInfo(llGetOwner());
+        vector gpos = llGetRootPosition();
+        float depth = deepest-(gpos.z-ascale.z/2);
+				
+        if( ainfo&AGENT_WALKING ){
+		
+            // Trigger splash
+            if( depth < .1 ){
+
+				if( deepest <= 0 )
+					depth = 0;
+					
+				vector pos = <gpos.x,gpos.y,gpos.z-ascale.z/2+depth>;
+				send(jasPrimswimParticles$onFeetWetSplash, [0, pos]);
+				
+				list sounds = PrimswimAuxCfg$soundFootstepsShallow;
+				llTriggerSound(randElem(sounds), .75+llFrand(.25));
+                return;
+				
+            }
+            else if( depth<.4 ){
+				
+				list sounds = PrimswimAuxCfg$soundFootstepsMed;
+				llTriggerSound(randElem(sounds), .75+llFrand(.25));
+                
+			}
+            else{
+				
+				list sounds = PrimswimAuxCfg$soundFootstepsDeep;
+				llTriggerSound(randElem(sounds), .75+llFrand(.25));
+                
+			}
+			send(jasPrimswimParticles$onFeetWetSplash, [1, <gpos.x,gpos.y,deepest>]);
+			
+        }
+		
+    }
+	
+	
 }
 
 default{
@@ -56,8 +160,7 @@ default{
     }
 	
 	timer(){
-		BFL = BFL&~BFL_WAIT_SPAWN;
-		llSetTimerEvent(0);
+		multiTimer([]);
 	}
 
     object_rez(key id){ 
@@ -115,9 +218,6 @@ default{
     if( method$isCallback || !method$internal )
 		return;
 		
-	if( METHOD == PrimswimAuxMethod$spawn )
-		spawnHelper();
-	
 
     #define LM_BOTTOM 
     #include "xobj_core/_LM.lsl"

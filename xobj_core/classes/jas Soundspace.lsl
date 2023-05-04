@@ -1,17 +1,9 @@
 /*
 	
-	Installing soundspaces
-	1. Create 2 prims on your HUD create a new script in one of them and name it jas Soundspace
-	2. Include your _core.lsl file
-	3. #include "xobj_core/classes/packages/jas Soundspace.lsl"
-	4. Create a new script in the same prim as jas Soundspace, name it "jas SoundspaceAux"
-	5. At the top of your jas SoundspaceAux include your _core.lsl file
-	6. enter #define THIS_SUB 1
-	7. Enter #include "xobj_core/classes/packages/jas SoundspaceAux.lsl"
-	8. Compile
-	9. Go to the second prim and create another script named jas SoundspaceAux
-	10. Copy+paste the code from your previous jas SoundspaceAux into the new one but replace #define THIS_SUB 1 with #define THIS_SUB 2
-	11. Done!
+	Installing soundspaces (DB4)
+	1. Define SoundSpaceConst$prim0 SoundSpaceConst$prim1 as the audio tween links (integers) used to loop the sounds.
+	2. Optionally use #define SOUNDSPACE_ADDITIONAL to add more soundspaces. Stride of 2 where the first value is the shorthand like "ra" and the second the UUID
+	
 	
 	Usage:
 	To override current soundspace with the underwater soundspace, use Soundspace$dive(integer underWater)
@@ -19,6 +11,7 @@
 	See jas Interact for description setup.
 
 */
+
 
 #define SoundspaceMethod$dive 1				// Overrides any soundspace with underwater sounds
 #define SoundspaceMethod$override 2			// (key)uuid, (float)vol OR void - Overrides all other soundspaces with this or stops the override if void

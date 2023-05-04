@@ -11,15 +11,18 @@
 	2. Include your _core.lsl file
 	3. Define any config options you want
 	4. Create a function integer checkForceStop(){return FALSE;}
-	5. #include "xobj_core/classes/packages/st Primswim.lsl"
-	6. Compile
+	5. Define DB4 table: #define PrimSwimCfg$table <your table char>
+	6. #include "xobj_core/classes/packages/jas Primswim.lsl"
+	7. Compile
 	
 	
 	
 	How to install st PrimswimAux:
 	1. Create a new script, name it "jas PrimswimAux"
 	2. Include your _core.lsl file
-	3. #include "xobj_core/classes/packages/jas PrimswimAux.lsl"
+	3. 
+		#define PrimSwimCfg$table <same as jas Primswim>
+		#include "xobj_core/classes/packages/jas PrimswimAux.lsl"
 	4. Compile.
 	5. Create a new prim in world, leave it as a .5 x .5 x .5 cube.
 	6. Create a new script in it, name it whatever you want.
@@ -60,6 +63,25 @@
 */
 
 
+#define PrimSwimCfg$table$status db4$0					// (int) primswim status flags
+#define PrimSwimCfg$table$surfaceZ db4$1				// (float) water surface in region coordinates
+
+
+#define PrimSwimGet$status() ((int)db4$fget(PrimSwimCfg$table, PrimSwimCfg$table$status))
+#define PrimSwimGet$surfaceZ() ((float)db4$fget(PrimSwimCfg$table, PrimSwimCfg$table$surfaceZ))
+
+
+#define PrimswimStatus$IN_WATER 0x1
+#define PrimswimStatus$SWIMMING 0x2
+#define PrimswimStatus$CAM_UNDER_WATER 0x4
+#define PrimswimStatus$FULLY_SUBMERGED 0x8
+#define PrimswimStatus$FEET_SUBMERGED 0x10
+#define PrimswimStatus$TIMER_FAST 0x20
+#define PrimswimStatus$HAS_WET_FEET 0x40
+#define PrimswimStatus$CONTROLS_TAKEN 0x80
+#define PrimswimStatus$AT_SURFACE 0x100
+#define PrimswimStatus$CLIMBING 0x200
+
 
 #define PrimswimMethod$airpockets 1				// airpocket1, airpocket2...
 #define PrimswimMethod$swimSpeedMultiplier 2	// (float)speed | Allows you to swim faster or slower. 1 is default, higher is faster.
@@ -76,43 +98,12 @@
 // Timer tick speed
 #ifndef PrimswimCfg$maxSpeed
 	// While you are close to water
-	#define PrimswimCfg$maxSpeed .1
 #endif
 #ifndef PrimswimCfg$minSpeed
 	// While you are not close to water
-	#define PrimswimCfg$minSpeed 5
+	#define PrimswimCfg$minSpeed 2
 #endif
 
-// Sound defaults
-#ifndef PrimswimCfg$splashBig
-	#define PrimswimCfg$splashBig "cb50db39-8fb7-acd2-21e7-ef37cc2e0030"
-#endif 
-#ifndef PrimswimCfg$splashMed
-	#define PrimswimCfg$splashMed "58bab621-cbec-175a-2b55-fc2810e96d7c"
-#endif
-#ifndef PrimswimCfg$splashSmall
-	#define PrimswimCfg$splashSmall "0eccd45f-8a31-1263-c4c2-cbe80a27696b"
-#endif
-
-#ifndef PrimswimCfg$soundExit
-	#define PrimswimCfg$soundExit "2ade5961-3b75-f8cf-ca78-7f64cd804572"
-#endif
-#ifndef PrimswimCfg$soundStroke
-	#define PrimswimCfg$soundStroke "975f7f5d-320c-94a7-e31f-1cc5547081e8"
-#endif
-#ifndef PrimswimCfg$soundSubmerge
-	#define PrimswimCfg$soundSubmerge "c72c63dc-7ca2-fde7-41d8-6f63b3360820"
-#endif
-
-#ifndef PrimswimCfg$soundFootstepsShallow
-	#define PrimswimCfg$soundFootstepsShallow ["d2a62376-8569-274d-3378-b33028915845", "88179970-4fb8-9fe8-c1c0-c6c8a112ede8", "200548aa-c2c7-c32c-77fc-6ad9acef65a9"]
-#endif
-#ifndef PrimswimCfg$soundFootstepsMed
-	#define PrimswimCfg$soundFootstepsMed ["6ff37e21-b76e-45c5-bb17-0f40af500b50", "d7e3be48-bdeb-6e7e-644e-6cfaee33effc", "d69f45ec-346b-bd5c-2b62-0de4fc60a5c0", "53bbd8c6-4e49-88e0-006c-7ce6987db83c"]
-#endif
-#ifndef PrimswimCfg$soundFootstepsDeep
-	#define PrimswimCfg$soundFootstepsDeep ["21f9d648-dab6-e8aa-fc96-20f516061852", "0c21ae4c-f542-4e44-baa5-7f3d9b9600e3", "3b8f13f2-727b-e80c-7d25-28c9601bf651", "a5048f46-2b7f-8ba4-db08-e962e6c0f9c8"]
-#endif
 
 
 // Anim defaults
@@ -141,4 +132,5 @@
 #define PrimswimEvt$onWaterExit 2
 #define PrimswimEvt$atLedge 3			// [(bool)at_ledge] - Player is at a ledge and can climb out
 #define PrimswimEvt$feetWet 4			// [(bool)wet] - Feet are now wet or not
-
+//#define PrimswimEvt$status 5			// (int)status - Status changed
+#define PrimswimEvt$submerge 6			// (bool)submerged, (vec)surface_pos, (rot)surface_rot

@@ -7,8 +7,8 @@
 
 
   
-string CURRENT_WALKABLE = ""; 
-key CURRENT_PRIM = "";
+string CURRENT_WALKABLE; 
+string CURRENT_DESC;
 float CURRENT_VOL = -1;
 list SOUND_CACHE;
 key previousSound;
@@ -53,7 +53,10 @@ timerEvent(string id, string data){
 			~status&AGENT_WALKING ||
 			SOUND_CACHE == [] ||
 			BFL&BFL_SWIMMING
-		)return;
+		){
+			return;
+		}
+
 
         float vol = CURRENT_VOL;
         if( vol == -1 ){ 
@@ -87,14 +90,18 @@ timerEvent(string id, string data){
         
 		if( llList2Integer(ray, -1) <= 0 ){
 			
-			CURRENT_PRIM = "";
+			CURRENT_DESC = "";
 			return;
 			
 		}
+		
+		string desc = prDesc(llList2Key(ray,0));
+		if( desc == CURRENT_DESC )
+			return;
 	
 	
-		CURRENT_PRIM = llList2Key(ray, 0);
-		list split = explode("$$", prDesc(llList2Key(ray,0)));
+		CURRENT_DESC = llList2Key(ray, 0);
+		list split = explode("$$", desc);
 		integer found = FALSE;
 		
 		list_shift_each(split, val, 
@@ -147,7 +154,8 @@ setWalkable( string walkable ){
     
     SOUND_CACHE = [];
     integer i; integer pushing;
-    for(i=0; i<llGetListLength(SOUNDS); i++){ 
+    for( ; i < count(SOUNDS); ++i ){
+	
         integer type = llGetListEntryType(SOUNDS, i);
         if(type != TYPE_KEY){ 
             if(llList2String(SOUNDS, i) == CURRENT_WALKABLE){
@@ -158,6 +166,7 @@ setWalkable( string walkable ){
         else if(pushing){
             SOUND_CACHE += llList2Key(SOUNDS, i);
         }
+		
     }
 } 
 
@@ -173,7 +182,7 @@ default{
         init();
         setWalkable("DEFAULT");
         multiTimer([TIMER_STEP, "", FootstepsCfg$SPEED, TRUE]);
-        multiTimer([TIMER_RECHECK, "", 1, TRUE]);
+        multiTimer([TIMER_RECHECK, "", .5, TRUE]);
 		
     }
     
