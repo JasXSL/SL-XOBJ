@@ -33,7 +33,6 @@ float last_update;				// Last update of soundspace
 float tweenStarted;
 int aux;			// Which prim are we tweening up?
 
-
 integer getAuxLink( integer pr ){
 	if( !pr )
 		return SoundSpaceConst$prim0;

@@ -215,11 +215,13 @@ default{
 					float timeout = (float)method_arg(3);
 					if(type == 0)return llTriggerSound(uuid, vol);
 					
-					if(type == 1)llPlaySound(uuid, vol);
-					else if(type == 2)llLoopSound(uuid, vol);
-					if(timeout>0){
+					if( type == 1 )
+						llPlaySound(uuid, vol);
+					else if( type == 2 )
+						llLoopSound(uuid, vol);
+					if( timeout>0 )
 						multiTimer(["STOP_SOUND", "", timeout, FALSE]);
-					}
+					
 				}
 			}
 			#endif

@@ -98,6 +98,7 @@
 // Timer tick speed
 #ifndef PrimswimCfg$maxSpeed
 	// While you are close to water
+	#define PrimswimCfg$maxSpeed 0.25
 #endif
 #ifndef PrimswimCfg$minSpeed
 	// While you are not close to water

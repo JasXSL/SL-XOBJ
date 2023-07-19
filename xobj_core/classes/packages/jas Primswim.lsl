@@ -493,6 +493,9 @@ timerEvent(string id, string data){
 					sprint = -0.6;
 
 				
+				// Add whirlwind/stream
+				dif += turb+tan;
+				
 				//else debug((string)SP + " "+(string)llVecDist(SP, SP+dif)+" "+(string)(llVecDist(gpos,gpos+dif)+.5));
 				
 				float mag = llVecMag(dif); // Calculate the magnitude before messing with it
@@ -533,10 +536,9 @@ timerEvent(string id, string data){
 				
 				// XY and Z have different speeds
 				dif = (llVecNorm(dif)*ssm*SSM*(1+sprint*.5))*.75;
-				dif += turb+tan;
 				
 				
-				SP+=dif*mag;
+				SP += dif*mag;
 				
 				
 				// XY checking isn't needed because we're moving relative to our current position

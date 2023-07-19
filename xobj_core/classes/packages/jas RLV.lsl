@@ -188,7 +188,7 @@ damageSprint(float amount){
 // Events
 timerEvent(string id, string data){
 #if RLVcfg$USE_SPRINT==1
-    if(id == TIMER_SPRINT_CHECK){ 
+    if( id == TIMER_SPRINT_CHECK ){ 
 	
         integer pstatus = llGetAgentInfo(llGetOwner());
         if( pstatus&AGENT_ALWAYS_RUN && pstatus&AGENT_WALKING ){
@@ -212,7 +212,7 @@ timerEvent(string id, string data){
 		
     }
 	
-	else if(id == TIMER_SPRINT_QUICK){
+	else if( id == TIMER_SPRINT_QUICK ){
 	
         if( BFL&BFL_SPRINTING ){
 		
@@ -249,7 +249,8 @@ timerEvent(string id, string data){
     
 	
 	#ifdef RLVcfg$sprintFadeOut
-	else if(id == TIMER_SPRINT_FADE){
+	else if( id == TIMER_SPRINT_FADE ){
+	
 		float f = 0;
 		if(RLVcfg$sprintFadeOut > 0)
 			f = (float)data-(.05/RLVcfg$sprintFadeOut);
