@@ -173,7 +173,9 @@
 #define RLVevt$cam_unset 3					// void - Camera unset
 #define RLVevt$windlight_override 4			// (str)sender_script - Raised when a windlight override is received
 #define RLVevt$windlight_reset 5			// (str)sender_script - Raised when a windlight override is reset
-
+#define RLVevt$sprint_start 6				// raised when sprint start
+#define RLVevt$sprint_tick 7				// raised every 1 sec when sprinting and also on sprint start
+#define RLVevt$sprint_end 8					// raised when sprint ends
 
 // Shortcuts
 #define RLV$setFov(fov) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$setFov, (list)fov, TNN)

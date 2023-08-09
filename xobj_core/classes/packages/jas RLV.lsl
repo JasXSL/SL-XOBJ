@@ -49,6 +49,7 @@ integer BFL;
 #define TIMER_ATTACHED_CHECK "e"
 #define TIMER_INIT_DLY "f"
 #define TIMER_RESET_ATTACH_REQS "g"
+#define TIMER_SPRINT_EVT "h"
 
 int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 
@@ -149,6 +150,10 @@ startSprint(){
 		
 	multiTimer([TIMER_SPRINT_START_REGEN]);
 	BFL = BFL|BFL_SPRINT_STARTED;
+	multiTimer([TIMER_SPRINT_EVT, 0, 1, TRUE]);
+	raiseEvent(RLVevt$sprint_start, "");
+	raiseEvent(RLVevt$sprint_tick, "");
+	
 		
 	// Show the sprint bar and stop fading
 	multiTimer([TIMER_SPRINT_FADE]);
@@ -159,8 +164,6 @@ startSprint(){
 		llSetLinkAlpha(sprintPrim, 1, RLVcfg$sprintFace); 
 	#endif
 
-	
-	
 }
 
 #if RLVcfg$USE_SPRINT==1
@@ -201,16 +204,26 @@ timerEvent(string id, string data){
         }
         else{
 		
-            if(BFL&BFL_SPRINT_STARTED){
+            if( BFL&BFL_SPRINT_STARTED ){
+			
                 multiTimer([TIMER_SPRINT_QUICK]);
                 multiTimer([TIMER_SPRINT_START_REGEN, "", RLVCfg$sprintGracePeriod, FALSE]);
 				BFL = BFL&~BFL_SPRINT_STARTED;
+				multiTimer([TIMER_SPRINT_EVT]);
+				raiseEvent(RLVevt$sprint_end, "");
+				
             }
             BFL = BFL&~BFL_SPRINTING;
 			
         }
 		
     }
+	
+	else if( id == TIMER_SPRINT_EVT ){
+		
+		raiseEvent(RLVevt$sprint_tick, "");
+		
+	}
 	
 	else if( id == TIMER_SPRINT_QUICK ){
 	

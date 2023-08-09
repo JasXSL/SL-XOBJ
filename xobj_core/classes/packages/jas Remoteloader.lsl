@@ -1,67 +1,205 @@
-// Conf
-#include "xobj_core/classes/jas Remoteloader.lsl" 
-#include "xobj_core/classes/jas Attached.lsl" 
+/*
+	REMOTE_TABLE : Stores scripts with a portal and what scripts you can use the portal to defer loading to
+		Table keys follow this convention: TABLE + "." + (str)remoterUUID
+		Table value is a JSON array: [
+			(int)(llGetTime()*10),		- Last time this remoteloaded something
+			(arr)scripts
+		]
+	
+	QUEUE_TABLE : Sequential load queue. Purged when all scripts have been loaded.
+		[
+			(key)target, (str)name, (int)pin, (int)startparam
+		]
 
-#include "xobj_core/_CLASS_STATIC.lsl"
+*/
+#define USE_DB4
+#include "xobj_core/_ROOT.lsl"
 
-integer slave = 0;
-list slaves;			// [(float)time]
- 
-list delayed_callbacks; // [name, script, callback, method]
-integer dcs = 4;
+#ifndef REMOTE_TABLE
+	#error "Remoteloader requires DB4 now. Please #define REMOTE_TABLE with the table that you want to use for portal remoting."
+#endif
+#ifndef QUEUE_TABLE
+	#error "Remoteloader requires DB4 now. Please #define QUEUE_TABLE with the table that you want to use for queue storage."
+#endif
+
+
+
+
+list slaves;			// [(float)time] Cooldowns of each slave
 
 integer BFL;
-#define BFL_QUE 0x1
+#define BFL_DONE 0x1
+
 
 list queue;				// [(key)id, (str)script, (int)pin, (int)startparam]
 #define QSTRIDE 4
 
-
-next(){
-
-	if( BFL&BFL_QUE || queue == [] ){
-		
-		if( queue == [] )
-			multiTimer(["C", "", 4, FALSE]);	// Load finish timer
-		
-		return;
-	}
+// Assets with a portal in it can be used to alleviate remote loading
+key getAvailablePortal( string script, key id ){
 	
+	str regex = "^"+REMOTE_TABLE+"\\."; // Starts with TABLE followed by script and a dot
+	list keys = llLinksetDataFindKeys(regex, 0, 0);
+	float gtime = llGetTime();
 	integer i;
-	for( i=0; i<=RemoteloaderConf$slaves && queue != []; i++ ){
-	
-		// Oldest slave is still cooling down, wait
-		if(llList2Float(slaves, slave)+3.1 >= llGetTime()){
+	for(; i < count(keys); ++i ){
 		
-			BFL = BFL|BFL_QUE;
-			multiTimer(["A", "", llCeil(llList2Float(slaves, slave)+3-llGetTime()), FALSE]);
-			multiTimer(["C"]);		// Clear load finish timer
-			return;
+		string k = l2s(keys, i);
+		string data = llLinksetDataRead(k);
+		float time = (float)j(data, 0)*0.1; 	// Time is stored as an int of 10th of a second
+		key targ = llGetSubString(k, llSubStringIndex(k, ".")+1, -1);
+		
+		if( llKey2Name(targ) == "" ){
+		
+			debugCommon("[Remoter] Prune: "+k);
+			llLinksetDataDelete(k);
 			
 		}
+		// Can be used every 4 seconds.
+		else if( gtime-time > 4 && targ != id ){
+			
+			list scripts = llJson2List(j(data, 1));
+			if( ~llListFindList(scripts, (list)script) ){ // Has this script
+
+				// Mark as used
+				data = llJsonSetValue(data, (list)0, (str)floor(llGetTime()*10));
+				llLinksetDataWrite(k, data);
+				return targ;
+				
+			}
+			
+		}
+	}
+	return "";
 	
-		//qd("Loading "+llKey2Name(llList2String(queue,0))+" :: "+llList2String(queue, 1)+" with slave "+(string)slave);
-		slaves = llListReplaceList(slaves, [llGetTime()], slave, slave);
-		llMessageLinked(LINK_THIS, slave, llList2Json(JSON_ARRAY, [llList2Key(queue,0), llList2String(queue, 1), llList2Integer(queue, 2), llList2Integer(queue, 3)]), "rm_slave");
-		queue = llDeleteSubList(queue, 0, QSTRIDE-1);
-		slave++;
-		if(slave>=RemoteloaderConf$slaves) slave = 0;
-		multiTimer(["C", "", 4, FALSE]);	// load finish timer
+}
+
+int getAvailableSlave(){
+	
+	float gtime = llGetTime();
+	integer i;
+	for(; i < count(slaves); ++i ){
+		
+		if( gtime-l2f(slaves, i) > 3.1 )
+			return i;
 		
 	}
+	return -1;
+	
+}
+
+// returns an index in QUEUE_TABLE or -1 if we are done
+int getNextScriptIndex(){
+
+	db4$each(QUEUE_TABLE, idx, item, 
+		return idx;
+	)
+	return -1;
+	
+}
+
+// Checks if a remoteload already exists in queue so you do not have to be worried about causing recursions
+// Returns the index if it exists, or -1
+int getQueueIndex( key targ, string script ){
+	
+	db4$each(QUEUE_TABLE, idx, item,
+		
+		if( j(item, 0) == targ && j(item, 1) == script )
+			return idx;
+		
+	)
+	return -1;
+	
 }
 
 
+// Returns -1 on complete, 0 on all spawners busy, 1 on success
+int load(){
+
+	int next = getNextScriptIndex();
+	// Queue done. Reset.
+	if( next == -1 ){
+		
+		if( ~BFL & BFL_DONE ){
+			
+			db4$drop(QUEUE_TABLE);
+			debugUncommon("[Queue] Done!");
+			#ifdef onLoadFinish
+			onLoadFinish;
+			#endif
+			BFL = BFL|BFL_DONE;
+			
+		}
+		return -1;
+		
+	}
+	
+	BFL = BFL &~ BFL_DONE;
+	
+	list task = llJson2List(db4$get(QUEUE_TABLE, next));
+	key targ = l2k(task, 0);
+	string script = l2s(task, 1);
+	int pin = l2i(task, 2);
+	int startParam = l2i(task, 3);
+	int noRemote = l2i(task, 4);
+	
+	// First try to find a portal to defer to
+	if( !noRemote ){
+		
+		key targPortal = getAvailablePortal( script, targ );
+		if( targPortal ){
+			
+			Portal$remoteLoad( 
+				targPortal, 
+				targ, 
+				script, 
+				pin, 
+				startParam 
+			);
+			db4$delete(QUEUE_TABLE, next); // We always delete on attempt. If it fails, the target will send a new request.
+			debugUncommon("[Remoter] Remoting "+script+" from "+llKey2Name(targPortal)+" to "+llKey2Name(targ));
+			return TRUE;
+			
+		}
+		
+	}
+	
+	int slave = getAvailableSlave();
+	if( ~slave ){
+	
+		slaves = llListReplaceList(slaves, (list)llGetTime(), slave, slave);
+		llMessageLinked(LINK_THIS, slave, mkarr((list)targ + script + pin + startParam), "rm_slave");
+		db4$delete(QUEUE_TABLE, next); // We always delete on attempt. If it fails, the target will send a new request.
+		debugUncommon("[Internal] Load "+script+" via slave "+(str)slave+" to "+llKey2Name(targ));
+		return TRUE;
+		
+	}
+
+
+	debugUncommon("[Queue] Out of loaders... delaying "+(str)llGetTime()+" "+mkarr(slaves));
+	return FALSE;
+	
+}
+
+next(){
+	
+	// Need to allow events to raise. So we set a timer.
+	float t = 0.01;
+	integer l = load();
+	if( l == -1 )
+		return;
+		
+	if( !l )
+		t = 1.0; // All spawners occupied.
+		
+	multiTimer(["A", 0, t, FALSE]);
+
+}
+
 timerEvent(string id, string data){
-	if(id == "A"){
-		BFL = BFL&~BFL_QUE;
+
+	if( id == "A" )
 		next();
-	}
-	else if(id == "C"){
-		#ifdef onLoadFinish
-		onLoadFinish;
-		#endif
-	}
+	
 }
 
 
@@ -71,78 +209,106 @@ default
         llResetScript();
     }
     
-    object_rez(key id){
-        list s = llList2ListStrided(delayed_callbacks, 0,-1, 3);
-        integer pos = llListFindList(s, [llKey2Name(id)]);
-        if(~pos){
-             
-            string script = llList2String(delayed_callbacks,pos*dcs+1);
-            integer method = llList2Integer(delayed_callbacks,pos*dcs+3);
-            string callback = llList2String(delayed_callbacks, pos*dcs+2);
-            sendCallback((string)LINK_SET, script, method, id, callback);
-            delayed_callbacks = llDeleteSubList(delayed_callbacks, pos*dcs, pos*dcs+dcs-1);
-        }
-    } 
 	
 	state_entry(){
+	
 		// qd("state_entry");
 		slaves=[];
 		integer i;
-		for(i=0; i<=RemoteloaderConf$slaves; i++){
-			slaves+=[-3.0];
+		for( ; i <= llGetInventoryNumber(INVENTORY_SCRIPT); ++i ){
+			
+			str name = llGetInventoryName(INVENTORY_SCRIPT, i);
+			if( llGetSubString(name, 0, 4) == "slave" )
+				slaves += -3.0;
+			
 		}
+		debugUncommon("Found "+(str)count(slaves)+" slaves.");
+		
+		db4$drop(REMOTE_TABLE);
+		db4$drop(QUEUE_TABLE);
+		
+		llListen(RemoteloaderConst$iniChan, "", "", "");
 		
 		#ifdef stateEntry
 		stateEntry;
 		#endif
+		
+	}
+	
+	// Receive init messages from portal
+	listen( integer ch, string n, key id, string msg ){
+		idOwnerCheck
+		
+		// Portal always added
+		list scripts = "got Portal" + llJson2List(msg);
+		str label = REMOTE_TABLE + "." + (str)id;
+		llLinksetDataWrite(
+			label, 
+			mkarr((list)
+				-50 + // Can start loading instantly
+				mkarr(scripts)
+			)
+		);
+		debugCommon("[Remoter]  Adding "+llKey2Name(id)+" : "+mkarr(scripts));
+
+	
 	}
 	
     timer(){multiTimer([]);}
 
     #include "xobj_core/_LM.lsl"
-        
+        if( !method$byOwner )
+			return;
+			
         if( nr == METHOD_CALLBACK ) 
             return;
         
-            
         if( METHOD == RemoteloaderMethod$load ){
 		
 			list dta = PARAMS;
 			if( id == "" )
-				id = llList2String(dta, -1);		// Lets you override the ID to send to
+				id = llList2String(dta, -1);		// Lets you override the ID to send to. Only used internally.
 			
 			string s = llList2String(dta, 0);
-			list scripts = [s];
+			
+			list scripts = (list)s;
 			if( llJsonValueType(s, []) == JSON_ARRAY )		// Load multiple
 				scripts = llJson2List(s);
 			
-			list_shift_each(scripts, val,
-				queue+= ([id, val])+llList2List(dta, 1, 2);
-			)
+			integer i;
+			for(; i < count(scripts); ++i ){
+			
+				string script = l2s(scripts, i);
+				if( llGetInventoryType(script) != INVENTORY_SCRIPT )
+					llOwnerSay("Trying to remoteload non-existing script "+script);
+				else{
+				
+					// This exists already as a remoteloader. We should remove it or it may cause desync
+					str rl = REMOTE_TABLE+"."+(str)id;
+					if( llLinksetDataRead(rl) )
+						llLinksetDataDelete(rl);
+				
+					int exists = getQueueIndex(id, script);
+					string out = mkarr((list)
+						id +
+						script + 		// Script
+						l2i(dta, 1) +		// Pin
+						l2i(dta, 2)	+		// Start param
+						l2i(dta, 3)			// No remoter
+					);
+					if( ~exists )
+						db4$replace(QUEUE_TABLE, exists, out);
+					else
+						db4$insert(QUEUE_TABLE, out);
+					debugCommon("[Queue] Add " + llKey2Name(id)+" >> "+script);
+					
+				}
+			
+			}
+			
 			next();
 			
         }
-		
-        else if( METHOD == RemoteloaderMethod$asset )
-            llGiveInventory(id, method_arg(0));
-			
-		else if( METHOD == RemoteloaderMethod$attach ){
-		
-            //llOwnerSay("Rezzing: "+method_arg(0));
-            llRezAtRoot(method_arg(0), llGetRootPosition(), ZERO_VECTOR, ZERO_ROTATION, 1);
-            if(CB != ""){
-                delayed_callbacks += [method_arg(0), SENDER_SCRIPT, CB, METHOD];
-				return;
-			}
-			
-        }
-		else if( METHOD == RemoteloaderMethod$detach )
-			runOmniMethod("jas Attached", AttachedMethod$remove, [method_arg(0)], TNN);
-		
-        else if( METHOD == RemoteloaderMethod$rez )
-			llRezAtRoot(method_arg(0), (vector)method_arg(1), (vector)method_arg(2), (rotation)method_arg(3), (integer)method_arg(4));
-        
-        
 
     #define LM_BOTTOM  
     #include "xobj_core/_LM.lsl" 

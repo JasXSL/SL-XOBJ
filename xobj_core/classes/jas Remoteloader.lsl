@@ -13,6 +13,7 @@ default
 {
     state_entry(){llSetMemoryLimit(llGetUsedMemory()*2);}
     link_message(integer link, integer nr, string str, key id){
+    link_message(integer link, integer nr, string str, key id){
         if(id == "rm_slave"){
             if(nr == (integer)llGetSubString(llGetScriptName(), -1, -1)){
                 llRemoteLoadScriptPin(llJsonGetValue(str, [0]), 
@@ -40,25 +41,29 @@ default
 // These are identifier ints used to call methods on this class from other scripts
 // Each function you make in public methods should be listed here with it's own integer ID
 // Methods should not be negative
-#define RemoteloaderMethod$load 0		// (str)script, (int)pin, (int)startparam - Remoteloads a script onto sender. Script can also be a JSON array
-#define RemoteloaderMethod$asset 1		// (str)asset - Gives an inventory item to sender
-#define RemoteloaderMethod$attach 2		// (str)asset
-#define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam
-#define RemoteloaderMethod$detach 4		// (str)asset
+#define RemoteloaderMethod$load 0		// (str)script, (int)pin, (int)startparam, (int)no_remoter - Remoteloads a script onto sender. Script can also be a JSON array
+//#define RemoteloaderMethod$asset 1		// (str)asset - Gives an inventory item to sender
+//#define RemoteloaderMethod$attach 2		// (str)asset
+//#define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam
+//#define RemoteloaderMethod$detach 4		// (str)asset
+
+#define RemoteloaderConst$iniChan -23499578
+#define Remoteloader$portalInit( scripts ) llRegionSayTo(llGetOwner(), RemoteloaderConst$iniChan, mkarr(scripts))
+
 
 #ifndef RemoteloaderConf$slaves
 	#define RemoteloaderConf$slaves 5
 #endif
 
 // Preprocessor shortcuts
-#define Remoteloader$attach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
-#define Remoteloader$detach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
-#define Remoteloader$attachTo(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
-#define Remoteloader$detachFrom(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
+//#define Remoteloader$attach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+//#define Remoteloader$detach(asset) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
+//#define Remoteloader$attachTo(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$attach, [asset], TNN)
+//#define Remoteloader$detachFrom(target, asset) runMethod((string)target, "jas Remoteloader", RemoteloaderMethod$detach, [asset], TNN)
 
 
-#define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
-#define Remoteloader$load(script, pin, startparam) runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam], TNN)
+//#define Remoteloader$rez(obj,pos,vel,rot,sp) runMethod((string)LINK_SET, "jas Remoteloader", RemoteloaderMethod$rez, [obj,pos,vel,rot,sp], TNN)
+#define Remoteloader$load(script, pin, startparam, no_remoter) runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [script, pin, startparam, no_remoter], TNN)
 #define Remoteloader$autoLoadThis() \
 	{int _pin = (int)llFrand(MAXINT); llSetRemoteScriptAccessPin(_pin); \
 	runMethod((string)llGetOwner(), "jas Remoteloader", RemoteloaderMethod$load, [cls$name, _pin, 1], TNN);}

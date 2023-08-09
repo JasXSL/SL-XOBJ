@@ -6,7 +6,7 @@
 	This is a script that lets an object temp attach to you. It also serves as a #ROOT script.
 	Setup:
 	1. Create a prim in your target's HUD.
-	2. Install the "jas Remoteloader" module into that prim.
+	2. Install the "jas Remoteloader" module into the HUD.
 	3. Create a new script in the prim, make sure it's transferrable.
 	4. Name the new script "jas Attached"
 	5. Open the script and uncheck "running".
@@ -14,7 +14,7 @@
 	7. Drag that script into your inventory.
 	8. From your inventory, drag the script into the object you want to temp-attach when rezzed. (Recommended 
 	9. Pick up that item to inventory and put it in the same prim as the "jas Remoteloader" script.
-	10. Rez the object with either Remoteloader$attach((string)objName) or you can use llRezObject or llRezAtRoot using start parameter 1.
+	10. Rez the object with llRezAtRoot using start parameter 1.
 	11. The object should now attach.
 	
 	
