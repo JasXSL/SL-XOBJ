@@ -204,7 +204,10 @@ default{
 			#endif
 			#endif
 			
-		}	 
+		}
+		else{
+			llResetScript();
+		}
 		
     }
     
@@ -219,7 +222,7 @@ default{
 		if(llGetStartParameter() == 2){
             llOwnerSay("@acceptpermission=add");
             runOmniMethod(cls$name, AttachedMethod$remove, [llGetObjectName()], "");
-            raiseEvent(evt$SCRIPT_INIT, "");
+            raiseEvent(evt$SCRIPT_INIT, "1");
             multiTimer([TIMER_CHECK_ATTACH, "", 1, TRUE]);
 			#ifdef Attached$onSpawn
 			Attached$onSpawn;
@@ -250,6 +253,9 @@ default{
 			Attached$onStateEntry
 		#endif
 		
+		// Raise init with non-live if not live
+		if( !llGetStartParameter() )
+			raiseEvent(evt$SCRIPT_INIT, "0");
 		
     }
 	#ifdef Attached$automateMeshAnim

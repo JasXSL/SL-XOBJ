@@ -46,6 +46,7 @@ default
 //#define RemoteloaderMethod$attach 2		// (str)asset
 //#define RemoteloaderMethod$rez 3		// (str)obj, (vec)pos, (vec)vel, (rot)rotation, (int)startparam
 //#define RemoteloaderMethod$detach 4		// (str)asset
+#define RemoteloaderMethod$debug 5			// Dumps information about the load queue
 
 #define RemoteloaderConst$iniChan -23499578
 #define Remoteloader$portalInit( scripts ) llRegionSayTo(llGetOwner(), RemoteloaderConst$iniChan, mkarr(scripts))

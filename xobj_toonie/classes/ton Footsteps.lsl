@@ -128,7 +128,12 @@ init(){
 		(key)"e037874e-db50-e4f2-8bca-8e24d24aa602",
 		(key)"393191af-41dc-8b9c-5c96-bda9a47ccaa2",
 		(key)"f1927a9b-0890-cbb8-44ea-dce2c7545b28",
-		(key)"1b087621-fbcd-3281-488f-1a9d8016831b"
+		(key)"1b087621-fbcd-3281-488f-1a9d8016831b",
+		"PLS", // Plastic
+		(key)"9d99b483-85b5-2b83-f8c0-a8fe6b61f8de", \
+		(key)"9b311697-343d-e37a-ebe6-04e10952885f", \
+		(key)"12b95171-5463-0f5e-58e7-9e5e1e611182", \
+		(key)"e3f1b064-f9a1-9ec0-bd8f-79f25c03d8ba" \
 	];
 	
 	COLS = [

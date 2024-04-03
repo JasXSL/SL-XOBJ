@@ -41,6 +41,7 @@ integer BFL;
 #define BFL_SPRINTING 1
 #define BFL_RUN_LOCKED 2
 #define BFL_SPRINT_STARTED 0x4
+#define BFL_CAM_LOCKED 0x8
 
 #define TIMER_SPRINT_CHECK "a"
 #define TIMER_SPRINT_QUICK "b"
@@ -50,6 +51,7 @@ integer BFL;
 #define TIMER_INIT_DLY "f"
 #define TIMER_RESET_ATTACH_REQS "g"
 #define TIMER_SPRINT_EVT "h"
+#define TIMER_CAM_CHECK "i"
 
 int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 
@@ -276,6 +278,12 @@ timerEvent(string id, string data){
 	else
 #endif
 
+#if RLVcfg$USE_CAM==1
+	if( id == TIMER_CAM_CHECK && ~llGetAgentInfo(llGetOwner()) & AGENT_SITTING ){
+		RLV$clearCamera(LINK_THIS);		
+	}
+#endif
+
 #if RLVcfg$USE_KEEPATTACH==1
     if(id == TIMER_ATTACHED_CHECK){
         objarr_each(KEEP_ATTACHED, i, k, val, {
@@ -299,6 +307,19 @@ timerEvent(string id, string data){
     }
 } 
 
+int CHR; // current chat redir
+redirSpeech( int ch ){
+	
+	str output;
+	if( CHR )
+		output += "redirchat:"+(str)CHR+"=rem,";
+	if( ch )
+		output += "redirchat:"+(str)ch+"=add";
+	CHR = ch;
+	if( output )
+		llOwnerSay("@"+output);
+
+}
 
 
 default {
@@ -434,7 +455,10 @@ default {
 			if(~llGetPermissions()&PERMISSION_CONTROL_CAMERA)return;
 			vector pos = (vector)method_arg(0);
 			rotation rot = (rotation)method_arg(1);
+			int flags = l2i(PARAMS, 2);
             if(pos == ZERO_VECTOR){
+				BFL = BFL&~BFL_CAM_LOCKED;
+				multiTimer(["SC"]);
 				raiseEvent(RLVevt$cam_unset, "");
 				return llClearCameraParams();
 			}
@@ -446,6 +470,9 @@ default {
 				CAMERA_POSITION, pos, // region relative position
 				CAMERA_POSITION_LOCKED, TRUE // (TRUE or FALSE)
 			]);
+			BFL = BFL|BFL_CAM_LOCKED;
+			if( flags & RLVMethod$staticCamera$flags$clearOnUnsit )
+				multiTimer([TIMER_CAM_CHECK, 0, 0.25, TRUE]);
 		}
 		#endif
 			
@@ -615,6 +642,13 @@ default {
 		if( METHOD == RLVMethod$setFov )
 			setFoV(l2f(PARAMS, 0));
 		#endif
+		
+		if( METHOD == RLVMethod$redirectSpeech ){
+		
+			int ch = l2i(PARAMS, 0);
+			redirSpeech(ch);
+			
+		}
             
         #if RLVcfg$USE_SPRINT==1
         if( METHOD == RLVMethod$sprintFadeModifier )

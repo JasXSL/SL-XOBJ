@@ -26,6 +26,9 @@
 #define MAXINT 0x7FFFFFFF
 #define fabs(X) X*(-1*((X<0.0)-(X>0.0)))
 
+// Ternary operation that works for floats, ints and vectors
+#define ternaryNum(statement, a, b) (a*((statement)!=0))+(b*(!(statement)))
+
 // Max and Min Functions and Unit Tests
 // Emilie (Hermit Barber in World)
 // Creative Commons: Attribution, Share-alike, Non Commecial
@@ -190,7 +193,19 @@ list bitArrToList(integer n, integer bytesize){
 	#define mkarr(data) llList2Json(JSON_ARRAY, data)
 	
 
-	
+
+// Get+set material macros for use like llSetLinkPrimitiveParamsFast(gsmColor(link, face, color))
+// alternative to PRIM_COLOR for materials. Note that using more than one face at a time is destructive if there's more than one material
+#define gsmColor(link, face, color, alpha) (list)PRIM_GLTF_BASE_COLOR + face + llListReplaceList(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face), (list)(color) + (alpha), 4,5)
+#define gsmTexture(link, face, texture) (list)PRIM_GLTF_BASE_COLOR + face + llListReplaceList(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face), (list)(texture), 0,0)
+#define gsmFullbright(link, face, color) (list)PRIM_GLTF_EMISSIVE + face + llListReplaceList(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_EMISSIVE + face), (list)(color), 4,4)
+
+// Show or hide object by using materials. Show expects the material to have no alpha
+#define hideMaterial(link, face) llSetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face + l2k(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face), 0) + "" + "" + "" + "" + 0 + PRIM_GLTF_ALPHA_MODE_MASK + 1.0 + FALSE)
+#define showMaterial(link, face) llSetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face + l2k(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face), 0) + "" + "" + "" + "" + 1 + 0 + 0 + FALSE)
+
+
+//#define gsmNormalOffset(link, face, repeats, offsets, rot) PRIM_GLTF_NORMAL + face + llListReplaceList(llGetLinkPrimitiveParams(link, (list)PRIM_GLTF_BASE_COLOR + face), (list)alpha, 5,5)
 
 
 #define PP(link, params) llSetLinkPrimitiveParamsFast(link, params)

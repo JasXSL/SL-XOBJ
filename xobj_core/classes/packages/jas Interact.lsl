@@ -142,7 +142,11 @@ onEvt(string script, integer evt, list data){
 						
 				}
 				else if(task == Interact$TASK_SITON){
-					RLV$sitOn(targ, FALSE); 
+
+					key t = targ;
+					if( l2i(split, 1) )
+						t = prRoot(t);
+					RLV$sitOn(t, FALSE); 
 				} 
 				else if(task == Interact$TASK_CLIMB){ 
 					Climb$start(targ, 
@@ -349,7 +353,7 @@ seek( list sensed ){
 		if( ~BFL&BFL_OVERRIDE_DISPLAYED ){
 			
 			BFL = BFL|BFL_OVERRIDE_DISPLAYED;
-			onDesc(llGetOwner(), llList2String(OVERRIDE, 0));
+			onDesc(llGetOwner(), llList2String(OVERRIDE, 0), 0);
 			
 		}
 		
@@ -404,15 +408,17 @@ seek( list sensed ){
 	// Send description
 	list d = explode("$$",targDesc);
 	string dout = targDesc;
+	int flags;
 	list_shift_each(d, val, 
 		list spl = explode("$",val);
 		if( l2s(spl, 0) == "D" ){
 			dout = l2s(spl, 1);
+			flags = l2i(spl, 2);
 			d = [];
 		}	
 	)
 	
-	onDesc(targ, dout);
+	onDesc(targ, dout, flags);
 	
 	
 
@@ -445,11 +451,12 @@ default{
 			
 			key id = llDetectedKey(i);
 			string desc = prDesc(id);
-			if( llGetSubString(desc, 0,1) == "D$" && !l2i(llGetObjectDetails(id, (list)OBJECT_PHANTOM), 0) ){
+			list spl = explode("$", desc);
+			int phantom = l2i(llGetObjectDetails(id, (list)OBJECT_PHANTOM), 0) ;
+			if( llGetSubString(desc, 0,1) == "D$" && (!phantom || l2i(spl, 2) & Interact$TASK_DESC$ALLOW_PHANTOM) ){
 				
-				list spl = explode("$", desc);
-				if( ~l2i(spl, 2) & Interact$TASK_DESK$NO_SENSOR )
-					near += id;
+				if( ~l2i(spl, 2) & Interact$TASK_DESC$NO_SENSOR )
+					near += (list)id;
 				
 			}
 				

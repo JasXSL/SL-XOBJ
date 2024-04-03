@@ -76,6 +76,11 @@ timerEvent( string id, string data ){
 		toggleAnim(l2s(d, 0), l2i(d, 1), l2f(d, 2), l2i(d, 3), 0);
 		
 	}
+	#ifdef onCustomTimer
+	else if( pre == "c_" ){
+		onCustomTimer(id, data);
+	}
+	#endif
 	
 	#ifdef AnimHandlerConf$useAudio
 	if( id == "STOP_SOUND" )
@@ -173,6 +178,8 @@ default{
 				if( flags&jasAnimHandler$animFlag$randomize )
 					anims = [randElem(anims)];
 				
+				// Anims set as fast
+				list toStart; list toStop;
 				integer i;
 				for( ; i<llGetListLength(anims); ++i ){
 				
@@ -198,9 +205,25 @@ default{
 						
 					}
 
-					toggleAnim(a, s, d, f, predelay);
+					if( f & jasAnimHandler$animFlag$fast ){
+						
+						if( start )
+							toStart += a;
+						else
+							toStop += a;
+					
+					}
+					else
+						toggleAnim(a, s, d, f, predelay);
+					
 					
 				}
+				
+				for( i = 0; i < count(toStart); ++i )
+					animOn(l2s(toStart, i));
+				for( i = 0; i < count(toStop); ++i )
+					animOff(l2s(toStop, i));
+				
 				
 				
 					

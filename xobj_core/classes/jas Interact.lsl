@@ -14,7 +14,7 @@
 	2. Include your _core.lsl file
 	3. Define any config overrides you want
 	4. Create a new function: integer onInteract(key obj, string task, list params){} - Return TRUE if successful
-	5. Create a new function: onDesc(key obj, string text)
+	5. Create a new function: onDesc(key obj, string text, int flags)
 	6. Create a new function: integer preInteract(key obj)
 	7. Create a new function: onInit(){}
 	8. #include "xobj_core/classes/packages/jas Interact.lsl"
@@ -38,12 +38,16 @@
 //D$Climb$$CL$<0,.7,.7,0>$c_p$c_a$c_a$ $ $<-5,-.9,0>,<-5,-.9,0>,<5,-.9,0>,<5,-.9,0>
 //D$Climb$$CL$<0,0,-.7,.7>$l_p$l_a$l_a$l_d$ $<0,.5,-.5>,<0,.5,-.5>,<0,.5,.8>,<0,-.2,1.5>
 #define Interact$TASK_DESC "D"				// [(str)text,(int)flags] - Text that shows on your HUD
-	#define Interact$TASK_DESK$NO_SENSOR 0x1			// Prevent use of sensor, allowing only raycast to detect this
+	#define Interact$TASK_DESC$NO_SENSOR 0x1			// Prevent use of sensor, allowing only raycast to detect this
+	#define Interact$TASK_DESC$ALLOW_PHANTOM 0x2		// Allow phantom detection via sensor.
+	#define Interact$TASK_DESC$NO_ACTION 0x4			// Not used internally but can be used in onDesc to mark that we should not use [E].
+	
+	
 #define Interact$TASK_TELEPORT "P"			// [(vec)offset] - Teleports you
 #define Interact$TASK_INTERACT "I"			// NULL - Sends an interact com to the object
 #define Interact$TASK_TRIGGER_SOUND "T"		// [(key)uuid, (float)vol=1]
 #define Interact$TASK_PLAY_SOUND "S"		// [(key)uuid, (float)vol=1]
-#define Interact$TASK_SITON "SO"			// NULL - Calls RLV to sit on the object, does not use cube
+#define Interact$TASK_SITON "SO"			// (bool)root - Calls RLV to sit on the prim (or root prim if root is true), does not use cube
 #define Interact$TASK_CLIMB "CL"			// (rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (CSV)nodes, (float)climbspeed
 #define Interact$TASK_WATER "WT"			// (vec)stream, (float)cyclone, (float)swimspeed_modifier, (str)windlight_preset
 #define Interact$TASK_SOUNDSPACE "SS"		// (str)name, (float)vol
@@ -53,6 +57,7 @@
 
 #define InteractEvt$TP 1					// NULL - Raised when a TP task is raised
 #define InteractEvt$onInteract 2			// (key)targ OR custom - Not built in by default, you can raise this manually if you want or define InteractConf$raiseEvent
+#define InteractEvt$custom 3				// ... - Can be manually raised by the user who implements this script, generally in onInteract
 
 // * Implemented by default. Though you might need to install a module for it.
 

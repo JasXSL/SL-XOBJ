@@ -19,6 +19,7 @@
 //#define onAnim( anim, data ) handleAnim( string anim, list data ){} - Use with AnimHandlerConf$automateMeshAnim to get an event when anim is received
 //#define AnimHandlerConf$beforeAnim( str anim ) - Use a function or expression that returns true/false. If false, it prevents the anim
 // Events are not captured by default so you can use #define USE_EVENTS and onEvt like normal
+//#define onCustomTimer( id, data ) - Can set custom timers. Must start with "c_" ex multiTimer(["c_myTimer", 0, 1, FALSE])
 
 #define AnimHandlerMethod$anim 0			// (str)|(arr)anim, (int)start, (float)replicate_dly, (float)duration, (int)flags
 											// Anim can be an array of multiple animations to start/stop. 
@@ -35,6 +36,8 @@
 	#define jasAnimHandler$animFlag$stopOnMove 0x1			// Stops the animation when the avatar moves
 	#define jasAnimHandler$animFlag$randomize 0x2			// Picks one random element from anim instead of playing all
 	#define jasAnimHandler$animFlag$stopOnUnsit 0x4			// Stops the animation if the avatar isn't sitting
+	#define jasAnimHandler$animFlag$fast 0x8				// Disables stopOnMove, stopOnUnsit, replicate_dly, and duration to trigger the animation ASAP. WARNING: Does not check anim exitence and may throw script errors if the animation is missing.
+	#define jasAnimHandler$animFlag$restart 0x10			// Used in animesh forks of this script.
 	
 #define AnimHandlerMethod$remInventory 1	// [(arr)anims]
 #define AnimHandlerMethod$sound 2			// [(key)sound, (float)vol, (int)type, (float)duration] - sending a non-key sound stops. Type of 0 is trigger, 1 is play and 2 is loop. If duration is > 0 then it will llStopSound after that time.. Requires AnimHandlerConf$useAudio defined

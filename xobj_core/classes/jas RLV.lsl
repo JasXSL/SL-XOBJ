@@ -138,6 +138,7 @@
 #define RLVMethod$addSprint 16			// (float)perc
 #define RLVMethod$turnTowards 17		// (vec)region_pos - Faces the avatar towards a location
 #define RLVMethod$staticCamera 18		// (vec)region_pos, (rot)rotation - Forces camera to position and rot. If region_pos is 0 it clears
+	#define RLVMethod$staticCamera$flags$clearOnUnsit 0x1		// Clear camera when the player is not sitting
 #define RLVMethod$reset 19				// void - Resets the script, internal only
 
 #define RLVMethod$setWindlight 20		// (obj)settings. Sets windlight settings. Accepts the following parameters:
@@ -166,6 +167,7 @@
 
 */
 #define RLVMethod$setFov 21					// float fov. Use 0 to reset
+#define RLVMethod$redirectSpeech 22			// (int)chan - 0 turns off. Redirects all speech to a channel.
 
 // Events
 #define RLVevt$supportcubeSpawn 1			// (key)id
@@ -193,7 +195,8 @@
 #define RLV$targSitOn(targ, uuid, prevent_unsit) runMethod(targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$targUnsit(targ, override) runMethod(targ, "jas RLV", RLVMethod$unsit, [override], TNN)
 #define RLV$setCamera(targ, pos, rot) runMethod((string)targ, "jas RLV", RLVMethod$staticCamera, [pos, rot], TNN)
-#define RLV$clearCamera(targ) runMethod(targ, "jas RLV", RLVMethod$staticCamera, [], TNN)
+#define RLV$setCameraFull(targ, pos, rot, flags) runMethod((string)targ, "jas RLV", RLVMethod$staticCamera, [pos, rot, flags], TNN)
+#define RLV$clearCamera(targ) runMethod((str)targ, "jas RLV", RLVMethod$staticCamera, [], TNN)
 #define RLV$setWindlight(targ, settings) runMethod(targ, "jas RLV", RLVMethod$setWindlight, [settings], TNN)
 
 #define RLV$limitCamDist(limit) runMethod((string)LINK_ROOT, "jas RLV", RLVMethod$limitCamDist, [limit], TNN)
@@ -204,6 +207,7 @@
 #define RLV$sitTargOn(targ, uuid, prevent_unsit) runMethod((string)targ, "jas RLV", RLVMethod$sitOn, [uuid, prevent_unsit], TNN)
 #define RLV$unsitTarg(targ, override) runMethod((string)targ, "jas RLV", RLVMethod$unsit, [override], TNN)
 #define RLV$setSprintPercent(targ, perc) runMethod((str)targ, "jas RLV", RLVMethod$setSprintPercent, [perc], TNN)
+#define RLV$redirectSpeech(targ, chan) runMethod((str)targ, "jas RLV", RLVMethod$redirectSpeech, (list)(chan), TNN)
 
 #define RLV$reset() runMethod((str)LINK_ROOT, "jas RLV", RLVMethod$reset, [], TNN)
 

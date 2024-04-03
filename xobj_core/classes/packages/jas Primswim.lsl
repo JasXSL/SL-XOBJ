@@ -192,6 +192,9 @@ enterWater(){
 	    
 	vector gpos = llGetRootPosition();
 	gpos.z = deepest+0.05;
+	#ifdef onWaterEnter
+		onWaterEnter
+	#endif
     raiseEvent(PrimswimEvt$onWaterEnter, mkarr((list)weight + gpos));
 	debugUncommon("Entered water");
 
@@ -214,7 +217,9 @@ exitWater(){
     setStatus(STATUS&~PrimswimStatus$FULLY_SUBMERGED);
     
     raiseEvent(PrimswimEvt$onWaterExit, "");
-	
+	#ifdef onWaterExit
+		onWaterExit
+	#endif
 
 	
     setBuoyancy();

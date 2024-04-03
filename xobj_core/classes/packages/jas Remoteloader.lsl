@@ -140,7 +140,7 @@ int load(){
 	string script = l2s(task, 1);
 	int pin = l2i(task, 2);
 	int startParam = l2i(task, 3);
-	int noRemote = l2i(task, 4);
+	int noRemote = l2i(task, 4) || ~llListFindList(NO_DEFER, (list)script);
 	
 	// First try to find a portal to defer to
 	if( !noRemote ){
@@ -263,6 +263,13 @@ default
         if( nr == METHOD_CALLBACK ) 
             return;
         
+		if( METHOD == RemoteloaderMethod$debug ){
+			qd("== Remoteloader queue ==");
+			db4$each(QUEUE_TABLE, idx, item, 
+				qd((str)idx+". "+item);
+			)
+		}
+		
         if( METHOD == RemoteloaderMethod$load ){
 		
 			list dta = PARAMS;

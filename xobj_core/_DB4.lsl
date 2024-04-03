@@ -37,7 +37,7 @@
 #define db4$delete(table, index) llLinksetDataDelete(table+llChar(db4$ofs+index))
 #define db4$replace(table, index, data) llLinksetDataWrite(table+llChar(db4$ofs+index), (str)(data))
 // // Todo: replaced with in future: llLinksetDataDeleteFound("^"+table+".{1}$", "")
-#define db4$drop(table) _4d(table)
+#define db4$drop(table) llLinksetDataDeleteFound("^"+table+".{1}$", "") //_4d(table)
 
 // These are faster than above by using a precalculated index char
 #define db4$fget(table, idxChar) llLinksetDataRead(table+idxChar)
@@ -72,6 +72,7 @@ integer _4i( string table, string data ){
 // NOTE: USE THE MACROS ABOVE. NOT THESE.
 
 // Drops a DB4 table
+/*
 _4d( string t ){
     
 	list found; integer i;
@@ -81,6 +82,8 @@ _4d( string t ){
 	}
     
 }
+*/
+
 
 
 dumpLSD(){
