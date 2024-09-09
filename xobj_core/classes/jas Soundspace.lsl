@@ -39,6 +39,10 @@
 #define SP_OCEAN "oc"
 #define SP_OCEAN_INDOORS "occ"
 #define SP_BATTLE "bat"
+#define SP_JUNGLE_OCEAN "jo"
+#define SP_JUNGLE_OCEAN_NIGHT "jon"
+#define SP_JUNGLE_OCEAN_INDOOR "joi"
+#define SP_JUNGLE_OCEAN_NIGHT_INDOOR "joni"
 
 // 2-strided list of soundspaces if you want to add more
 #define SP_DATA [ \
@@ -62,7 +66,11 @@
 	SP_TOWN, "1d864bd6-a128-8b97-738a-60ca23e6fdc4", \
 	SP_OCEAN, "4a31d167-d280-88e5-1a86-f6e1e9bf8b11", \
 	SP_OCEAN_INDOORS, "dee10385-49f7-ec47-b0fd-ab6c57428d6a", \
-	SP_BATTLE, "89c339ef-007c-2202-5ed8-b26de682688f" \
+	SP_BATTLE, "89c339ef-007c-2202-5ed8-b26de682688f", \
+	SP_JUNGLE_OCEAN, "2dbc662c-403e-84a9-1eb3-c2177ca44461", \
+	SP_JUNGLE_OCEAN_NIGHT, "f23a59f4-b56d-de85-ebc0-3865d86245f5", \
+	SP_JUNGLE_OCEAN_INDOOR, "f4629595-8025-6ed8-4652-9c5dd0778ad5", \
+	SP_JUNGLE_OCEAN_NIGHT_INDOOR, "4e59e8b7-9ee1-eea8-6187-a4c7f5080670" \
 ]
 
 

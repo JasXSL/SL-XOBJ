@@ -30,7 +30,7 @@ key real_key;						// If ROOT is used, then this is the sublink. You can use thi
 integer held;
 vector rayPos;						// Position of last ray hit
 
-list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB, (int)flags]
+list OVERRIDE;						// [(str)Override_text, (key)sender, (str)senderScript, (str)CB, (int)overrideFlags, (int)descFlags]
 list ON_INTERACT = [];				// (str)id, (str)datastring - Stuff to be run on interact
 
 
@@ -91,11 +91,18 @@ onEvt(string script, integer evt, list data){
 			, FALSE]);
 			
 			
-			if(OVERRIDE){
+			if( OVERRIDE ){
 				
 				onInteract("", llList2String(OVERRIDE, 0), [], ZERO_VECTOR);						// Always run this before
-				sendCallback(llList2Key(OVERRIDE, 1), llList2String(OVERRIDE, 2), InteractMethod$override, mkarr([llList2String(OVERRIDE, 0)]), llList2String(OVERRIDE, 3));
+				sendCallback(
+					l2k(OVERRIDE, 1), 
+					l2s(OVERRIDE, 2), 
+					InteractMethod$override, 
+					mkarr((list)l2s(OVERRIDE, 0)), 
+					l2s(OVERRIDE, 3)
+				);
 				return;
+				
 			}
 			
 			
@@ -149,17 +156,12 @@ onEvt(string script, integer evt, list data){
 					RLV$sitOn(t, FALSE); 
 				} 
 				else if(task == Interact$TASK_CLIMB){ 
-					Climb$start(targ, 
-						(rotation)llList2String(split,1), // Rot offset 
-						llList2String(split,2), // Anim passive
-						llList2String(split,3), // Anim active
-						llList2String(split,4), // anim_active_down, 
-						llList2String(split,5), // anim_dismount_top, 
-						llList2String(split,6), // anim_dismount_bottom, 
-						llList2String(split,7), // nodes, 
-						llList2String(split,8), // Climbspeed
-						llList2String(split,9), // onStart
-						llList2String(split,10) // onEnd
+					runMethod(
+						(string)LINK_SET, 
+						"jas Climb", 
+						ClimbMethod$start, 
+						(list)targ + llDeleteSubList(split, 0, 0), 
+						TNN
 					);
 				}		
 				else
@@ -187,10 +189,15 @@ onEvt(string script, integer evt, list data){
 			#endif
 			
 			
-		}else if(evt == evt$BUTTON_HELD_SEC){
+		}else if( evt == evt$BUTTON_HELD_SEC ){
+			
 			integer btn = llList2Integer(data, 0);
-			if(btn == CONTROL_UP)held = llList2Integer(data, 1);
-		}else if(evt == evt$BUTTON_PRESS && llList2Integer(data,0)&CONTROL_UP)held = 0;
+			if(btn == CONTROL_UP)
+				held = llList2Integer(data, 1);
+				
+		}else if(evt == evt$BUTTON_PRESS && llList2Integer(data,0)&CONTROL_UP){
+			held = 0;
+		}
     }
 	
 	#ifdef InteractConf$usePrimSwim
@@ -353,11 +360,11 @@ seek( list sensed ){
 		if( ~BFL&BFL_OVERRIDE_DISPLAYED ){
 			
 			BFL = BFL|BFL_OVERRIDE_DISPLAYED;
-			onDesc(llGetOwner(), llList2String(OVERRIDE, 0), 0);
+			onDesc(llGetOwner(), l2s(OVERRIDE, 0), l2i(OVERRIDE, 5));
 			
 		}
 		
-		if( l2i(OVERRIDE, 4)&Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == "" )
+		if( l2i(OVERRIDE, 4) & Interact$OF_AUTOREMOVE && llKey2Name(l2k(OVERRIDE, 1)) == "" )
 			OVERRIDE = [];
 			
 		return;
@@ -486,14 +493,21 @@ default{
         return;
     }
         
-	if(METHOD == InteractMethod$override){
+	if( METHOD == InteractMethod$override ){
 	// Clear override displayed
 		BFL = BFL&~BFL_OVERRIDE_DISPLAYED;
 			
 		if(method_arg(0) == "")
 			OVERRIDE = [];
 		else{
-			OVERRIDE = [method_arg(0), id, SENDER_SCRIPT, CB, l2i(PARAMS, 1)];
+			OVERRIDE = [
+				method_arg(0), 	// label 
+				id, 			// object that requested it
+				SENDER_SCRIPT, 	// script that requested
+				CB, 			// callback
+				l2i(PARAMS, 1),	// override flags
+				l2i(PARAMS, 2)	// desc flags
+			];
 		}
 		
 		return;

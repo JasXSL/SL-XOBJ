@@ -59,66 +59,10 @@ integer BF_COMBAT;
 #define BFC_ATTACK_LINEDUP 2
 
 
-// Checks if the object the script is in is intersecting id and returns the surface Z coordinate at that location
-float waterZ(vector userPos, key id, integer inverse){
-        vector vPos = userPos;
-        
-        list d = llGetObjectDetails(id, [OBJECT_POS, OBJECT_ROT]);
-        vector gpos = llList2Vector(d,0);
-        if(gpos == ZERO_VECTOR)return -1;
-        rotation grot = llList2Rot(d,1);
-        list bb = llGetBoundingBox(id);
-        
-        vector v1 = llList2Vector(bb,0);
-        vector v2 = llList2Vector(bb,1);
-        
-        vPos = vPos-gpos;
-        
-        float fTemp;
-        // Order in size so v2 is always greater
-        if (v1.x > v2.x){fTemp = v2.x;v2.x = v1.x;v1.x = fTemp;}
-        if (v1.y > v2.y){fTemp = v2.y;v2.y = v1.y;v1.y = fTemp;}
-        if (v1.z > v2.z){fTemp = v2.z;v2.z = v1.z;v1.z = fTemp;}
-        
-        // Adjust the point to object rotation
-        vPos/=llList2Rot(d,1);
-        if (vPos.x < v1.x || vPos.y < v1.y || vPos.z < v1.z || vPos.x > v2.x || vPos.y > v2.y || vPos.z > v2.z)return 0;
-        
-        vector scale = <v2.x-v1.x, v2.y-v1.y, v2.z-v1.z>*.5;
-        if(inverse)scale.z=-scale.z;
-        vector offset = userPos-gpos;
-        offset.z = 0;
-        offset*=grot;
-        offset.z+=scale.z;
-        float ret = gpos.z+offset.z;
-        return ret;
-}
 
 
-// -1 = is submerged
-// 0 = not submerged (linden air)
-// anything else = global Z for where bubble begins
-float pointSubmerged(vector point){
 
-    integer i; float submerged = 0;
-    float s; float vs;
-    for(i=0;i<llGetListLength(water);i++){
-        if((vs = waterZ(point,llList2Key(water,i), FALSE))>0){
-            submerged = -1;
-            i = 9000;
-        }
-    }
-    
-    for(i=0; i<llGetListLength(airpockets); i++){
-	
-        if((s=waterZ(point, llList2Key(airpockets, i), TRUE))>0)
-            return s;
-        
-    }
-     
-    return submerged;
-	
-}
+
 
 updateAnimstate(){
 
@@ -274,11 +218,15 @@ setBuoyancy(){
 
 vector ascale;
 integer CONTROL;
-list water;
+list WATER;			// UUIDs of water
 list airpockets;
 float deepest;		// Z position of surface in region coordinates
 vector prePush;
 float pp;
+
+#define saveWater() \
+	db4$freplace(PrimSwimCfg$table, PrimSwimCfg$table$waterPrims, llList2CSV(WATER)); \
+	raiseEvent(PrimswimEvt$waterChanged, "")
 
 timerEvent(string id, string data){
 	
@@ -300,13 +248,14 @@ timerEvent(string id, string data){
 		list RC_DEFAULT = (list)RC_REJECT_TYPES + (RC_REJECT_AGENTS|RC_REJECT_PHYSICAL);
 		#endif
 		
-		for( ; i < count(water) && water != [] && ~STATUS&PrimswimStatus$CLIMBING; ++i ){
+		for( ; i < count(WATER) && WATER != [] && ~STATUS&PrimswimStatus$CLIMBING; ++i ){
 		
-			key wID = llList2Key(water,i);
+			key wID = llList2Key(WATER,i);
 			
 			vector gpos = llGetRootPosition();
 			
-			float is = pointSubmerged(<gpos.x,gpos.y,gpos.z+ascale.z/2>); // Checks if feet are submerged, or if there's an airbubble.
+			vector checkPos = <gpos.x,gpos.y,gpos.z+ascale.z/2>;
+			float is = PrimswimHelper$pointSubmerged(checkPos); // Checks if feet are submerged, or if there's an airbubble.
 
 			// Point is not an air bubble
 			if( is ==-1 || is == 0 )
@@ -329,7 +278,7 @@ timerEvent(string id, string data){
 			
 			// Handle camera
 			vector pos = llGetCameraPos();
-			if( pointSubmerged(pos) != 0 && (~STATUS&PrimswimStatus$AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
+			if( PrimswimHelper$pointSubmerged(pos) != 0 && (~STATUS&PrimswimStatus$AT_SURFACE || ~ainfo&AGENT_MOUSELOOK) ){
 			
 				if( ~STATUS&PrimswimStatus$CAM_UNDER_WATER )
 					toggleCam(TRUE);
@@ -347,7 +296,8 @@ timerEvent(string id, string data){
 			// The water has been deleted, object no longer found
 			if( is == -1 ){
 				
-				water = llDeleteSubList(water,i,i);
+				WATER = llDeleteSubList(WATER,i,i);
+				saveWater();
 				--i; 
 				
 			}
@@ -364,7 +314,8 @@ timerEvent(string id, string data){
 				
 				if( i > 0 ){ // INDEX THIS WATER
 				
-					water = [wID]+llDeleteSubList(water, i, i);
+					WATER = [wID]+llDeleteSubList(WATER, i, i);
+					saveWater();
 					i=0;
 					
 				}  
@@ -753,7 +704,7 @@ timerEvent(string id, string data){
 
         multiTimer([id, "", 4, TRUE]);
         
-        if( STATUS & PrimswimStatus$IN_WATER || count(water) ){
+        if( STATUS & PrimswimStatus$IN_WATER || count(WATER) ){
 		
             if( ~STATUS & PrimswimStatus$TIMER_FAST ){
 			
@@ -869,14 +820,17 @@ default{
         
     sensor(integer total){ 
 	
-        integer i;
+        integer i; integer l = count(WATER);
         for( ; i < total; ++i ){
 		
             key id = llDetectedKey(i);
-            if( llListFindList(water, (list)id) == -1)
-                water += (list)id;
+            if( llListFindList(WATER, (list)id) == -1)
+                WATER += (list)id;
             
         }
+		if( count(WATER) != l ){
+			saveWater();
+		}
         llSensorRepeat(PrimswimConst$pnWater, "", PASSIVE|ACTIVE, 90, PI, 5);
 		
     }

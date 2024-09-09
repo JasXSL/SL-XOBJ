@@ -18,16 +18,23 @@
 
 
 
-#define Climb$start(ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed, onStart, onEnd) runMethod((string)LINK_SET, "jas Climb", ClimbMethod$start, ([ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed, onStart, onEnd]), TNN)
+#define Climb$start(ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed, onStart, onEnd, revClimbSpeed, sound, revSound) \
+	runMethod((string)LINK_SET, "jas Climb", ClimbMethod$start, ([ladder, rot_offset, anim_passive, anim_active, anim_active_down, anim_dismount_top, anim_dismount_bottom, nodes, climbspeed, onStart, onEnd, revClimbSpeed, sound, revSound]), TNN)
+
 //#define Climb$start(data) runMethod((string)LINK_ROOT, "jas Climb", ClimbMethod$start, data, TNN)
 #define Climb$stop(targ) runMethod(targ, "jas Climb", ClimbMethod$stop, [], TNN)
 
 #define ClimbEvt$start 1		// [(key)ladder, (var)onStartData]
 #define ClimbEvt$end 2			// [(key)ladder, (var)onEndData]
+#define ClimbEvt$dir 3			// (int)dir - Active climbing direction has changed. -1 is down, 0 is not climbing, 1 is up. 
 
 #ifndef ClimbCfg$defaultSpeed
 	#define ClimbCfg$defaultSpeed .65
 #endif
 
+// Required: #define ClimbCfg$soundPrim (int)primToLoopClimbingSound
+
+
 // Optional function bindings
 //#define ClimbCfg$onClimbStart		// Define a function that should be called when the climb data has been parsed
+//#define ClimbCfg$onInit 			// function run when the script is reset

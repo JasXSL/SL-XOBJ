@@ -191,6 +191,7 @@ runLimitMethod(string tokenSender, string className, integer method, list data, 
 
 // Standard function to raise an event.
 #define raiseEvent(evt, data) llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, ([llGetScriptName(), data])), (string)evt)
+#define emulateEvent(script, evt, data) llMessageLinked(LINK_SET, EVT_RAISED, llList2Json(JSON_ARRAY, (list)(script) + (data)), (string)evt)
 
 // Code used to reset the linkset's scripts
 #define resetAllOthers() llMessageLinked(LINK_SET, RESET_ALL, llGetScriptName(), "")

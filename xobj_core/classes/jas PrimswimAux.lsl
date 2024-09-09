@@ -4,9 +4,10 @@
 #define Primswim$partChan playerChan(llGetOwner())+0x1717 
 
 #define PrimswimAuxMethod$spawn 1
+#define PrimswimAuxMethod$triggerSplash 2		// (int)intensity (0-2) - Force triggers a splash event
 
 #define PrimswimAux$spawn() runMethod((str)LINK_THIS, "jas PrimswimAux", PrimswimAuxMethod$spawn, [], TNN)
-
+#define PrimswimAux$triggerSplash(intensity, pos) runMethod((str)LINK_THIS, "jas PrimswimAux", PrimswimAuxMethod$triggerSplash, (list)(intensity) + (pos), TNN)
 
 // Sound defaults
 #ifndef PrimswimAuxCfg$splashBig

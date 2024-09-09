@@ -347,6 +347,21 @@ kill(){
 	
 }
 
+execReceived( list PARAMS, string SENDER_SCRIPT, string senderUuid ){
+	
+	integer i;
+	for(; i < count(PARAMS); ++i ){
+	
+		str json = llJsonSetValue(l2s(PARAMS, i), (list)"s", senderUuid);
+		json = llJsonSetValue(json, (list)"ss", SENDER_SCRIPT);
+		PARAMS = llListReplaceList(PARAMS, (list)json, i, i);
+		
+	}
+	tasks += PARAMS;
+	runTask();
+	
+}
+
 default{
  
     #ifdef SupportcubeCfg$listenOverride
@@ -359,11 +374,12 @@ default{
 	
     #include "xobj_core/_LISTEN.lsl" 
     
-    on_rez(integer mew){
+    on_rez( integer mew ){
 	
         if( mew )
 			llSetAlpha(0, ALL_SIDES);
-        llSetObjectDesc((string)mew);
+        
+		llSetObjectDesc((string)mew);
 		llRegionSayTo(mySpawner(), SUPPORTCUBE_INIT_CHAN, "INIT");
         llResetScript(); 
 		
@@ -375,11 +391,14 @@ default{
         llSitTarget(<0,0,.01>,ZERO_ROTATION);
 		debugRare("Running killall");
         runOmniMethod(llGetScriptName(), SupportcubeMethod$killall, [], TNN);
-        if((float)llGetObjectDesc()){
+        if( (float)llGetObjectDesc() ){
+		
 			debugUncommon("Setting death timer");
             runMethod(llGetOwner(), "jas RLV", RLVMethod$cubeFlush, [], TNN);
             multiTimer([TIMER_DIE, "", (float)llGetObjectDesc(), TRUE]);
+			
         }
+		
 		multiTimer([TIMER_CHECK, "", 10, TRUE]);
         initiateListen();
 		#ifdef SupportcubeCfg$listenOverride
@@ -389,12 +408,22 @@ default{
 		
 		#ifdef DEBUG
 		if( llGetScriptName() != "jas Supportcube" )
-			llOwnerSay("!! Script needs to be named 'jas Supportcube' (lowercase c), rename it retard");
+			llOwnerSay("!! Script needs to be named 'jas Supportcube' (lowercase c)");
 		if( llGetObjectName() != "SupportCube" ){
 			llOwnerSay("!! Object needs to be named 'SupportCube'. I'll fix this for you.");
 			llSetObjectName("SupportCube");
 		}
 		#endif
+		
+		// StartString is [(arr)PARAMS_SENT_TO_EXECUTE]
+		string ss = llGetStartString();
+		if( ss ){
+			
+			list PARAMS = llJson2List(j(ss, 0));
+			execReceived(PARAMS, "jas RLV", mySpawner());
+			
+		}
+			
 		
     }
     
@@ -461,25 +490,19 @@ default{
     
     #include "xobj_core/_LM.lsl" 
 	
-		
-	
         if( nr == METHOD_CALLBACK )
 			return;
+			
         if( method$byOwner ){
-            if(METHOD == SupportcubeMethod$execute){
-				integer i;
-				for(; i<count(PARAMS); ++i ){
+		
+            if( METHOD == SupportcubeMethod$execute ){
 				
-					str json = llJsonSetValue(l2s(PARAMS, i), (list)"s", id);
-					json = llJsonSetValue(json, (list)"ss", SENDER_SCRIPT);
-					PARAMS = llListReplaceList(PARAMS, (list)json, i, i);
-					
-				}
-                tasks+=PARAMS;
-                runTask();
+				execReceived(PARAMS, SENDER_SCRIPT, id);
+
             }
-            else if(METHOD == SupportcubeMethod$killall)
+            else if( METHOD == SupportcubeMethod$killall )
 				kill();
+			
         }
         
     #define LM_BOTTOM  

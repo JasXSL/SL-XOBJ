@@ -18,6 +18,10 @@
 	
 	See xobj_core/classes/jas Interact.lsl for object descriptions
 	
+	Optional defines:
+	onCollision() - Raised at the start of every collision_start event
+	customEvt(script, evt, data) - Raised when receiving an event
+	
 */
 
 
@@ -177,7 +181,6 @@ init(){
 #ifndef FootstepsCfg$CROUCH_VOL
 	#define FootstepsCfg$CROUCH_VOL .01
 #endif
-
 
 
 

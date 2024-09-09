@@ -4,7 +4,7 @@
 	Install instructions:
 	1. Create a new prim on your HUD
 	2. Create a new script, on the first line you include your project "_core.lsl" file
-	3. On the second line #include "xobj_core/classes/packages/st Remoteloader.lsl"
+	3. On the second line #include "xobj_core/classes/packages/jas Remoteloader.lsl"
 	4. Create a new script in your inventory, name it _slave1
 	5. Paste the following code into it and compile:
 	
@@ -31,11 +31,18 @@ default
 	7. Rename the _slave scripts into _slave0, _slave1, _slave2, _slave3, _slave4
 	8. These scripts will be used to speed up remoteloading, to circumvent the long delay caused by it.
 	9. Make sure jas Remoteloader is on drive
+	10. Setup the following defines:
+	#define REMOTE_TABLE <db4_table>
+	#define QUEUE_TABLE <db4_table>
+	#define META_TABLE <db4_table>
+	
 	
 	#define onLoadFinish to any code you want to run when the current queue is complete
 	#define stateEntry to any code you want to put in state entry
 	
 */
+
+
 
 // Methods //
 // These are identifier ints used to call methods on this class from other scripts
@@ -50,6 +57,15 @@ default
 
 #define RemoteloaderConst$iniChan -23499578
 #define Remoteloader$portalInit( scripts ) llRegionSayTo(llGetOwner(), RemoteloaderConst$iniChan, mkarr(scripts))
+
+
+// LSD
+#define remoteloaderMetaTable$status db4$0 		// Fixed index is META_TABLE
+	#define remoteloaderStatus$NO_QUEUE -1		// We are not loading at all
+	#define remoteloaderStatus$BUSY 0			// We are loading and queue is full
+	#define remoteloaderStatus$LOADING 1		// We are loading but the queue is not full
+#define Remoteloader$getMetaStatus(table) ((int)db4$fget(table, remoteloaderMetaTable$status))
+
 
 
 #ifndef RemoteloaderConf$slaves

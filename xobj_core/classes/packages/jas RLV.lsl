@@ -59,18 +59,30 @@ int ATC_REQ = 5;		// Attach requests remaining. Max 5 every 20 sec
 float lastCube;	// Time last tried rezz
 key supportcube;
 list cubetasks;
-cubeTask(list tasks){
-    cubetasks+=tasks;
-    if(cubetasks){
+cubeTask( list tasks ){
+
+    cubetasks += tasks;
+    if( cubetasks ){
         
         if(llKey2Name(supportcube) != ""){
 			debugUncommon("Running cube tasks on "+(string)playerChan(llGetOwner()));
             runMethod((string)supportcube, "jas Supportcube", SupportcubeMethod$execute, cubetasks, TNN);
             cubetasks = [];
         }else if( llGetTime()-lastCube > 1.0 ){
+		
 			debugUncommon("Spawning cube");
 			lastCube = llGetTime();
-            llRezAtRoot("SupportCube", llGetRootPosition()-<0,0,3>, ZERO_VECTOR, ZERO_ROTATION, 300);
+            llRezObjectWithParams(
+				"SupportCube", [
+					REZ_POS, llGetRootPosition()-<0,0,3>, FALSE, TRUE,
+					REZ_PARAM, 300,
+					REZ_PARAM_STRING, mkarr((list)
+						mkarr(cubetasks)
+					)
+				]
+			);
+			cubetasks = [];
+			
         }
         
     }

@@ -41,14 +41,14 @@
 	#define Interact$TASK_DESC$NO_SENSOR 0x1			// Prevent use of sensor, allowing only raycast to detect this
 	#define Interact$TASK_DESC$ALLOW_PHANTOM 0x2		// Allow phantom detection via sensor.
 	#define Interact$TASK_DESC$NO_ACTION 0x4			// Not used internally but can be used in onDesc to mark that we should not use [E].
-	
+	#define Interact$TASK_DESC$NO_CROSSHAIR 0x8			// Not used internally but signifies to onDesc that we do not want to show a crosshair
 	
 #define Interact$TASK_TELEPORT "P"			// [(vec)offset] - Teleports you
 #define Interact$TASK_INTERACT "I"			// NULL - Sends an interact com to the object
 #define Interact$TASK_TRIGGER_SOUND "T"		// [(key)uuid, (float)vol=1]
 #define Interact$TASK_PLAY_SOUND "S"		// [(key)uuid, (float)vol=1]
 #define Interact$TASK_SITON "SO"			// (bool)root - Calls RLV to sit on the prim (or root prim if root is true), does not use cube
-#define Interact$TASK_CLIMB "CL"			// (rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (CSV)nodes, (float)climbspeed
+#define Interact$TASK_CLIMB "CL"			// (rot)rotation_offset, (str)anim_passive, (str)anim_active, (str)anim_active_down, (str)anim_dismount_top, (str)anim_dismount_bottom, (CSV)nodes, (float)climbspeed, (str)climbStartEvent(passed toClimbEvt$start), (str)climbEndEvent(passed to ClimbEvt$end), (float)revspeed(same as climbspeed if omitted)
 #define Interact$TASK_WATER "WT"			// (vec)stream, (float)cyclone, (float)swimspeed_modifier, (str)windlight_preset
 #define Interact$TASK_SOUNDSPACE "SS"		// (str)name, (float)vol
 #define Interact$TASK_WL_PRESET "WL"		// (str)preset
@@ -61,7 +61,7 @@
 
 // * Implemented by default. Though you might need to install a module for it.
 
-#define InteractMethod$override 1			// (str)text, (int)flags - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
+#define InteractMethod$override 1			// (str)text, (int)override_flags, (int)descFlags - Overrides the text. When the user interacts, sends a callback to that script with data being [(str)text]. Use "" as text to clear
 	#define Interact$OF_AUTOREMOVE 0x1			// Auto removes the override if the object that called the override is not found
 #define InteractMethod$onClick 2			// (str)id, $list_actions - id is a unique identifier for your event used in removing, $list_actions is a string same as the Interact$TASK you'd expect. Only passing id unbinds
 #define InteractMethod$allowWhenSitting 3	// (bool)allow - Toggles whether interacts are allowed while sitting
@@ -77,7 +77,7 @@
 // #define InteractConf$soundPrim (int)linknr 		// Link number to play HUD sounds for interact. Default 1
 
 // #define Interact$addKeys(keys) runMethod((string)LINK_ROOT, "jas Interact", InteractMethod$addKeys, keys, TNN)
-#define Interact$override(targ, text, callback, flags) runMethod((string)targ, "jas Interact", InteractMethod$override, [text, flags], callback)
+#define Interact$override(targ, text, callback, overrideFlags, descFlags) runMethod((string)targ, "jas Interact", InteractMethod$override, [text, overrideFlags, descFlags], callback)
 #define Interact$onClick(targ, id, list_actions) runMethod((string)targ, "jas Interact", InteractMethod$onClick, [id, list_actions], TNN)
 #define Interact$offClick(targ, id) runMethod((string)targ, "jas Interact", InteractMethod$onClick, [id], TNN)
 

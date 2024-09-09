@@ -9,11 +9,27 @@
 
 
 init(){
+	llLinkStopSound(ClimbCfg$soundPrim);
     llSetMemoryLimit(llCeil(llGetUsedMemory()*1.5));
+	#ifdef ClimbCfg$onInit
+	ClimbCfg$onInit();
+	#endif
 }
+
+list CSOUNDS = [
+	"ld", "c0039e86-b805-c039-db3f-54b7e32d2ad0", 	// Wood ladder
+	"rc", "a0596509-bfab-111c-aa94-9c12bd70bf05",	// Rope climb
+	"rs", "4d2070de-28a0-3061-7068-71b9fa83b68b",	// Rope slide
+	"sh", "095684dd-224d-a542-f66b-4d443e902757",	// Shimmy Rope
+	"cc", "ee5b1830-26ec-bd0c-7dc5-a6e83d522aa7",	// climb chain
+	"cs", "be14a8a5-0d66-0d11-78da-586c699932e2"	// slide chain
+];
 
 // Set when climbing to ClimbCfg$defaultSpeed
 float CLIMBSPEED;
+float CLIMBSPEED_REV;
+string CSOUND;
+string CSOUND_D;
 
 integer BFL;
 #define BFL_MOVING 1
@@ -55,11 +71,54 @@ string anim_active_cur;
 string onStart;
 string onEnd;
 
+
 integer onNode;
 rotation rot;
 float perc;
+integer cDir; // Cache of last sent climb direction. Used for the event.
 
+string curSound; // Sound currently being looped
+updateSound(){
+	
+	string s;
+	if( BFL&BFL_MOVING ){
+	
+		s = CSOUND;
+		// Actually down
+		if( BFL & BFL_DIR_UP )
+			s = CSOUND_D;
+			
+	}
+	
+	integer pos = llListFindList(CSOUNDS, (list)s);
+	if( pos == -1 )
+		s = "";
+		
+	if( s == curSound )
+		return;
+	
+	curSound = s;
+	
+	if( s == "" ){
+		llLinkStopSound(ClimbCfg$soundPrim);
+		return;
+	}
+	
+	key uuid = l2k(CSOUNDS, pos+1);
+	llLinkPlaySound(ClimbCfg$soundPrim, uuid, 0.1, SOUND_LOOP);
 
+}
+
+sendCdir( integer dir ){
+	
+	if( ~BFL&BFL_CLIMBING )
+		return;
+	if( dir == cDir )
+		return;
+	cDir = dir;
+	raiseEvent(ClimbEvt$dir, (str)cDir);
+	
+}
 
 #define setCubePos(pos) llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, llList2CSV([SupportcubeOverride$tSetPosAndRot, pos, rot*ladder_root_rot]))
 
@@ -73,14 +132,18 @@ dismount( integer atoffset ){
     
 	if( BFL&BFL_DISMOUNTING )
 		return;
-		
+	
+	sendCdir(0);
     BFL = BFL|BFL_DISMOUNTING;
     multiTimer([TIMER_MOVE]);
     BFL = BFL&~BF_CLIMB_INI;
     BFL = BFL&~BFL_CLIMBING_ANIM;
     BFL = BFL&~BFL_CLIMBING;
+	BFL = BFL&~BFL_MOVING;
     anim_active_cur = "";
-    
+    updateSound();
+	
+	
     if(anim_active != ""){
         AnimHandler$anim(anim_active,FALSE,0,0,0);
     }
@@ -112,10 +175,14 @@ dismount( integer atoffset ){
     
     multiTimer([TIMER_DISMOUNTING, "", to, FALSE]);
     raiseEvent(ClimbEvt$end, mkarr(([(string)ladder, onEnd])));
+	updateSound();
+	
 }
 
 mount(){
+
 	BFL_CACHE = 0;
+	sendCdir(0);
     findNearestNode();
     // Position cube at node and start
     vector p = offset2global(llList2Vector(nodes, onNode));
@@ -157,8 +224,9 @@ timerEvent(string id, string data){
         multiTimer([id, "", .1, FALSE]);
         
 		// Agent has unsat
-		if(~llGetAgentInfo(llGetOwner())&AGENT_SITTING){
-            if(BFL&BF_CLIMB_INI)return;
+		if( ~llGetAgentInfo(llGetOwner()) & AGENT_SITTING ){
+            if( BFL&BF_CLIMB_INI )
+				return;
             dismount(FALSE);
             return;
         }
@@ -175,27 +243,28 @@ timerEvent(string id, string data){
 		
 		
         
-		if(BFL&BFL_MOVING){
+		if( BFL & BFL_MOVING ){
+		
             vector nodea = offset2global(llList2Vector(nodes,1)); 
             vector nodeb = offset2global(llList2Vector(nodes,2));
             float maxdist = llVecDist(nodea, nodeb);
-            float spd = CLIMBSPEED/maxdist*.5;
-                
-            if(BFL&BFL_DIR_UP)
-				perc-=spd;
-            else
-				perc+=spd;
+            // Up and down are reversed in the script for some reason
+			float spd = -CLIMBSPEED_REV/maxdist*.5;
+			if( ~BFL&BFL_DIR_UP )
+				spd = CLIMBSPEED/maxdist*.5;
+            perc += spd;
                     
-            if(isset(anim_active) && ~BFL&BFL_CLIMBING_ANIM){
-                BFL = BFL|BFL_CLIMBING_ANIM;
-                string a = anim_active;
-                    
-                if( ~BFL&BFL_DIR_UP )
-					a = anim_active_down;
-                if(a != anim_active_cur)AnimHandler$anim(a,TRUE,0,0,0);
-                anim_active_cur = a;
-            }
-                
+            BFL = BFL|BFL_CLIMBING_ANIM;
+            
+			string a = anim_active;
+            if( ~BFL&BFL_DIR_UP )
+				a = anim_active_down;
+            if( a != anim_active_cur ){
+				if( anim_active_cur )
+					AnimHandler$anim(anim_active_cur,FALSE,0,0,0);
+				AnimHandler$anim(a,TRUE,0,0,0);
+			}
+            anim_active_cur = a;	
 				
 			// Reached top or bottom
             if(perc>1 || perc<0){
@@ -213,7 +282,7 @@ timerEvent(string id, string data){
 		else{
 		
             BFL = BFL&~BFL_CLIMBING_ANIM;
-            if(anim_active_cur != ""){
+            if( anim_active_cur != "" ){
                 AnimHandler$anim(anim_active_cur,FALSE,0,0,0);
                 anim_active_cur = "";
             }
@@ -223,7 +292,8 @@ timerEvent(string id, string data){
 				llRegionSayTo(CUBE, SupportcubeCfg$listenOverride, (str)SupportcubeOverride$tKFMEnd);
 			
         }
-        
+        updateSound();
+		
         BFL_CACHE = BFL;
         
     }
@@ -266,37 +336,54 @@ findNearestNode(){
     onNode = nn+1;
 }
 
+int PRESSED_KEYS;
 onEvt(string script, integer evt, list data){
+
     if(script == "jas RLV" && evt == RLVevt$supportcubeSpawn){
         CUBE = llList2String(data,0);
     }
-    else if(script == "#ROOT"){
+    else if( script == "#ROOT" && (evt == evt$BUTTON_RELEASE || evt == evt$BUTTON_PRESS) ){
+	
         integer n = llList2Integer(data,0);
+		
+        if( evt == evt$BUTTON_RELEASE )
+			PRESSED_KEYS = PRESSED_KEYS & ~n;
+		else
+			PRESSED_KEYS = PRESSED_KEYS | n;
+			
         integer up = CONTROL_FWD|CONTROL_RIGHT|CONTROL_UP|CONTROL_ROT_RIGHT;
         integer dn = CONTROL_BACK|CONTROL_LEFT|CONTROL_DOWN|CONTROL_ROT_LEFT;
-            
-        if(evt == evt$BUTTON_RELEASE){
-            if(n&(up|dn)){
-                BFL = BFL&~BFL_MOVING;
-                BFL = BFL&~BFL_DIR_UP;
-            }
-        }else if(evt == evt$BUTTON_PRESS){
-            
-
-            if(n&(up|dn)){
-                BFL = BFL|BFL_MOVING;
-                if(n&up)BFL = BFL&~BFL_DIR_UP;
-                else BFL = BFL|BFL_DIR_UP;
-            }
-            
-            return;
-        }
+        if( !(PRESSED_KEYS & (up|dn)) ){
+		
+			BFL = BFL&~BFL_MOVING;
+            BFL = BFL&~BFL_DIR_UP;
+			sendCdir(0);
+			
+		}
+		else{
+		
+			// These are reversed for some reason but it is what it is
+			BFL = BFL|BFL_MOVING;
+			if( PRESSED_KEYS & up ){
+			
+				BFL = BFL&~BFL_DIR_UP;
+				sendCdir(1);
+				
+			}
+			else{
+			
+				BFL = BFL|BFL_DIR_UP;
+				sendCdir(-1);
+				
+			}
+			
+		}
+		
     }
     
 }
 
-default
-{
+default{
     on_rez(integer mew){
         llResetScript();
     }
@@ -358,10 +445,21 @@ default
             CLIMBSPEED = (float)tr(method_arg(8));
 			onStart = tr(method_arg(9));
 			onEnd = tr(method_arg(10)); 
-			
-
-            if(CLIMBSPEED<=0)
+			CLIMBSPEED_REV = (float)tr(method_arg(11));
+			if( CLIMBSPEED <= 0 )
 				CLIMBSPEED = ClimbCfg$defaultSpeed;
+			if( CLIMBSPEED_REV < .01 )
+				CLIMBSPEED_REV = CLIMBSPEED;
+			CSOUND = tr(method_arg(12));
+			CSOUND_D = tr(method_arg(13));
+			if( CSOUND == JSON_INVALID )
+				CSOUND = "";
+			if( CSOUND == "" )
+				CSOUND = "ld"; // For backwards compatibility, default to ladder
+			if( CSOUND_D == "" || CSOUND_D == JSON_INVALID )
+				CSOUND_D = CSOUND;
+			
+			
             list dta = llGetObjectDetails(ladder, [OBJECT_POS, OBJECT_ROT]);
             ladder_root_pos = llList2Vector(dta,0);
             ladder_root_rot = llList2Rot(dta, 1);

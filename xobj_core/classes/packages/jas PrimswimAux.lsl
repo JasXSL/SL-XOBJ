@@ -15,6 +15,17 @@ list AIR_POCKETS;			// Handles all the air pockets
 key PARTICLE_HELPER;		// Active particle generator prim
 integer CACHE_CHAN; 		// Channel it communicates on
 
+triggerSplash( integer weight, vector position ){
+
+	list sounds = (list)
+		PrimswimAuxCfg$splashSmall +
+		PrimswimAuxCfg$splashMed +
+		PrimswimAuxCfg$splashBig
+	;
+	llTriggerSound(l2k(sounds, weight), 1);		
+	send(jasPrimswimParticles$onWaterEntered, (list)weight + position);
+	
+}
 
 onEvt( string script, integer evt, list data){
 	
@@ -24,14 +35,8 @@ onEvt( string script, integer evt, list data){
 	if( evt == PrimswimEvt$onWaterEnter ){
 		
 		int weight = l2i(data, 0);
-		list sounds = (list)
-			PrimswimAuxCfg$splashSmall +
-			PrimswimAuxCfg$splashMed +
-			PrimswimAuxCfg$splashBig
-		;
-		llTriggerSound(l2k(sounds, weight), 1);		
-		send(jasPrimswimParticles$onWaterEntered, data);
-		
+		vector position = (vector)l2s(data, 1);
+		triggerSplash(weight, position);
 		multiTimer([TIMER_SWIMSTROKE, "", 1., TRUE]);
 		
 	}
@@ -217,7 +222,9 @@ default{
     #include "xobj_core/_LM.lsl"
     if( method$isCallback || !method$internal )
 		return;
-		
+	
+	if( METHOD == PrimswimAuxMethod$triggerSplash )
+		triggerSplash(l2i(PARAMS, 0), (vector)l2s(PARAMS, 1));
 
     #define LM_BOTTOM 
     #include "xobj_core/_LM.lsl"

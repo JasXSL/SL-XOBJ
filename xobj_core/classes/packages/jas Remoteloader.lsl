@@ -34,6 +34,8 @@ integer BFL;
 list queue;				// [(key)id, (str)script, (int)pin, (int)startparam]
 #define QSTRIDE 4
 
+#define LOADER_TIMEOUT 3.25	// Min seconds between loads
+
 // Assets with a portal in it can be used to alleviate remote loading
 key getAvailablePortal( string script, key id ){
 	
@@ -54,8 +56,8 @@ key getAvailablePortal( string script, key id ){
 			llLinksetDataDelete(k);
 			
 		}
-		// Can be used every 4 seconds.
-		else if( gtime-time > 4 && targ != id ){
+		// Can be used every LOADER_TIMEOUT seconds.
+		else if( gtime-time > LOADER_TIMEOUT && targ != id ){
 			
 			list scripts = llJson2List(j(data, 1));
 			if( ~llListFindList(scripts, (list)script) ){ // Has this script
@@ -79,7 +81,7 @@ int getAvailableSlave(){
 	integer i;
 	for(; i < count(slaves); ++i ){
 		
-		if( gtime-l2f(slaves, i) > 3.1 )
+		if( gtime-l2f(slaves, i) > LOADER_TIMEOUT )
 			return i;
 		
 	}
@@ -169,13 +171,13 @@ int load(){
 		slaves = llListReplaceList(slaves, (list)llGetTime(), slave, slave);
 		llMessageLinked(LINK_THIS, slave, mkarr((list)targ + script + pin + startParam), "rm_slave");
 		db4$delete(QUEUE_TABLE, next); // We always delete on attempt. If it fails, the target will send a new request.
-		debugUncommon("[Internal] Load "+script+" via slave "+(str)slave+" to "+llKey2Name(targ));
+		debugUncommon("[Internal] Load "+script+" via slave "+(str)slave+" to "+llKey2Name(targ)+" pin ["+(str)pin+"]");
 		return TRUE;
 		
 	}
 
 
-	debugUncommon("[Queue] Out of loaders... delaying "+(str)llGetTime()+" "+mkarr(slaves));
+	debugUncommon("[Queue] Out of loaders... delaying "+(str)llGetTime()+" "+mkarr(slaves)+" pin ["+(str)pin+"]");
 	return FALSE;
 	
 }
@@ -185,6 +187,7 @@ next(){
 	// Need to allow events to raise. So we set a timer.
 	float t = 0.01;
 	integer l = load();
+	db4$freplace(META_TABLE, remoteloaderMetaTable$status, l);
 	if( l == -1 )
 		return;
 		

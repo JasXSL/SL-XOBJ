@@ -33,6 +33,47 @@ string dateformat(integer utime){
     return output;
 }
 
+string stripSlurls( string input ){
+    
+    string test = "[secondlife:///app/chat";
+    list tx = llParseStringKeepNulls(input, [test], []);
+    string out; integer i;
+    if( llGetSubString(input, 0, llStringLength(test)-1) != test ){
+        out = l2s(tx, 0);
+        ++i; // Start at 1
+    }
+    
+    for( ; i < count(tx); ++i ){
+        
+        string sub = l2s(tx, i);
+        integer n; integer t; integer e;
+        integer l = llStringLength(sub);
+        for( ; t < l; ++t ){
+            
+            string ch = llGetSubString(sub, t, t);
+            if( ch == "[" )
+                ++n;
+            else if( ch == "]" ){
+                
+                --n;
+                if( n == -1 ){
+                    n = t-1;
+                    t = l; // break;
+                }
+                
+            }
+                        
+        }
+        
+        out += implode(" ", llDeleteSubList(explode(" ", llGetSubString(sub, 0, n)), 0, 0));
+        if( n+2 != l )
+            out += llGetSubString(sub, n+2, -1);
+        
+    }
+    return out;
+    
+}
+
 // Lets you round floats, vectors, and rotations
 #define allRound(input, places) _allRound((list)(input), places)
 string _allRound( list input, integer places ){
@@ -78,6 +119,54 @@ string _allRound( list input, integer places ){
     return llList2String(vals, 0);
 }
 
+
+// Requests and plays an animation immediately. This seems to work in every test I have made. Useful for syncing anims between users.
+// data is a 3 stride of [key uuid, str anim, vec camPos, vec camTarg, int start]
+lazyAnim( key targ, string anim, integer start ){
+	
+	targ = llGetOwnerKey(targ);
+	if( llGetAgentSize(targ) == ZERO_VECTOR )
+		return;
+	// Not sitting on us
+	if( prRoot(targ) != llGetKey() )
+		return;
+	
+    llRequestPermissions(targ, PERMISSION_TRIGGER_ANIMATION);
+    if( llGetPermissions()&PERMISSION_TRIGGER_ANIMATION ){
+        if( start )
+            animOn(anim);
+        else
+            animOff(anim);
+    }
+    
+}
+
+// Requests and sets camera immediately. This seems to work in every test I have made. Useful when controlling many users.
+lazyCam( key targ, vector camPos, vector camTarg ){
+    
+	targ = llGetOwnerKey(targ);
+	if( llGetAgentSize(targ) == ZERO_VECTOR )
+		return;
+    llRequestPermissions(targ, PERMISSION_CONTROL_CAMERA);
+    if( llGetPermissions() & PERMISSION_CONTROL_CAMERA ){
+        
+        if( camPos ){
+            
+            llSetCameraParams([
+                CAMERA_ACTIVE, TRUE,
+                CAMERA_POSITION_LOCKED, TRUE,
+                CAMERA_FOCUS_LOCKED, TRUE,
+                CAMERA_POSITION, llGetPos()+camPos*llGetRot(),
+                CAMERA_FOCUS, llGetPos()+camTarg*llGetRot()
+            ]);
+            
+        }
+        else
+            llClearCameraParams();
+            
+    }
+    
+}
 
 //Searches for HEADER in INPUT and returns the value
 //If header isnt found, returns an empty string

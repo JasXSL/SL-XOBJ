@@ -65,11 +65,11 @@
 
 #define PrimSwimCfg$table$status db4$0					// (int) primswim status flags
 #define PrimSwimCfg$table$surfaceZ db4$1				// (float) water surface in region coordinates
-
+#define PrimSwimCfg$table$waterPrims db4$2				// CSV of detected water prims
 
 #define PrimSwimGet$status() ((int)db4$fget(PrimSwimCfg$table, PrimSwimCfg$table$status))
 #define PrimSwimGet$surfaceZ() ((float)db4$fget(PrimSwimCfg$table, PrimSwimCfg$table$surfaceZ))
-
+#define PrimSwimGet$water() llCSV2List(db4$fget(PrimSwimCfg$table, PrimSwimCfg$table$waterPrims))
 
 #define PrimswimStatus$IN_WATER 0x1
 #define PrimswimStatus$SWIMMING 0x2
@@ -135,3 +135,84 @@
 #define PrimswimEvt$feetWet 4			// [(bool)wet] - Feet are now wet or not
 //#define PrimswimEvt$status 5			// (int)status - Status changed
 #define PrimswimEvt$submerge 6			// (bool)submerged, (vec)surface_pos, (rot)surface_rot
+#define PrimswimEvt$waterChanged 7		// void - List of water prims detected has changed. Use PrimSwimGet$water()
+
+
+// Requires a list called WATER that contains UUIDs of water prims to check and a list called airpockets
+#define PrimswimHelper$pointSubmerged(point) __pspsm(point)
+// -1 = is submerged
+// 0 = not submerged (linden air)
+// anything else = global Z for where bubble begins
+float __pspsm( vector point ){
+
+    integer i; float submerged = 0;
+    float s; float vs;
+    for(i=0;i<llGetListLength(WATER);i++){
+        if((vs = waterZ(point,llList2Key(WATER,i), FALSE))>0){
+            submerged = -1;
+            i = 9000;
+        }
+    }
+    
+    for(i=0; i<llGetListLength(airpockets); i++){
+	
+        if((s=waterZ(point, llList2Key(airpockets, i), TRUE))>0)
+            return s;
+        
+    }
+     
+    return submerged;
+	
+}
+
+// Needs to use same logic as above, but returns either -1 or the surface coordinate. skips air pockets
+#define PrimswimHelper$pointSubmergedFast(point) __psf(point)
+float __psf( vector point ){
+
+    integer i;
+    for( ;i < count(WATER); ++i ){
+	
+		float z = waterZ(point,llList2Key(WATER,i), FALSE);
+		if( z > 0 )
+			return z;
+		
+    }
+
+    return -1;
+	
+}
+
+// Checks if userPos is intersecting id and returns the surface Z coordinate at that location
+float waterZ(vector userPos, key id, integer inverse){
+	vector vPos = userPos;
+	
+	list d = llGetObjectDetails(id, [OBJECT_POS, OBJECT_ROT]);
+	vector gpos = llList2Vector(d,0);
+	if(gpos == ZERO_VECTOR)return -1;
+	rotation grot = llList2Rot(d,1);
+	list bb = llGetBoundingBox(id);
+	
+	vector v1 = llList2Vector(bb,0);
+	vector v2 = llList2Vector(bb,1);
+	
+	vPos = vPos-gpos;
+	
+	float fTemp;
+	// Order in size so v2 is always greater
+	if (v1.x > v2.x){fTemp = v2.x;v2.x = v1.x;v1.x = fTemp;}
+	if (v1.y > v2.y){fTemp = v2.y;v2.y = v1.y;v1.y = fTemp;}
+	if (v1.z > v2.z){fTemp = v2.z;v2.z = v1.z;v1.z = fTemp;}
+	
+	// Adjust the point to object rotation
+	vPos/=llList2Rot(d,1);
+	if (vPos.x < v1.x || vPos.y < v1.y || vPos.z < v1.z || vPos.x > v2.x || vPos.y > v2.y || vPos.z > v2.z)return 0;
+	
+	vector scale = <v2.x-v1.x, v2.y-v1.y, v2.z-v1.z>*.5;
+	if(inverse)scale.z=-scale.z;
+	vector offset = userPos-gpos;
+	offset.z = 0;
+	offset*=grot;
+	offset.z+=scale.z;
+	float ret = gpos.z+offset.z;
+	return ret;
+}
